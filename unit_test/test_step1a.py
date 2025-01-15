@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from pyblinkers.vislab.getBlinkPositions_vislab import getBlinkPosition
+from pyblinkers.getBlinkPositions_vislab import getBlinkPosition
 from unit_test.debugging_tools import load_matlab_data
 
 

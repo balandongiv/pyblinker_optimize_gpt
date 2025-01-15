@@ -3,11 +3,11 @@ import logging
 
 import numpy as np
 
-from pyblinkers.utilities.zero_crossing import (_get_half_height,
-                                                compute_fit_range)
-from pyblinkers.vislab.base_left_right import create_left_right_base_vislab
+from pyblinkers.zero_crossing import (_get_half_height,
+                                      compute_fit_range)
+from pyblinkers.base_left_right import create_left_right_base_vislab
 from pyblinkers.line_intersection_matlab import lines_intersection_matlabx
-from pyblinkers.utilities.zero_crossing import left_right_zero_crossing
+from pyblinkers.zero_crossing import left_right_zero_crossing
 logging.getLogger().setLevel(logging.INFO)
 
 class FitBlinks:

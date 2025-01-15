@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyblinkers.utilities.zero_crossing import (_maxPosVelFrame, _get_left_base, _get_right_base)
+from pyblinkers.zero_crossing import (_maxPosVelFrame, _get_left_base, _get_right_base)
 
 
 def create_left_right_base_vislab(data,df):

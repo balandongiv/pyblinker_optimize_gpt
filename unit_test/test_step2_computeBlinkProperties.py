@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-from pyblinkers.utilities.extractBlinkProperties import BlinkProperties
+from pyblinkers.extractBlinkProperties import BlinkProperties
 from unit_test.debugging_tools import load_matlab_data
 from pyblinkers import default_setting
 

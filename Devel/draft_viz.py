@@ -1,7 +1,3 @@
-import hickle as hkl
-
-
-
 def viz_fit_blink_pd_approach(data=None,df=None):
     """
 
@@ -11,7 +7,7 @@ def viz_fit_blink_pd_approach(data=None,df=None):
     https://stackoverflow.com/a/38015084/6446053
     :return:
     """
-    from pyblinkers.viz.viz_pd import viz_complete_blink_prop
+    from pyblinkers.viz_pd import viz_complete_blink_prop
     import mne
 
 

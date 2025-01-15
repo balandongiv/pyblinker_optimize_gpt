@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import pandas as pd
 from unit_test.debugging_tools import load_matlab_data
-from pyblinkers.utilities.extractBlinkProperties import getGoodBlinkMask
+from pyblinkers.extractBlinkProperties import getGoodBlinkMask
 
 
 class TestGetGoodBlinkMask(unittest.TestCase):

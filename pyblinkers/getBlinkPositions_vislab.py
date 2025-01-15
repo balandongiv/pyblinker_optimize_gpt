@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyblinkers.utilities.misc import mad_matlab
+from pyblinkers.misc import mad_matlab
 
 logging.getLogger().setLevel(logging.INFO)
 

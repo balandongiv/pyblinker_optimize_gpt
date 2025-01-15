@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 import logging
 from pyblinkers import default_setting
-from pyblinkers.utilities.extractBlinkProperties import BlinkProperties, getGoodBlinkMask, get_blink_statistic
-from pyblinkers.utilities.fit_blink import FitBlinks
-from pyblinkers.vislab.getBlinkPositions_vislab import getBlinkPosition
+from pyblinkers.extractBlinkProperties import BlinkProperties, getGoodBlinkMask, get_blink_statistic
+from pyblinkers.fit_blink import FitBlinks
+from pyblinkers.getBlinkPositions_vislab import getBlinkPosition
 from unit_test.debugging_tools import load_matlab_data
 
 # Configure logger

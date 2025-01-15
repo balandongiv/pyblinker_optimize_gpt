@@ -5,13 +5,13 @@ import pandas as pd
 from pyblinkers import default_setting
 from pyblinkers.getRepresentativeChannel import filter_blink_amplitude_ratios, filter_good_blinks, filter_good_ratio, \
     select_max_good_blinks
-from pyblinkers.utilities.extractBlinkProperties import BlinkProperties
-from pyblinkers.utilities.extractBlinkProperties import getGoodBlinkMask
-from pyblinkers.utilities.extractBlinkProperties import get_blink_statistic
-from pyblinkers.utilities.fit_blink import FitBlinks
-from pyblinkers.utilities.misc import create_annotation
-from pyblinkers.vislab.getBlinkPositions_vislab import getBlinkPosition
-from pyblinkers.viz.viz_pd import viz_complete_blink_prop
+from pyblinkers.extractBlinkProperties import BlinkProperties
+from pyblinkers.extractBlinkProperties import getGoodBlinkMask
+from pyblinkers.extractBlinkProperties import get_blink_statistic
+from pyblinkers.fit_blink import FitBlinks
+from pyblinkers.misc import create_annotation
+from pyblinkers.getBlinkPositions_vislab import getBlinkPosition
+from pyblinkers.viz_pd import viz_complete_blink_prop
 
 logging.getLogger().setLevel(logging.INFO)
 

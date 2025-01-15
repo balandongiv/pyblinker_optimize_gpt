@@ -5,7 +5,7 @@ import matplotlib
 import mne
 
 matplotlib.use('Agg')
-from pyblinkers.utilities.misc import check_make_folder
+from pyblinkers.misc import check_make_folder
 from tqdm import tqdm
 
 def save_blink_report(dlist):
