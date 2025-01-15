@@ -37,7 +37,7 @@ Matlab original code
 import unittest
 
 import numpy as np
-from unit_test.matlab_forking import get_intersection
+from pyblinkers.matlab_forking import get_intersection
 class TestGetIntersection(unittest.TestCase):
 
     def test_get_intersection(self):

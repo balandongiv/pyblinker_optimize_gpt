@@ -21,27 +21,6 @@ def _goodblink_based_corr_median_std(df, correlationThreshold):
 
     return R2, R3, specifiedMedian, specifiedStd
 
-#
-# def get_mask_optimise(df, indicesNaN, correlationThreshold, zScoreThreshold):
-#     """
-#     "used Feb 02 2023"
-#     The calculation of bestmedian,worst median, worrst rbobustst
-#     is from https://github.com/VisLab/EEG-Blinks/blob/16b6ea04101ecfa74fb1c9cbceb037324572687e/blinker/utilities/extractBlinks.m#L97
-#
-#     :param df:
-#     :param indicesNaN:
-#     :param correlationThreshold:
-#     :param zScoreThreshold:
-#     :return:
-#     """
-#     R1 = ~indicesNaN
-#     R2, R3, specifiedMedian, specifiedStd = _goodblink_based_corr_median_std(df, correlationThreshold)
-#
-#     R4 = df['maxValue'] >= max(0, specifiedMedian - zScoreThreshold * specifiedStd)
-#     R5 = df['maxValue'] <= specifiedMedian + zScoreThreshold * specifiedStd
-#     bool_test = R1.values & R2.values & R3.values & R4.values & R5.values
-#
-#     return bool_test, specifiedMedian, specifiedStd
 
 
 def calculate_within_range(all_values, best_median, best_robust_std):
@@ -689,8 +668,6 @@ class BlinkProperties:
             lambda row: self.compute_time_shut_base(row, self.data, self.srate, self.shutAmpFraction), axis=1)
 
 
-
-
         ## Time shut tent
 
         # closingTimeTent and reopeningTimeTent included
@@ -702,23 +679,7 @@ class BlinkProperties:
         self.df['timeShutTent'] = self.df.apply(
             lambda row: self.compute_time_shut_tent(row, self.data, self.srate, self.shutAmpFraction), axis=1)
 
-        # self.df['ampThreshhold_tst'] = self.shutAmpFraction * self.df['maxValue']
-        #
-        # self.df[['leftXIntercept_int', 'rightXIntercept_int']] = self.df[['leftXIntercept', 'rightXIntercept']].astype(
-        #     int)
-        #
-        #
-        # self.df=self.df[self.df.leftXIntercept_int<self.df.rightXIntercept_int]
-        # self.df.reset_index(drop=True,inplace=True)
-        # self.df['start_shut_tst'] = self.df.apply(
-        #     lambda x: np.argmax(self.data[x['leftXIntercept_int']:x['rightXIntercept_int'] + 1] >= x['ampThreshhold']), axis=1)
-        #
-        #
-        # self.df['endShut_tst'] = self.df.apply(self.get_argmax_val,axis=1)
-        #
-        # # timeShutTent included
-        # self.df['timeShutTent'] = self.df.apply(
-        #     lambda x: 0 if x['endShut_tst'] == np.isnan else (x['endShut_tst'] / self.srate), axis=1)
+
 
     def get_argmax_val(self,row):
         left = row['leftXIntercept_int']
@@ -754,42 +715,6 @@ class BlinkProperties:
         self.df['interBlinkMaxVelBase']=(self.df['peaksPosVelBase']*-1)/self.srate
 
         self.df['interBlinkMaxVelZero']=(self.df['peaksPosVelZero']*-1)/self.srate
-        # existing_array = self.df['maxFrame'].to_numpy()
-        # range_to_append = np.arange(len(self.data))
-        #
-        # # Append the range to the existing array
-        # combined_array = np.append(existing_array, range_to_append)
-        #
-        # peaks=self.df['maxFrame'].to_numpy(),len(self.data)
-        # # Calculation for interBlinkMaxVelBase and interBlinkMaxVelZero
-        # dfcal = self.df[['maxFrame', 'peaksPosVelBase', 'peaksPosVelZero']]
-        #
-        # df_t = pd.DataFrame.from_records([[self.signal_l] * 3], columns=['maxFrame', 'peaksPosVelBase', 'peaksPosVelZero'])
-        #
-        # dfcal = pd.concat([dfcal, df_t]).reset_index(drop=True)
-        #
-        # dfcal['ibmx'] = dfcal.maxFrame.diff().shift(-1)
-        #
-        # # -->>interBlinkMaxAmp included
-        # dfcal['interBlinkMaxAmp'] = dfcal['ibmx'] / self.srate
-        #
-        # dfcal['ibmvb'] = 1 - dfcal['peaksPosVelBase']
-        #
-        # # -->> interBlinkMaxVelBase included
-        # dfcal['interBlinkMaxVelBase'] = dfcal['ibmvb'] / self.srate  # peaksPosVelBase == velFrame
-        #
-        # dfcal['ibmvz'] = 1 - dfcal['peaksPosVelZero']
-        #
-        # # interBlinkMaxVelZero included
-        # dfcal['interBlinkMaxVelZero'] = dfcal['ibmvz'] / self.srate
-        #
-    # def applyPAVRRestriction(self):
-    #     # Define the conditions
-    #     condition_1 = self.df['posAmpVelRatioZero'] < self.pAVRThreshold
-    #     condition_2 = self.df['maxValue'] < (self.blinkStatProperties['bestMedian'] - self.blinkStatProperties['bestRobustStd'])
-    #
-    #     # filters the DataFrame to keep only rows that do not meet both conditions.
-    #     self.df= self.df[~(condition_1 & condition_2)]
 
 
 

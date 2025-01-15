@@ -13,14 +13,11 @@ def viz_complete_blink_prop(data,row,srate):
     TODO Viz
 
     https://stackoverflow.com/a/51928241/6446053
-    https://stackoverflow.com/a/38015084/6446053
+
     :return:
     """
 
-    # bquality = row['blink_quality']
-    # blinkq = 'Gblink' if bquality else 'Bblink'
-    # xLabelString = f"Time(s) [Max:F={row['maxFrames']},T={(row['maxFrames'])/srate}] " \
-    #                f"[Left:F={row['leftBase']},T={(row['rightBase'])/srate} sec].blinkQuality:{blinkq}"
+
     xLabelString='T'
     fig, ax = plt.subplots(figsize=(8, 6))
 

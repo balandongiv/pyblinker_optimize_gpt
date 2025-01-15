@@ -1,7 +1,7 @@
 import unittest
 import logging
 import numpy as np
-from unit_test.matlab_forking import corrMatlab, polyvalMatlab, polyfitMatlab, get_intersection
+from pyblinkers.matlab_forking import corrMatlab, polyvalMatlab, polyfitMatlab, get_intersection
 
 # Set up logger
 logging.basicConfig(level=logging.INFO)
