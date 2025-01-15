@@ -1,24 +1,64 @@
-import numpy as np
+# LLMed on 15 January 2025
 
+import numpy as np
 from pyblinkers.zero_crossing import (_maxPosVelFrame, _get_left_base, _get_right_base)
 
+def create_left_right_base_vislab(data, df):
+    """
+    Computes leftBase and rightBase for each row in df, using blinkVelocity
+    derived from data. Additional columns maxPosVelFrame and maxNegVelFrame
+    are also added to df.
 
-def create_left_right_base_vislab(data,df):
-    # YES
+    :param data: 1D numpy array of signal data
+    :param df: Pandas DataFrame containing columns:
+        ['maxFrame', 'leftZero', 'rightZero', 'outerStarts', 'outerEnds', ...]
+    :return: Updated df with columns:
+        ['maxPosVelFrame', 'maxNegVelFrame', 'leftBase', 'rightBase']
+    """
+
+    # Compute blink velocity by differencing the data
     blinkVelocity = np.diff(data, axis=0)
-    df = df.dropna()
+
+    # Remove rows with NaNs so we don't pass invalid data to our calculations
+    df.dropna(inplace=True)
+
+    # Calculate maxPosVelFrame and maxNegVelFrame
     df[['maxPosVelFrame', 'maxNegVelFrame']] = df.apply(
-        lambda x: _maxPosVelFrame(blinkVelocity, x['maxFrame'], x['leftZero'],
-                                  x['rightZero']), axis=1, result_type="expand")
+        lambda row: _maxPosVelFrame(
+            blinkVelocity=blinkVelocity,
+            maxFrame=row['maxFrame'],
+            leftZero=row['leftZero'],
+            rightZero=row['rightZero']
+        ),
+        axis=1,
+        result_type='expand'
+    )
 
-    ## Lets check some condition especially for data with anamoly
+    # Filter out anomalous rows where outerStarts >= maxPosVelFrame
+    df = df[df['outerStarts'] < df['maxPosVelFrame']]
 
-    df = df[df['outerStarts'] < df['maxPosVelFrame']]  # Filter and take only row that normal
+    # Calculate leftBase
+    df['leftBase'] = df.apply(
+        lambda row: _get_left_base(
+            blinkVelocity=blinkVelocity,
+            leftOuter=row['outerStarts'],
+            maxPosVelFrame=row['maxPosVelFrame']
+        ),
+        axis=1
+    )
 
-    df['leftBase'] = df.apply(lambda x: _get_left_base(blinkVelocity, x['outerStarts'], x['maxPosVelFrame']), axis=1)
+    # Drop rows with NaNs again if any were introduced
+    df.dropna(inplace=True)
 
-    df = df.dropna()
+    # Calculate rightBase
+    df['rightBase'] = df.apply(
+        lambda row: _get_right_base(
+            candidateSignal=data,
+            blinkVelocity=blinkVelocity,
+            rightOuter=row['outerEnds'],
+            maxNegVelFrame=row['maxNegVelFrame']
+        ),
+        axis=1
+    )
 
-    df['rightBase'] = df.apply(lambda x: _get_right_base(data, blinkVelocity, x['outerEnds'], x['maxNegVelFrame']),
-                               axis=1)
     return df

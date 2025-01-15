@@ -1,303 +1,342 @@
-import warnings
+# LLMed on 15 January 2025
 
+import warnings
 import numpy as np
 
-
-def get_line_intersection_slope(xIntersect,yIntersect,leftXIntercept,rightXIntercept):
-    # YES
+def get_line_intersection_slope(xIntersect, yIntersect, leftXIntercept, rightXIntercept):
+    """
+    Original logic retained. Computes slopes at the intersection point.
+    """
+    # Local variable usage here is minimal since there's only two lines.
     leftSlope = yIntersect / (xIntersect - leftXIntercept)
     rightSlope = yIntersect / (xIntersect - rightXIntercept)
-    return leftSlope,rightSlope
-
-def get_average_velocity(pLeft,pRight,xLeft,xRight):
-    # YES
-    averLeftVelocity = pLeft.coef[1] / np.std(xLeft)  # 0.36513701
-    averRightVelocity = pRight.coef[1] / np.std(xRight)  # -0.068895057
-
-    return averLeftVelocity,averRightVelocity
+    return leftSlope, rightSlope
 
 
+def get_average_velocity(pLeft, pRight, xLeft, xRight):
+    """
+    Original logic retained. Computes average velocities.
+    """
+    # Using local references is possible, but it's already short.
+    averLeftVelocity = pLeft.coef[1] / np.std(xLeft)
+    averRightVelocity = pRight.coef[1] / np.std(xRight)
+    return averLeftVelocity, averRightVelocity
 
 
 def left_right_zero_crossing(candidateSignal, maxFrame, outerStarts, outerEnds):
-    ### YES Latest as of 29 April 2022 which is more efficient
-    theRange = np.arange(int(outerStarts), int(maxFrame))
-    sInd_leftZero = np.flatnonzero(candidateSignal[theRange] < 0)
+    """
+    Identify the left zero crossing and right zero crossing of the signal
+    between outerStarts->maxFrame and maxFrame->outerEnds.
+    """
+    startIdx = int(outerStarts)
+    mFrame = int(maxFrame)
+    endIdx = int(outerEnds)
 
-    if (sInd_leftZero.size != 0):
-        leftZero = theRange[sInd_leftZero[-1]]
+    # Left side search
+    leftRange = np.arange(startIdx, mFrame)
+    leftValues = candidateSignal[leftRange]
+    sInd_leftZero = np.flatnonzero(leftValues < 0)
 
+    if sInd_leftZero.size > 0:
+        leftZero = leftRange[sInd_leftZero[-1]]
     else:
-        extreme_outerStartss = np.arange(0, maxFrame)
-        extreme_outerStartss = extreme_outerStartss.astype(int)
-        sInd_rightZero_ex = np.flatnonzero(candidateSignal[extreme_outerStartss] < 0)[-1]
-        leftZero = extreme_outerStartss[sInd_rightZero_ex]
+        # Fall back if no negative crossing found in leftRange
+        fullLeftRange = np.arange(0, mFrame).astype(int)
+        leftNegIdx = np.flatnonzero(candidateSignal[fullLeftRange] < 0)
+        leftZero = fullLeftRange[leftNegIdx[-1]]
 
-    theRange = np.arange(int(maxFrame), int(outerEnds))
-    sInd_rightZero = np.flatnonzero(candidateSignal[theRange] < 0)
+    # Right side search
+    rightRange = np.arange(mFrame, endIdx)
+    rightValues = candidateSignal[rightRange]
+    sInd_rightZero = np.flatnonzero(rightValues < 0)
 
-    if (sInd_rightZero.size != 0):
-        rightZero = theRange[sInd_rightZero[0]]
+    if sInd_rightZero.size > 0:
+        rightZero = rightRange[sInd_rightZero[0]]
     else:
-        """
-        We take extreme remedy by extending the outerEnds to the maximum
-        """
+        # Extreme remedy by extending beyond outerEnds to the max signal length
         try:
-            extreme_outerEns = np.arange(maxFrame, candidateSignal.shape)
+            extremeOuter = np.arange(mFrame, candidateSignal.shape[0]).astype(int)
         except TypeError:
             print('Error')
-        extreme_outerEns = extreme_outerEns.astype(int)
-        sInd_rightZero_ex_s = np.flatnonzero(candidateSignal[extreme_outerEns] < 0)
+            # If this except triggers, raise or handle accordingly
+            return leftZero, None
 
-        if (sInd_rightZero_ex_s.size != 0):
-            # This usually happen for end of signal
-            sInd_rightZero_ex = sInd_rightZero_ex_s[0]
-            rightZero = extreme_outerEns[sInd_rightZero_ex]
+        sInd_rightZero_ex = np.flatnonzero(candidateSignal[extremeOuter] < 0)
+        if sInd_rightZero_ex.size > 0:
+            rightZero = extremeOuter[sInd_rightZero_ex[0]]
         else:
             return leftZero, None
 
-    if leftZero > maxFrame:
-        raise ValueError('something is not right')
+    if leftZero > mFrame:
+        raise ValueError("Validation error: leftZero = {leftZero}, maxFrame = {maxFrame}. Ensure leftZero <= maxFrame.")
 
-    if maxFrame > rightZero:
-        raise ValueError('something is not right')
-
+    if mFrame > rightZero:
+        raise ValueError('Validation error: maxFrame = {maxFrame}, rightZero = {rightZero}. Ensure maxFrame <= rightZero.')
 
     return leftZero, rightZero
 
 
 def get_up_down_stroke(maxFrame, leftZero, rightZero):
-    # YES Compute the place of maximum positive and negative velocities.
-    # upStroke is the interval between leftZero and maxFrame, downStroke is the interval between maxFrame and rightZero.
-    # For time being, lets us apppend +1 to ensure we get the same nsize as what in the original MATLAB code
-    upStroke = np.arange(leftZero, maxFrame+1)
-    downStroke = np.arange(maxFrame, rightZero+1)
+    """
+    YES Compute the place of maximum positive and negative velocities.
+    upStroke is the interval between leftZero and maxFrame,
+    downStroke is the interval between maxFrame and rightZero.
+    """
+    # Using local references for clarity.
+    mFrame = int(maxFrame)
+    lZero = int(leftZero)
+    rZero = int(rightZero)
+
+    upStroke = np.arange(lZero, mFrame + 1)
+    downStroke = np.arange(mFrame, rZero + 1)
     return upStroke, downStroke
 
 
 def _maxPosVelFrame(blinkVelocity, maxFrame, leftZero, rightZero):
-    '''
-    YES
+    """
+    In the context of *blinkVelocity* time series,
+    the `maxPosVelFrame` and `maxNegVelFrame` represent the indices where
+    the *blinkVelocity* reaches its maximum positive value and maximum negative value, respectively.
+    """
+    mFrame = int(maxFrame)
+    lZero = int(leftZero)
+    rZero = int(rightZero)
 
+    upStroke, downStroke = get_up_down_stroke(mFrame, lZero, rZero)
 
-    In the context of *blinkVelocity* time series, the `maxPosVelFrame` and `maxNegVelFrame` represent the indices where the *blinkVelocity* reaches its maximum positive value and maximum negative value, respectively. These values are determined within the boundaries defined by `LeftZero` and `RightZero`.
-    :param blinkVelocity:
-    :param maxFrame:
-    :param leftZero:
-    :param rightZero:
-    :return:
-    '''
-    maxFrame, leftZero, rightZero = int(maxFrame), int(leftZero), int(rightZero)
-    upStroke, downStroke = get_up_down_stroke(maxFrame, leftZero, rightZero)
-    maxPosVelFrame = np.argmax(blinkVelocity[upStroke])
-    maxPosVelFrame = maxPosVelFrame + upStroke[0]
+    # Maximum positive velocity in the upStroke region
+    maxPosVelIdx = np.argmax(blinkVelocity[upStroke])
+    maxPosVelFrame = upStroke[maxPosVelIdx]
 
-
-    if len(blinkVelocity[downStroke])>0:
-        maxNegVelFrame = np.argmin(blinkVelocity[downStroke])
-        maxNegVelFrame = maxNegVelFrame + downStroke[0]
+    # Maximum negative velocity in the downStroke region, if it exists
+    if downStroke.size > 0:
+        maxNegVelIdx = np.argmin(blinkVelocity[downStroke])
+        maxNegVelFrame = downStroke[maxNegVelIdx]
     else:
         warnings.warn('Force nan but require further investigation why happen like this')
-        maxNegVelFrame=np.nan
-
+        maxNegVelFrame = np.nan
 
     return maxPosVelFrame, maxNegVelFrame
 
 
 def _get_left_base(blinkVelocity, leftOuter, maxPosVelFrame):
-    # YES
+    """
+    Determine the left base index from leftOuter to maxPosVelFrame
+    by searching for where blinkVelocity crosses <= 0.
+    """
+    lOuter = int(leftOuter)
+    mPosVel = int(maxPosVelFrame)
 
-    leftOuter, maxPosVelFrame = int(leftOuter), int(maxPosVelFrame)
+    leftRange = np.arange(lOuter, mPosVel + 1)
+    reversedVelocity = np.flip(blinkVelocity[leftRange])
 
-    # We need to append +1 to ensure we get the same nsize as what in the original MATLAB code
-    leftBase = np.arange(leftOuter, maxPosVelFrame+1)
-    xx = blinkVelocity[leftBase]
-    leftBaseVelocity = np.flip(xx)
-
-    leftBaseIndex = np.argmax(leftBaseVelocity <= 0)
-
-    # we need to -1 to ensure the leftBase position is tally what we define in the manual graph obvservation
-
-
-    leftBase = maxPosVelFrame - leftBaseIndex-1
-
+    leftBaseIndex = np.argmax(reversedVelocity <= 0)
+    leftBase = mPosVel - leftBaseIndex - 1
     return leftBase
 
 
 def _get_right_base(candidateSignal, blinkVelocity, rightOuter, maxNegVelFrame):
-    # YES Start Line 102 Matlab
-    rightOuter, maxNegVelFrame = int(rightOuter), int(maxNegVelFrame)
-    a_tend = np.minimum(rightOuter, candidateSignal.size)
+    """
+    Determine the right base index from maxNegVelFrame to rightOuter
+    by searching for where blinkVelocity crosses >= 0.
+    """
+    rOuter = int(rightOuter)
+    mNegVel = int(maxNegVelFrame)
 
-    if maxNegVelFrame > a_tend:
-        # warnings.warn(
-        #     'Failed to fit blink %s but due to MaxNegVelFrame: %s larger than a_tend: %s .For now I will skip this file'
-        #     % (number, maxNegVelFrame, a_tend))
+    # Ensure boundaries are valid
+    if mNegVel > rOuter:
         return None
 
+    maxSize = candidateSignal.size
+    endIdx = min(rOuter, maxSize)
+    rightRange = np.arange(mNegVel, endIdx)
 
-    rightBase = np.arange(maxNegVelFrame, a_tend)  # Line 102 matlab
-
-    # hh=blinkVelocity.size
-    # nn=np.max(rightBase)
-
-    if rightBase.size == 0:
+    if rightRange.size == 0:
         return None
 
-    if np.max(rightBase) >= blinkVelocity.size:
-        # For some reason, the original rightBase has index value greate than blinkVelocity which cause index error.
-        # To address this issue, we remove some value
-        rightBase = rightBase[:-1]
-        if np.max(rightBase) >= blinkVelocity.size:
-            raise ValueError('Please strategise how to address this')
+    # Avoid out-of-bounds indexing for blinkVelocity
+    if rightRange[-1] >= blinkVelocity.size:
+        rightRange = rightRange[:-1]
+        if rightRange.size == 0 or rightRange[-1] >= blinkVelocity.size:
+            # TODO: Handle this case more gracefully
+            raise ValueError('Please strategies how to address this')
 
-    rightBaseVelocity = blinkVelocity[rightBase]  #
-
-    '''
-    if rightBaseIndex.size == 0:  # Line 108 Matlab
-        rightBaseIndex = 0
-    '''
+    rightBaseVelocity = blinkVelocity[rightRange]
     rightBaseIndex = np.argmax(rightBaseVelocity >= 0)
-
-    # we need to -1 to ensure the leftBase position is tally what we define in the manual graph obvservation
-    rightBase = maxNegVelFrame + rightBaseIndex+1
-
-
+    rightBase = mNegVel + rightBaseIndex + 1
     return rightBase
 
 
 def _get_half_height(candidateSignal, maxFrame, leftZero, rightZero, leftBase, rightOuter):
-    #### YES
     """
-    leftBaseHalfHeight
-    The coordinate of the signal halfway (in height) between the blink maximum and the left base value. [A positive numeric value.]
-
-    rightBaseHalfHeight
-    The coordinate of the signal halfway (in height) between the blink maximum and the right base value.
-    [A positive numeric value.]
+    leftBaseHalfHeight:
+        The coordinate of the signal halfway (in height) between
+        the blink maximum and the left base value.
+    rightBaseHalfHeight:
+        The coordinate of the signal halfway (in height) between
+        the blink maximum and the right base value.
     """
+    mFrame = int(maxFrame)
+    lZero = int(leftZero)
+    rZero = int(rightZero)
+    lBase = int(leftBase)
+    rOuter = int(rightOuter)
 
-    maxFrame, leftZero, rightZero, leftBase, rightOuter = int(maxFrame), int(leftZero), int(rightZero), int(
-        leftBase), int(rightOuter)
+    # Halfway point (vertical) from candidateSignal[maxFrame] to candidateSignal[leftBase]
+    maxVal = candidateSignal[mFrame]
+    leftBaseVal = candidateSignal[lBase]
+    halfHeightVal = maxVal - 0.5 * (maxVal - leftBaseVal)
 
-    blinkHalfHeight = candidateSignal[maxFrame] - (0.5 * (candidateSignal[maxFrame] - candidateSignal[leftBase]))
+    # Left side half-height from base
+    leftRange = np.arange(lBase, mFrame + 1)
+    leftVals = candidateSignal[leftRange]
+    leftIndex = np.argmax(leftVals >= halfHeightVal)
+    leftBaseHalfHeight = lBase + leftIndex + 1
 
-    # We need to append +1 to ensure we get the same nsize as what in the original MATLAB code
-    leftHalfBase = np.arange(leftBase, maxFrame+1)
-    dd=candidateSignal[leftHalfBase]
-    cc= np.argmax(dd >= blinkHalfHeight)
-    leftBaseHalfHeight = leftBase +cc+1
-
-    # warnings.warn(
-    #     'Need to double check this line:To confirm whether it is correct to used rightOuter instead of rightBase?')
-    ## WIP : To confirm whether it is correct to used rightOuter instead of rightBase?
-    rightHalfBase = np.arange(maxFrame, rightOuter+1)
-
+    # Right side half-height from base
+    rightRange = np.arange(mFrame, rOuter + 1)
     try:
-        rightBaseHalfHeight = np.minimum(rightOuter,
-                                         np.argmax(candidateSignal[rightHalfBase] <= blinkHalfHeight) + maxFrame)
+        rightBaseHalfHeight = min(
+            rOuter,
+            np.argmax(candidateSignal[rightRange] <= halfHeightVal) + mFrame
+        )
     except IndexError:
-        rightHalfBase = np.arange(maxFrame, rightOuter)
-        rightBaseHalfHeight = np.minimum(rightOuter,
-                                         np.argmax(candidateSignal[rightHalfBase] <= blinkHalfHeight) + maxFrame)
-    # Consider to move this to its own designated function
-    # Compute the left and right half-height frames from zero
-    leftHalfBase = np.arange(leftZero, maxFrame+1)
-    blinkHalfHeight = 0.5 * candidateSignal[maxFrame]  # with_val 4.3747134
+        # If out-of-bounds, reduce range by 1
+        rightRange = np.arange(mFrame, rOuter)
+        rightBaseHalfHeight = min(
+            rOuter,
+            np.argmax(candidateSignal[rightRange] <= halfHeightVal) + mFrame
+        )
 
-    """
-    leftZeroHalfHeight
-    The coordinate of the signal halfway (in height) between the blink maximum and the left zero value.
-    """
-    leftZeroHalfHeight = np.argmax(candidateSignal[leftHalfBase] >= blinkHalfHeight) + leftZero+1
+    # Now compute the left and right half-height frames from zero
+    # Halfway from candidateSignal[maxFrame] down to 0 (the "zero" crossing region).
+    # leftZeroHalfHeight
+    zeroHalfVal = 0.5 * maxVal
+    leftZeroRange = np.arange(lZero, mFrame + 1)
+    leftZeroIndex = np.argmax(candidateSignal[leftZeroRange] >= zeroHalfVal)
+    leftZeroHalfHeight = lZero + leftZeroIndex + 1
 
-    rightHalfBase = np.arange(maxFrame, rightZero+1)
-
-    """
-    rightZeroHalfHeight
-    The coordinate of the signal halfway (in height) between the blink maximum and the right zero value.
-    """
-    rightZeroHalfHeight = np.minimum(rightOuter, maxFrame +
-                                     np.argmax(candidateSignal[rightHalfBase] <= blinkHalfHeight))
+    # rightZeroHalfHeight
+    rightZeroRange = np.arange(mFrame, rZero + 1)
+    rightZeroIndex = np.argmax(candidateSignal[rightZeroRange] <= zeroHalfVal)
+    rightZeroHalfHeight = min(rOuter, mFrame + rightZeroIndex)
 
     return leftZeroHalfHeight, rightZeroHalfHeight, leftBaseHalfHeight, rightBaseHalfHeight
 
+
 def get_left_range(leftZero, maxFrame, candidateSignal, blinkTop, blinkBottom):
-    # YES
-    blinkRange = np.arange(leftZero, maxFrame + 1, dtype=int)
+    """
+    Identify the left blink range based on blinkTop/blinkBottom thresholds
+    within candidateSignal.
+    """
+    lZero = int(leftZero)
+    mFrame = int(maxFrame)
 
-    blinkTopPoint = np.where(candidateSignal[blinkRange] < blinkTop)[0][-1]#np.argmin(dd) ## return 7
-    blinkBottomPoint = np.argmax(candidateSignal[blinkRange] > blinkBottom) # return 2
+    blinkRange = np.arange(lZero, mFrame + 1, dtype=int)
+    candSlice = candidateSignal[blinkRange]
 
+    # Indices where candidateSignal < blinkTop
+    topIdx = np.where(candSlice < blinkTop)[0]
+    blinkTopPoint_idx = topIdx[-1]  # the last occurrence
 
-    leftRange = [blinkRange[blinkBottomPoint], blinkRange[blinkTopPoint]] #[42,48]
-    blinkTopPoint_l_X = blinkRange[blinkTopPoint]
+    # Indices where candidateSignal > blinkBottom
+    bottomIdx = np.flatnonzero(candSlice > blinkBottom)
+    blinkBottomPoint_idx = bottomIdx[0]  # the first occurrence
+
+    blinkTopPoint_l_X = blinkRange[blinkTopPoint_idx]
     blinkTopPoint_l_Y = candidateSignal[blinkTopPoint_l_X]
-    blinkBottomPoint_l_X = blinkRange[blinkBottomPoint]
+
+    blinkBottomPoint_l_X = blinkRange[blinkBottomPoint_idx]
     blinkBottomPoint_l_Y = candidateSignal[blinkBottomPoint_l_X]
 
-    return leftRange,blinkTopPoint_l_X,blinkTopPoint_l_Y,blinkBottomPoint_l_X,blinkBottomPoint_l_Y
+    leftRange = [blinkBottomPoint_l_X, blinkTopPoint_l_X]
+
+    return leftRange, blinkTopPoint_l_X, blinkTopPoint_l_Y, blinkBottomPoint_l_X, blinkBottomPoint_l_Y
+
 
 def get_right_range(maxFrame, rightZero, candidateSignal, blinkTop, blinkBottom):
-    # YES
-    blinkRange = np.arange(maxFrame, rightZero + 1, dtype=int)
-    bxbz=candidateSignal[blinkRange]
-    axaz= bxbz< blinkTop
-    blinkTopPoint_r = np.argmax(axaz)
+    """
+    Identify the right blink range based on blinkTop/blinkBottom thresholds
+    within candidateSignal.
+    """
+    mFrame = int(maxFrame)
+    rZero = int(rightZero)
 
-    qqq=candidateSignal[blinkRange]
-    wwwe=qqq > blinkBottom
-    blinkBottomPoint_r=np.where(wwwe)[0][-1]
-    # blinkBottomPoint_r = np.argmin(wwwe)
+    blinkRange = np.arange(mFrame, rZero + 1, dtype=int)
+    candSlice = candidateSignal[blinkRange]
+
+    # Indices where candidateSignal < blinkTop
+    topMask = (candSlice < blinkTop)
+    blinkTopPoint_r = np.argmax(topMask)  # first True
+
+    # Indices where candidateSignal > blinkBottom
+    bottomMask = (candSlice > blinkBottom)
+    bottomIdx = np.where(bottomMask)[0]
+    blinkBottomPoint_r = bottomIdx[-1]  # last True
 
     blinkTopPoint_r_X = blinkRange[blinkTopPoint_r]
     blinkTopPoint_r_Y = candidateSignal[blinkTopPoint_r_X]
+
     blinkBottomPoint_r_X = blinkRange[blinkBottomPoint_r]
     blinkBottomPoint_r_Y = candidateSignal[blinkBottomPoint_r_X]
 
     rightRange = [blinkRange[blinkTopPoint_r], blinkRange[blinkBottomPoint_r]]
-    return rightRange,blinkTopPoint_r_X,blinkTopPoint_r_Y,blinkBottomPoint_r_X,blinkBottomPoint_r_Y
+
+    return (rightRange,
+            blinkTopPoint_r_X, blinkTopPoint_r_Y,
+            blinkBottomPoint_r_X, blinkBottomPoint_r_Y)
 
 
 def compute_fit_range(candidateSignal, maxFrame, leftZero, rightZero, baseFraction, top_bottom=None):
-    # YES
-    maxFrame, leftZero, rightZero = int(maxFrame), int(leftZero), int(rightZero)
-    blinkHeight = candidateSignal[maxFrame] - candidateSignal[leftZero]  # ?? 8.8286028
-    blinkTop = candidateSignal[maxFrame] - baseFraction * blinkHeight  # ?? 7.8665667
-    blinkBottom = candidateSignal[leftZero] + baseFraction * blinkHeight  # ?? 0.80368418
-    leftRange,blinkTopPoint_l_X,blinkTopPoint_l_Y,blinkBottomPoint_l_X,blinkBottomPoint_l_Y=get_left_range(leftZero, maxFrame, candidateSignal, blinkTop, blinkBottom)
+    """
+    Computes xLeft, xRight, leftRange, rightRange,
+    plus optional top/bottom blink points,
+    for the candidateSignal around a blink event.
+    """
+    mFrame = int(maxFrame)
+    lZero = int(leftZero)
+    rZero = int(rightZero)
 
-    rightRange,blinkTopPoint_r_X,blinkTopPoint_r_Y,blinkBottomPoint_r_X,blinkBottomPoint_r_Y=get_right_range(maxFrame, rightZero, candidateSignal, blinkTop, blinkBottom)
+    # Compute the blinkTop/blinkBottom for thresholding
+    blinkHeight = candidateSignal[mFrame] - candidateSignal[lZero]
+    blinkTop = candidateSignal[mFrame] - baseFraction * blinkHeight
+    blinkBottom = candidateSignal[lZero] + baseFraction * blinkHeight
 
+    (leftRange,
+     blinkTopPoint_l_X, blinkTopPoint_l_Y,
+     blinkBottomPoint_l_X, blinkBottomPoint_l_Y) = get_left_range(lZero, mFrame, candidateSignal, blinkTop, blinkBottom)
 
-    # use this to visualise
-    # from eeg_blinks.viz.viz_sanity import viz_blink_top_buttom_point
-    # viz_blink_top_buttom_point(candidateSignal,blinkRange,blinkTop,blinkBottom,maxFrame,rightZero,leftRange,rightRange)
+    (rightRange,
+     blinkTopPoint_r_X, blinkTopPoint_r_Y,
+     blinkBottomPoint_r_X, blinkBottomPoint_r_Y) = get_right_range(mFrame, rZero, candidateSignal, blinkTop, blinkBottom)
 
-    xLeft = np.arange(leftRange[0], leftRange[1] + 1, dtype=int)  # THe +1 to ensure we include the last frame
+    # Create arrays for fitting
+    xLeft = np.arange(leftRange[0], leftRange[1] + 1, dtype=int)  # +1 to include the last index
     xRight = np.arange(rightRange[0], rightRange[1] + 1, dtype=int)
 
-
-
-
+    # Edge-case warnings
+    # Edge-case warnings
     if blinkBottomPoint_l_X == blinkTopPoint_l_X:
-        warnings.warn('same value for left top_blink and left bottom_blink')
+        warnings.warn(f'same value for left top_blink and left bottom_blink: {blinkBottomPoint_l_X}')
 
     if blinkBottomPoint_r_X == blinkTopPoint_r_X:
-        warnings.warn('same value for right top_blink and right bottom_blink')
+        warnings.warn(f'same value for right top_blink and right bottom_blink: {blinkBottomPoint_r_X}')
 
+
+    # Replace empty arrays with np.nan for consistency
     if xLeft.size == 0:
         xLeft = np.nan
-
     if xRight.size == 0:
         xRight = np.nan
 
     if top_bottom is None:
+        # Return minimal information
         warnings.warn('To modify this so that all function return the top_bottom point')
         return xLeft, xRight, leftRange, rightRange
     else:
-        return xLeft, xRight, leftRange, rightRange, \
-               blinkBottomPoint_l_Y,blinkBottomPoint_l_X,blinkTopPoint_l_Y,blinkTopPoint_l_X,\
-               blinkBottomPoint_r_X,blinkBottomPoint_r_Y,blinkTopPoint_r_X,blinkTopPoint_r_Y
-
-
+        # Return extended info including top/bottom points
+        return (xLeft, xRight, leftRange, rightRange,
+                blinkBottomPoint_l_Y, blinkBottomPoint_l_X,
+                blinkTopPoint_l_Y, blinkTopPoint_l_X,
+                blinkBottomPoint_r_X, blinkBottomPoint_r_Y,
+                blinkTopPoint_r_X, blinkTopPoint_r_Y)

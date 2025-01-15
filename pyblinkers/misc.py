@@ -26,8 +26,7 @@ def check_make_folder(path, remove=False):
 
 
 def create_annotation(sblink, sfreq, label):
-    # st_blink = 'leftZero'
-    # blink_en = 'rightZero'
+
 
     if not isinstance(sblink, pd.DataFrame):
         raise ValueError('No appropriate channel. sorry. Try to use large channel selection')
