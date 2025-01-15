@@ -1,0 +1,5 @@
+# List your project dependencies below. For example:
+mne
+# pip3 install -U scidownl  : https://github.com/Tishacy/SciDownl
+
+
