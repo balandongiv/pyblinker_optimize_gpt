@@ -1,8 +1,0 @@
-
-https://realpython.com/pypi-publish-python-package/
-
-python -m pip install build twine
-
-python -m build
-
-twine upload -r pyblinkers dist/*
