@@ -16,21 +16,23 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 class BlinkDetector:
-    def __init__(self, raw_data, visualize=False, annot_label=None,filter_bad=False):
-        self.filter_bad=filter_bad
+    def __init__(self, raw_data, visualize=False, annot_label=None, filter_bad=False, filter_low=0.5, filter_high=20.5, resample_rate=100, n_jobs=1):
+        self.filter_bad = filter_bad
         self.raw_data = raw_data
         self.viz_data = visualize
         self.annot_label = annot_label
         self.sfreq = self.raw_data.info['sfreq']
         self.params = default_setting.params
         self.channel_list = self.raw_data.ch_names
-        self.all_data_info = []
-        self.all_data = []
+        self.filter_low = filter_low
+        self.filter_high = filter_high
+        self.resample_rate = resample_rate
+        self.n_jobs = n_jobs
 
     def prepare_raw_signal(self):
         self.raw_data.pick_types(eeg=True)
-        self.raw_data.filter(0.5, 20.5, fir_design='firwin')
-        self.raw_data.resample(100)
+        self.raw_data.filter(self.filter_low, self.filter_high, fir_design='firwin', n_jobs=self.n_jobs)
+        self.raw_data.resample(self.resample_rate, n_jobs=self.n_jobs)
         return self.raw_data
 
     def process_channel_data(self, channel):
@@ -82,28 +84,33 @@ class BlinkDetector:
         fig_data = [viz_complete_blink_prop(data, row, self.sfreq) for index, row in df.iterrows()]
 
         return fig_data
-    def get_blink_stat(self):
+    def process_all_channels(self):
         for channel in self.channel_list:
             self.process_channel_data(channel)
 
-
+    def select_representative_channel(self):
         ch_blink_stat = pd.DataFrame(self.all_data)
         ch_selected = ChannelSelection(ch_blink_stat, self.params)
         ch_selected.reset_index(drop=True, inplace=True)
+        return ch_selected
+
+    def get_representative_blink_data(self, ch_selected):
         ch = ch_selected.loc[0, 'ch']
-        nGoodBlinks = ch_selected.loc[0, 'numberGoodBlinks']
         data = self.raw_data.get_data(picks=ch)[0]
-        rep_blink_channel = self.filter_point(ch,self.all_data_info)
+        rep_blink_channel = self.filter_point(ch, self.all_data_info)
         df = rep_blink_channel['df']
+        df = self.filter_bad_blink(df)
+        return ch, data, df
 
-        df=self.filter_bad_blink(df)
-        # df.to_pickle('unit_test_1.pkl')
-
+    def create_annotations(self, df):
         annot_description = self.annot_label if self.annot_label else 'eye_blink'
-        annot = create_annotation(df, self.sfreq, annot_description)
-        if self.viz_data:
-            fig_data=self.generate_viz(data,df)
+        return create_annotation(df, self.sfreq, annot_description)
 
-        else:
-            fig_data=[]
-        return annot, ch, nGoodBlinks,df,fig_data,ch_selected
+    def get_blink_stat(self):
+        self.process_all_channels()
+        ch_selected = self.select_representative_channel()
+        ch, data, df = self.get_representative_blink_data(ch_selected)
+        annot = self.create_annotations(df)
+        fig_data = self.generate_viz(data, df) if self.viz_data else []
+        nGoodBlinks = ch_selected.loc[0, 'numberGoodBlinks']
+        return annot, ch, nGoodBlinks, df, fig_data, ch_selected

@@ -33,7 +33,7 @@ def plot_blinks(raw_file):
     # raw.save('temp_raw.fif')
     # Pick the 'EEG 002' channel
     # raw.pick_channels(['EEG 002'])
-    annot, ch, number_good_blinks,df,fig_data,ch_selected = BlinkDetector(raw,visualize=False, annot_label=None).get_blink_stat()
+    annot, ch, number_good_blinks, df, fig_data, ch_selected = BlinkDetector(raw, visualize=False, annot_label=None, filter_low=0.5, filter_high=20.5, resample_rate=100, n_jobs=2).get_blink_stat()
     raw.set_annotations(annot)
     raw.plot(block=True, title=f'Eye close based on channel {ch}')
 
