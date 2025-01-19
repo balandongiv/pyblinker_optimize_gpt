@@ -87,6 +87,7 @@ class BlinkDetector:
         fig_data = [viz_complete_blink_prop(data, row, self.sfreq) for index, row in df.iterrows()]
 
         return fig_data
+
 from concurrent.futures import ProcessPoolExecutor
 
     def process_all_channels(self):
