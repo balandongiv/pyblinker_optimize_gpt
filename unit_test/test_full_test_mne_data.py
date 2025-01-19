@@ -1,6 +1,7 @@
 import logging
 import unittest
 import os
+from hello import hello
 
 import matplotlib
 import mne

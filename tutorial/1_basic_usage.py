@@ -1,5 +1,6 @@
 import logging
 import os
+from hello import hello
 
 import matplotlib
 import mne
