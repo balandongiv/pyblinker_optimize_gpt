@@ -29,6 +29,7 @@ class BlinkDetector:
         self.filter_high = filter_high
         self.resample_rate = resample_rate
         self.n_jobs = n_jobs
+        self.all_data=[]
 
     def prepare_raw_signal(self):
         self.raw_data.pick_types(eeg=True)
@@ -107,7 +108,7 @@ class BlinkDetector:
         annot_description = self.annot_label if self.annot_label else 'eye_blink'
         return create_annotation(df, self.sfreq, annot_description)
 
-    def get_blink_stat(self):
+    def get_blink(self):
         self.process_all_channels()
         ch_selected = self.select_representative_channel()
         ch, data, df = self.get_representative_blink_data(ch_selected)
