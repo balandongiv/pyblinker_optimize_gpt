@@ -97,7 +97,23 @@ def select_max_good_blinks(df):
         df.loc[max_numberGoodBlinks_idx, 'select'] = True  # Select the row with the maximum value
         return df
 
+def ChannelSelection(channel_blink_stats,params):
+    # Apply the blink signal selection process
 
+    channel_blink_stats = filter_blink_amplitude_ratios(channel_blink_stats, params)
+    channel_blink_stats = filter_good_blinks(channel_blink_stats, params)
+    channel_blink_stats = filter_good_ratio(channel_blink_stats, params)
+    signal_data_output = select_max_good_blinks(channel_blink_stats)
+
+    # Columns to ignore
+    columns_to_ignore = ['status', 'select']
+
+
+
+    # Remove `status` and `select` columns from the comparison
+    signal_data_output = signal_data_output.drop(columns=columns_to_ignore, errors='ignore')
+
+    return signal_data_output
 
 # Applying the functions sequentially
 # df = filter_blink_amplitude(df, params)

@@ -55,20 +55,20 @@ def viz_complete_blink_prop(data,row,srate):
     plt.scatter([row['leftZero'], row['rightZero']], [0, 0], marker='d', s=100,label='zero crossing')
     plt.scatter(row['maxFrame'], data[row['maxFrame']],label='max Frame')
 
-    plt.scatter([row['leftBase'], row['rightBase']],
-                [data[row['leftBase']], data[row['rightBase']]],label='base')
-
-    plt.scatter([row['leftBaseHalfHeight'], row['rightBaseHalfHeight']],
-                [data[row['leftBaseHalfHeight']], data[row['rightBaseHalfHeight']]],
-                marker='<', s=200,label='BaseHalfHeight')
-
-    plt.scatter([row['rightZeroHalfHeight'], row['leftZeroHalfHeight']],
-                [data[row['rightZeroHalfHeight']], data[row['leftZeroHalfHeight']]],
-                marker='>', s=300,label='ZeroHalfHeight')
-
-    plt.scatter([row['maxPosVelFrame'],  row['maxNegVelFrame']],
-                [data[row['maxPosVelFrame']], data[ row['maxNegVelFrame']]],
-                marker='>', s=300,label='maxVelFrame')
+    # plt.scatter([row['leftBase'], row['rightBase']],
+    #             [data[row['leftBase']], data[row['rightBase']]],label='base')
+    #
+    # plt.scatter([row['leftBaseHalfHeight'], row['rightBaseHalfHeight']],
+    #             [data[row['leftBaseHalfHeight']], data[row['rightBaseHalfHeight']]],
+    #             marker='<', s=200,label='BaseHalfHeight')
+    #
+    # plt.scatter([row['rightZeroHalfHeight'], row['leftZeroHalfHeight']],
+    #             [data[row['rightZeroHalfHeight']], data[row['leftZeroHalfHeight']]],
+    #             marker='>', s=300,label='ZeroHalfHeight')
+    #
+    # plt.scatter([row['maxPosVelFrame'],  row['maxNegVelFrame']],
+    #             [data[row['maxPosVelFrame']], data[ row['maxNegVelFrame']]],
+    #             marker='>', s=300,label='maxVelFrame')
 
 
 
@@ -76,8 +76,10 @@ def viz_complete_blink_prop(data,row,srate):
     ylabel='Signal(uv)'
     plt.xlabel(xLabelString)
     plt.ylabel(ylabel)
-    bquality=row['blink_quality'] == 'Good'
-    maxFrames=row['maxFrames']
-    d=dict(fig=fig,blink_quality=bquality,maxFrames=maxFrames)
+    bquality= 'Good'
+    maxFrame=row['maxFrame']
+    d=dict(fig=fig,
+           blink_quality=bquality,
+           maxFrames=maxFrame)
 
     return d

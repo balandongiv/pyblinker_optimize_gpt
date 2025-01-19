@@ -48,13 +48,24 @@ class TestSelectChannelCompact(unittest.TestCase):
     def test_select_channel_compact(self):
         """
         Test the blink signal selection process against MATLAB ground truth.
+        df is the blink statistics for all the channeles. The statistic data include
+        - channel
+        - number blinks
+        - number good blinks
+        - blink amp ratio
+        - cut off
+        - best robust std
+        - good ratio
+
+
+
         """
         # Apply the blink signal selection process
-        df = self.signal_data.copy()
-        df = filter_blink_amplitude_ratios(df, self.params)
-        df = filter_good_blinks(df, self.params)
-        df = filter_good_ratio(df, self.params)
-        signal_data_output = select_max_good_blinks(df)
+        channel_blink_stats = self.signal_data.copy()
+        channel_blink_stats = filter_blink_amplitude_ratios(channel_blink_stats, self.params)
+        channel_blink_stats = filter_good_blinks(channel_blink_stats, self.params)
+        channel_blink_stats = filter_good_ratio(channel_blink_stats, self.params)
+        signal_data_output = select_max_good_blinks(channel_blink_stats)
 
         # Columns to ignore
         columns_to_ignore = ['status', 'select']
