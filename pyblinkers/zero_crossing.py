@@ -315,7 +315,6 @@ def compute_fit_range(candidateSignal, maxFrame, leftZero, rightZero, baseFracti
     xRight = np.arange(rightRange[0], rightRange[1] + 1, dtype=int)
 
     # Edge-case warnings
-    # Edge-case warnings
     if blinkBottomPoint_l_X == blinkTopPoint_l_X:
         warnings.warn(f'same value for left top_blink and left bottom_blink: {blinkBottomPoint_l_X}')
 

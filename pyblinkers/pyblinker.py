@@ -24,6 +24,7 @@ class BlinkDetector:
         self.sfreq = self.raw_data.info['sfreq']
         self.params = default_setting.params
         self.channel_list = self.raw_data.ch_names
+        self.all_data_info = []  # Ensure this line is present
         self.filter_low = filter_low
         self.filter_high = filter_high
         self.resample_rate = resample_rate
