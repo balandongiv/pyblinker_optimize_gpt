@@ -88,15 +88,11 @@ class BlinkDetector:
 
         return fig_data
 
-from concurrent.futures import ProcessPoolExecutor
+
 
     def process_all_channels(self):
-        if self.use_multiprocessing and self.n_jobs > 1:
-            with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
-                executor.map(self.process_channel_data, self.channel_list)
-        else:
-            for channel in self.channel_list:
-                self.process_channel_data(channel)
+        for channel in self.channel_list:
+            self.process_channel_data(channel)
 
     def select_representative_channel(self):
         ch_blink_stat = pd.DataFrame(self.all_data)
