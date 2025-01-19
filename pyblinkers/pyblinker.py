@@ -16,7 +16,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 class BlinkDetector:
-    def __init__(self, raw_data, visualize=False, annot_label=None, filter_bad=False, filter_low=0.5, filter_high=20.5, resample_rate=100, n_jobs=1):
+    def __init__(self, raw_data, visualize=False, annot_label=None, filter_bad=False, filter_low=0.5, filter_high=20.5, resample_rate=100, n_jobs=1, use_multiprocessing=False):
         self.filter_bad = filter_bad
         self.raw_data = raw_data
         self.viz_data = visualize
@@ -29,6 +29,7 @@ class BlinkDetector:
         self.filter_high = filter_high
         self.resample_rate = resample_rate
         self.n_jobs = n_jobs
+        self.use_multiprocessing = use_multiprocessing
         self.all_data=[]
 
     def prepare_raw_signal(self):
@@ -86,9 +87,15 @@ class BlinkDetector:
         fig_data = [viz_complete_blink_prop(data, row, self.sfreq) for index, row in df.iterrows()]
 
         return fig_data
+from concurrent.futures import ProcessPoolExecutor
+
     def process_all_channels(self):
-        for channel in self.channel_list:
-            self.process_channel_data(channel)
+        if self.use_multiprocessing and self.n_jobs > 1:
+            with ProcessPoolExecutor(max_workers=self.n_jobs) as executor:
+                executor.map(self.process_channel_data, self.channel_list)
+        else:
+            for channel in self.channel_list:
+                self.process_channel_data(channel)
 
     def select_representative_channel(self):
         ch_blink_stat = pd.DataFrame(self.all_data)
