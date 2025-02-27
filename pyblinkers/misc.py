@@ -10,19 +10,6 @@ def mad_matlab(arr, axis=None, keepdims=True):
     mad = np.median(np.abs(arr - median), axis=axis, keepdims=keepdims)[0]
     return mad
 
-def check_make_folder(path, remove=False):
-    if not remove:
-        if not os.path.exists(path):
-            os.makedirs(path, exist_ok=True)
-    else:
-        '''
-        Some time I want the folder to be emptied
-        '''
-        if os.path.exists(path):
-            shutil.rmtree(path)
-            os.makedirs(path, exist_ok=True)
-        else:
-            os.makedirs(path, exist_ok=True)
 
 
 def create_annotation(sblink, sfreq, label):
@@ -32,12 +19,12 @@ def create_annotation(sblink, sfreq, label):
         raise ValueError('No appropriate channel. sorry. Try to use large channel selection')
 
 
-    onset_s = (sblink['maxFrame'] / sfreq).tolist()
-    des_s = [label] * len(onset_s)
-    d_s=[0]* len(onset_s)
+    onset = (sblink['startBlinks'] / sfreq).tolist()
+    duration= (sblink['endBlinks'] - sblink['startBlinks']) / sfreq
+    des_s = [label] * len(onset)
 
-    annot = mne.Annotations(onset=onset_s,  # in seconds
-                            duration=d_s,  # in seconds, too
+    annot = mne.Annotations(onset=onset,  # in seconds
+                            duration=duration,  # in seconds, too
                             description=des_s)
 
     return annot

@@ -35,7 +35,7 @@ end
 
 %% First reduce on the basis of blink maximum amplitude 
 % [STEP 2B]
-goodBlinkMask = getGoodBlinkMask(blinkFits, signalData.bestMedian, ...
+goodBlinkMask = get_good_blink_mask(blinkFits, signalData.bestMedian, ...
                  signalData.bestRobustStd, params.zThresholds);
 blinkFits = blinkFits(goodBlinkMask);
 if isempty(blinkFits)

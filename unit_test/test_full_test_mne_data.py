@@ -42,7 +42,7 @@ class TestFullTestMneData(unittest.TestCase):
 
         # Perform blink detection
         blink_detector = BlinkDetector(self.raw, visualize=False, annot_label=None, filter_low=0.5, filter_high=20.5, resample_rate=100, n_jobs=2)
-        annot, ch, number_good_blinks, df, fig_data,ch_selected = blink_detector.get_blink_stat()
+        annot, ch, number_good_blinks, df, fig_data,ch_selected = blink_detector.get_blink()
 
         # Assertions to validate expected outcomes
         self.assertIsNotNone(annot, "Annotations should not be None.")

@@ -47,7 +47,7 @@ std_dev = np.std(blinkComp)
 threshold_value = stdThreshold * std_dev
 artifact_indices = np.where(np.abs(blinkComp) > threshold_value)[0]
 
-# Create a cleaned version of blinkComp where artifacts are set to zero
+# Create a cleaned version of blink_component where artifacts are set to zero
 blinkComp_cleaned = np.copy(blinkComp)
 blinkComp_cleaned[artifact_indices] = 0
 
@@ -56,7 +56,7 @@ blinkComp_cleaned = blinkComp_cleaned.astype(np.float32)
 
 # Save the cleaned data to a .mat file with single precision
 savemat('blinkComp_cleaned.mat', {
-    'blinkComp': blinkComp_cleaned,
+    'blink_component': blinkComp_cleaned,
     'srate': srate,
     'stdThreshold': stdThreshold
 })

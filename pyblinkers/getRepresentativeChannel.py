@@ -91,13 +91,13 @@ def select_max_good_blinks(df):
         return df
     else:
         # If 'select' column does not exist or no row is selected, proceed with the logic
-        max_numberGoodBlinks_idx = df['numberGoodBlinks'].idxmax()
+        max_number_good_blinks_idx = df['numberGoodBlinks'].idxmax()
         df['status'] = "Complete all checking"
         df['select'] = False  # Initialize 'select' column if it doesn't exist
-        df.loc[max_numberGoodBlinks_idx, 'select'] = True  # Select the row with the maximum value
+        df.loc[max_number_good_blinks_idx, 'select'] = True  # Select the row with the maximum value
         return df
 
-def ChannelSelection(channel_blink_stats,params):
+def channel_selection(channel_blink_stats, params):
     # Apply the blink signal selection process
 
     channel_blink_stats = filter_blink_amplitude_ratios(channel_blink_stats, params)
@@ -115,9 +115,4 @@ def ChannelSelection(channel_blink_stats,params):
 
     return signal_data_output
 
-# Applying the functions sequentially
-# df = filter_blink_amplitude(df, params)
-# df = filter_good_blinks(df, params)
-# df = filter_good_ratio(df, params)
-# df = select_max_good_blinks(df)
 

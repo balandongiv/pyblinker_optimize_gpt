@@ -15,7 +15,7 @@
 #
 # from eeg_blinks import default_setting
 #
-# from eeg_blinks.utilities.getBlinkPositions_vislab import getBlinkPosition
+# from eeg_blinks.utilities.getBlinkPositions_vislab import get_blink_position
 # from eeg_blinks.utilities.misc import mad_matlab
 # from eeg_blinks.utilities.zero_crossing import *
 # from eeg_blinks.utilities.zero_crossing import _maxPosVelFrame, _get_left_base, _get_right_base, _get_half_height
@@ -125,10 +125,10 @@
 #     good_data = df.loc[R2.values & R3.values, :]
 #     bestValues = good_data['maxValues'].array
 #
-#     specifiedMedian = np.nanmedian(bestValues)
-#     specifiedStd = 1.4826 * mad_matlab(bestValues)
+#     specified_median = np.nanmedian(bestValues)
+#     specified_std = 1.4826 * mad_matlab(bestValues)
 #
-#     return R2, R3, specifiedMedian, specifiedStd
+#     return R2, R3, specified_median, specified_std
 #
 #
 # def get_mask_optimise(df, indicesNaN, correlationThreshold, zScoreThreshold):
@@ -143,22 +143,22 @@
 #     :return:
 #     """
 #     R1 = ~indicesNaN
-#     R2, R3, specifiedMedian, specifiedStd = _goodblink_based_corr_median_std(df, correlationThreshold)
+#     R2, R3, specified_median, specified_std = _goodblink_based_corr_median_std(df, correlationThreshold)
 #
-#     R4 = df['maxValues'] >= max(0, specifiedMedian - zScoreThreshold * specifiedStd)
-#     R5 = df['maxValues'] <= specifiedMedian + zScoreThreshold * specifiedStd
+#     R4 = df['maxValues'] >= max(0, specified_median - zScoreThreshold * specified_std)
+#     R5 = df['maxValues'] <= specified_median + zScoreThreshold * specified_std
 #     bool_test = R1.values & R2.values & R3.values & R4.values & R5.values
 #
-#     return bool_test, specifiedMedian, specifiedStd
+#     return bool_test, specified_median, specified_std
 #
 #
-# def getGoodBlinkMask(df, zThresholds):
-#     # specifiedMedian, specifiedStd = 94.156208105121580, 28.368641236303578  # Need to find where is the source
+# def get_good_blink_mask(df, z_thresholds):
+#     # specified_median, specified_std = 94.156208105121580, 28.368641236303578  # Need to find where is the source
 #
 #     # warnings.warn('I am not so sure from where we get this value')
 #
 #     ## These is the default value
-#     correlationThreshold_s1, correlationThreshold_s2, zScoreThreshold_s1, zScoreThreshold_s2 = zThresholds
+#     correlationThreshold_s1, correlationThreshold_s2, zScoreThreshold_s1, zScoreThreshold_s2 = z_thresholds
 #
 #     df['rightR2'] = df['rightR2'].abs()
 #     df_data = df[['leftR2', 'rightR2', 'maxValues']]
@@ -268,7 +268,7 @@
 #
 #     # srate = 100
 #     shutAmpFraction = 0.9
-#     zThresholds = (0.90, 0.98, 2, 5)  # also availabe at getGOodBlinkMask: Orignally frame like this (0.90, 2, 0.98, 5)
+#     z_thresholds = (0.90, 0.98, 2, 5)  # also availabe at getGOodBlinkMask: Orignally frame like this (0.90, 2, 0.98, 5)
 #
 #     filename = 'data_to_get_zero_crossing_pd_viz_MFF.hkl'
 #
@@ -277,7 +277,7 @@
 #                    inplace=True)  # To ensure all index are reset, since we concat some index along the pipeline later
 #
 #     # # SLice only good blink. Expect lesser selection number
-#     df, bestMedian, bestRobustStd = getGoodBlinkMask(df, zThresholds)
+#     df, bestMedian, bestRobustStd = get_good_blink_mask(df, z_thresholds)
 #
 #     signal_l = data.shape[0]
 #     blinkVelocity = np.diff(data)  # to cross check whether this is correct?
@@ -509,7 +509,7 @@
 #
 #     logging.info('Get the blink position. This may take some time since channel is process at a time ')
 #     ch_list = raw.ch_names
-#     blinkPositions_list = [getBlinkPosition(params, sfreq, blinkComp=raw.get_data(picks=ch)[0], ch=ch) for ch in
+#     blinkPositions_list = [get_blink_position(params, sfreq, blink_component=raw.get_data(picks=ch)[0], ch=ch) for ch in
 #                            ch_list]
 #
 #     import hickle as hkl

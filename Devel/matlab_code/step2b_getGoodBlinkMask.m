@@ -5,7 +5,7 @@ function step2b_getGoodBlinkMask()
     specifiedMedian= data.specifiedMedian;
     blinkFits= data.blinkFits;
     [goodBlinkMask, specifiedMedian, specifiedStd] = ...
-      getGoodBlinkMask(blinkFits, specifiedMedian, specifiedStd, zThresholds);
+      get_good_blink_mask(blinkFits, specifiedMedian, specifiedStd, zThresholds);
 
     data_output = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step2b_data_output_getGoodBlinkMask.mat');
     

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pyblinkers import default_setting
 from pyblinkers.fit_blink import FitBlinks
-from pyblinkers.getBlinkPositions_vislab import getBlinkPosition
+from pyblinkers.getBlinkPositions_vislab import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
 
 # Configure logger
@@ -49,7 +49,7 @@ class TestFitBlinks(unittest.TestCase):
         Process blink data using `FitBlinks` and return the output DataFrame.
         """
         # Calculate blink positions
-        df_blink_positions = getBlinkPosition(params, blinkComp=blink_comp, ch=channel)
+        df_blink_positions = get_blink_position(params, blink_component=blink_comp, ch=channel)
 
         # Process blink data with `FitBlinks`
         fitblinks = FitBlinks(data=blink_comp, df=df_blink_positions, params=params)

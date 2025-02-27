@@ -1,7 +1,8 @@
 import numpy as np
+from scipy.linalg import qr, solve_triangular
 from scipy.stats import pearsonr, spearmanr, kendalltau
-from scipy.linalg import qr,solve_triangular
-# from scipy.linalg import
+
+
 def corrMatlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None):
     """
     Computes correlation coefficient(s) and p-values between pairs of data.

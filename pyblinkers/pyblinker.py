@@ -1,16 +1,16 @@
 import logging
 
 import pandas as pd
+from tqdm import tqdm
 
 from pyblinkers import default_setting
-from pyblinkers.extractBlinkProperties import BlinkProperties, getGoodBlinkMask
+from pyblinkers.extractBlinkProperties import BlinkProperties, get_good_blink_mask
 from pyblinkers.extractBlinkProperties import get_blink_statistic
 from pyblinkers.fit_blink import FitBlinks
+from pyblinkers.getBlinkPositions_vislab import get_blink_position
+from pyblinkers.getRepresentativeChannel import channel_selection
 from pyblinkers.misc import create_annotation
 from pyblinkers.viz_pd import viz_complete_blink_prop
-from pyblinkers.getRepresentativeChannel import ChannelSelection
-from pyblinkers.getBlinkPositions_vislab import getBlinkPosition
-
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -41,7 +41,7 @@ class BlinkDetector:
     def process_channel_data(self, channel):
 
         # STEP 1: Get blink positions
-        df = getBlinkPosition(self.params, blinkComp=self.raw_data.get_data(picks=channel)[0], ch='No_channel')
+        df = get_blink_position(self.params, blink_component=self.raw_data.get_data(picks=channel)[0], ch='No_channel')
 
         # STEP 2: Fit blinks
         fitblinks = FitBlinks(data=self.raw_data.get_data(picks=channel)[0], df=df, params=self.params)
@@ -49,23 +49,20 @@ class BlinkDetector:
         df = fitblinks.frame_blinks
 
         # STEP 3: Extract blink statistics
-        blink_stats= get_blink_statistic(df, self.params['zThresholds'], signal=self.raw_data.get_data(picks=channel)[0])
+        blink_stats= get_blink_statistic(df, self.params['z_thresholds'], signal=self.raw_data.get_data(picks=channel)[0])
         blink_stats['ch'] = channel
         # STEP 4: Get good blink mask
-        good_blink_mask, df = getGoodBlinkMask(
-            df, blink_stats['bestMedian'], blink_stats['bestRobustStd'], self.params['zThresholds']
+        good_blink_mask, df = get_good_blink_mask(
+            df, blink_stats['bestMedian'], blink_stats['bestRobustStd'], self.params['z_thresholds']
         )
 
         # STEP 5: Compute blink properties
-        sfreq = self.params['sfreq']
-        df = BlinkProperties(self.raw_data.get_data(picks=channel)[0], df, sfreq, self.params).df
+        df = BlinkProperties(self.raw_data.get_data(picks=channel)[0], df, self.params['sfreq'], self.params).df
 
         # STEP 6: Apply pAVR restriction
         condition_1 = df['posAmpVelRatioZero'] < self.params['pAVRThreshold']
         condition_2 = df['maxValue'] < (blink_stats['bestMedian'] - blink_stats['bestRobustStd'])
         df = df[~(condition_1 & condition_2)]
-
-
 
 
         self.all_data_info.append(dict(df=df, ch=channel))
@@ -91,12 +88,12 @@ class BlinkDetector:
 
 
     def process_all_channels(self):
-        for channel in self.channel_list:
+        for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel"):
             self.process_channel_data(channel)
 
     def select_representative_channel(self):
         ch_blink_stat = pd.DataFrame(self.all_data)
-        ch_selected = ChannelSelection(ch_blink_stat, self.params)
+        ch_selected = channel_selection(ch_blink_stat, self.params)
         ch_selected.reset_index(drop=True, inplace=True)
         return ch_selected
 
@@ -118,5 +115,5 @@ class BlinkDetector:
         ch, data, df = self.get_representative_blink_data(ch_selected)
         annot = self.create_annotations(df)
         fig_data = self.generate_viz(data, df) if self.viz_data else []
-        nGoodBlinks = ch_selected.loc[0, 'numberGoodBlinks']
-        return annot, ch, nGoodBlinks, df, fig_data, ch_selected
+        n_good_blinks = ch_selected.loc[0, 'numberGoodBlinks']
+        return annot, ch, n_good_blinks, df, fig_data, ch_selected

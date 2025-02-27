@@ -32,7 +32,7 @@ class TestBlinkStatistic(unittest.TestCase):
         for key in ["signal", "blinkPositions", "signalType", "signalNumber", "signalLabel"]:
             cls.signalData_gt.pop(key, None)
 
-        # Use fixed zThresholds
+        # Use fixed z_thresholds
         cls.zThresholds = np.array([[0.9, 0.98], [2.0, 5.0]])
 
     def test_blink_statistic(self):

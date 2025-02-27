@@ -315,11 +315,11 @@ def compute_fit_range(candidateSignal, maxFrame, leftZero, rightZero, baseFracti
     xRight = np.arange(rightRange[0], rightRange[1] + 1, dtype=int)
 
     # Edge-case warnings
-    if blinkBottomPoint_l_X == blinkTopPoint_l_X:
-        warnings.warn(f'same value for left top_blink and left bottom_blink: {blinkBottomPoint_l_X}')
-
-    if blinkBottomPoint_r_X == blinkTopPoint_r_X:
-        warnings.warn(f'same value for right top_blink and right bottom_blink: {blinkBottomPoint_r_X}')
+    # if blinkBottomPoint_l_X == blinkTopPoint_l_X:
+    #     warnings.warn(f'same value for left top_blink and left bottom_blink: {blinkBottomPoint_l_X}')
+    #
+    # if blinkBottomPoint_r_X == blinkTopPoint_r_X:
+    #     warnings.warn(f'same value for right top_blink and right bottom_blink: {blinkBottomPoint_r_X}')
 
 
     # Replace empty arrays with np.nan for consistency

@@ -1,44 +1,27 @@
 # LLMed on 15 January 2025
 
 import logging
+
 import numpy as np
 import pandas as pd
 
 from pyblinkers.misc import mad_matlab
-from pyblinkers.default_setting import scalingFactor
 
 logging.getLogger().setLevel(logging.INFO)
 
-
-def _goodblink_based_corr_median_std(df, correlationThreshold):
-    """
-    (Docstring unchanged)
-    """
-    R2 = df['leftR2'] >= correlationThreshold
-    R3 = df['rightR2'] >= correlationThreshold
-
-    good_data = df.loc[R2 & R3, :]
-    bestValues = good_data['maxValue'].to_numpy()
-
-    specifiedMedian = np.nanmedian(bestValues)
-    specifiedStd = scalingFactor * mad_matlab(bestValues)
-    return R2, R3, specifiedMedian, specifiedStd
+from pyblinkers.default_setting import SCALING_FACTOR
 
 
 def calculate_within_range(all_values, best_median, best_robust_std):
-    """
-    (Docstring unchanged)
-    """
+
     lower_bound = best_median - 2 * best_robust_std
     upper_bound = best_median + 2 * best_robust_std
     within_mask = (all_values >= lower_bound) & (all_values <= upper_bound)
     return np.sum(within_mask)
 
 
-def calculateGoodRatio(all_values, best_median, best_robust_std, all_x):
-    """
-    (Docstring unchanged)
-    """
+def calculate_good_ratio(all_values, best_median, best_robust_std, all_x):
+
     lower_bound = best_median - 2 * best_robust_std
     upper_bound = best_median + 2 * best_robust_std
     within_mask = (all_values >= lower_bound) & (all_values <= upper_bound)
@@ -46,103 +29,97 @@ def calculateGoodRatio(all_values, best_median, best_robust_std, all_x):
 
 
 def get_blink_statistic(df, zThresholds, signal=None):
-    """
-    (Docstring unchanged)
-    used Feb 02 2023
-    """
+
     dfx = df.copy()
     dfx[['leftZero', 'rightZero']] = dfx[['leftZero', 'rightZero']] - 1
 
     indices = np.arange(len(signal))
-    blinkMask = np.any(
+    blink_mask = np.any(
         [(indices >= lz) & (indices <= rz) for lz, rz in zip(dfx["leftZero"], dfx["rightZero"])],
         axis=0
     ).astype(bool)
 
-    insideBlink = (signal > 0) & blinkMask
-    outsideBlink = (signal > 0) & ~blinkMask
-    blinkAmpRatio = np.mean(signal[insideBlink]) / np.mean(signal[outsideBlink])
+    inside_blink = (signal > 0) & blink_mask
+    outside_blink = (signal > 0) & ~blink_mask
+    blink_amp_ratio = np.mean(signal[inside_blink]) / np.mean(signal[outside_blink])
 
-    correlationThresholdBottom, correlationThresholdTop = zThresholds[0]
+    correlation_threshold_bottom, correlation_threshold_top = zThresholds[0]
     df_data = df[['leftR2', 'rightR2', 'maxValue']]
 
-    goodMaskTop = (df_data['leftR2'] >= correlationThresholdTop) & (df_data['rightR2'] >= correlationThresholdTop)
-    goodMaskBottom = (df_data['leftR2'] >= correlationThresholdBottom) & (df_data['rightR2'] >= correlationThresholdBottom)
+    good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
+    good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
 
-    bestValues = df_data.loc[goodMaskTop, 'maxValue'].to_numpy()
-    worstValues = df_data.loc[~goodMaskBottom, 'maxValue'].to_numpy()
-    goodValues = df_data.loc[goodMaskBottom, 'maxValue'].to_numpy()
+    best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
+    worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
+    good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
 
-    bestMedian = np.nanmedian(bestValues)
-    bestRobustStd = 1.4826 * mad_matlab(bestValues)
-    worstMedian = np.nanmedian(worstValues)
-    worstRobustStd = 1.4826 * mad_matlab(worstValues)
+    best_median = np.nanmedian(best_values)
+    best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
+    worst_median = np.nanmedian(worst_values)
+    worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
 
-    cutoff = (bestMedian * worstRobustStd + worstMedian * bestRobustStd) / (bestRobustStd + worstRobustStd)
+    cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
 
-    all_x = calculate_within_range(df_data['maxValue'].to_numpy(), bestMedian, bestRobustStd)
-    goodRatio = np.nan if all_x <= 0 else calculateGoodRatio(goodValues, bestMedian, bestRobustStd, all_x)
+    all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
+    good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
 
-    numberGoodBlinks = np.sum(goodMaskBottom)
+    number_good_blinks = np.sum(good_mask_bottom)
 
     return dict(
         numberBlinks=len(df_data),
-        numberGoodBlinks=numberGoodBlinks,
-        blinkAmpRatio=blinkAmpRatio,
+        numberGoodBlinks=number_good_blinks,
+        blinkAmpRatio=blink_amp_ratio,
         cutoff=cutoff,
-        bestMedian=bestMedian,
-        bestRobustStd=bestRobustStd,
-        goodRatio=goodRatio
+        bestMedian=best_median,
+        bestRobustStd=best_robust_std,
+        goodRatio=good_ratio
     )
 
 
-def getGoodBlinkMask(blinkFits, specifiedMedian, specifiedStd, zThresholds):
-    """
-    (Docstring unchanged)
-    """
-    blinkFits = blinkFits.dropna(subset=['leftR2', 'rightR2', 'maxValue'])
+def get_good_blink_mask(blink_fits, specified_median, specified_std, z_thresholds):
+  
+    blink_fits = blink_fits.dropna(subset=['leftR2', 'rightR2', 'maxValue'])
 
-    leftR2 = blinkFits['leftR2'].to_numpy()
-    rightR2 = blinkFits['rightR2'].to_numpy()
-    maxValue = blinkFits['maxValue'].to_numpy()
+    left_r2 = blink_fits['leftR2'].to_numpy()
+    right_r2 = blink_fits['rightR2'].to_numpy()
+    max_value = blink_fits['maxValue'].to_numpy()
 
-    correlationThresholds = zThresholds[0]
-    zScoreThresholds = zThresholds[1]
+    correlation_thresholds = z_thresholds[0]
+    z_score_thresholds = z_thresholds[1]
 
-    lowerBounds = np.maximum(0, specifiedMedian - zScoreThresholds * specifiedStd)
-    upperBounds = specifiedMedian + zScoreThresholds * specifiedStd
+    lower_bounds = np.maximum(0, specified_median - z_score_thresholds * specified_std)
+    upper_bounds = specified_median + z_score_thresholds * specified_std
 
     # Expand for broadcasting
-    leftR2 = leftR2[:, None]
-    rightR2 = rightR2[:, None]
-    maxValue = maxValue[:, None]
-    correlationThresholds = correlationThresholds[None, :]
-    lowerBounds = lowerBounds[None, :]
-    upperBounds = upperBounds[None, :]
+    left_r2 = left_r2[:, None]
+    right_r2 = right_r2[:, None]
+    max_value = max_value[:, None]
+    correlation_thresholds = correlation_thresholds[None, :]
+    lower_bounds = lower_bounds[None, :]
+    upper_bounds = upper_bounds[None, :]
 
     masks = (
-            (leftR2 >= correlationThresholds) &
-            (rightR2 >= correlationThresholds) &
-            (maxValue >= lowerBounds) &
-            (maxValue <= upperBounds)
+            (left_r2 >= correlation_thresholds) &
+            (right_r2 >= correlation_thresholds) &
+            (max_value >= lower_bounds) &
+            (max_value <= upper_bounds)
     )
-    goodBlinkMask = np.any(masks, axis=1)
-    selected_rows = blinkFits[goodBlinkMask]
-    return goodBlinkMask, selected_rows
+    good_blink_mask = np.any(masks, axis=1)
+    selected_rows = blink_fits[good_blink_mask]
+    return good_blink_mask, selected_rows
 
 
 class BlinkProperties:
-    '''
-    (Docstring unchanged)
-    Return a structure with blink shapes and properties for individual blinks
-    '''
+
     def __init__(self, data, df, srate, params):
+        self.signal_l = None
+        self.blinkVelocity = None
         self.data = data
         self.df = df
         self.srate = srate
         self.shutAmpFraction = params['shutAmpFraction']
         self.pAVRThreshold = params['shutAmpFraction']
-        self.zThresholds = params['zThresholds']
+        self.zThresholds = params['z_thresholds']
 
         self.df_res = []
         self.reset_index()
@@ -175,7 +152,7 @@ class BlinkProperties:
     # --------------------------------------------------------------------------
     # A helper function to unify amplitude-velocity ratio calculations
     # --------------------------------------------------------------------------
-    def _compute_amplitude_velocity_ratio(self, start_key, end_key, ratio_key, aggregator='max', idx_col=None):
+    def compute_amplitude_velocity_ratio(self, start_key, end_key, ratio_key, aggregator='max', idx_col=None):
         """
         Internal helper that computes amplitude-velocity ratio between start_key and end_key.
         aggregator can be 'max' or 'min' to pick the velocity extremes.
@@ -209,25 +186,23 @@ class BlinkProperties:
         if idx_col:
             self.df[idx_col] = df_extreme['index'].to_numpy()
 
-    def compute_negAmpVelRatioZero(self):
-        """
-        (Docstring unchanged)
-        """
-        self._compute_amplitude_velocity_ratio(
+    def compute_neg_amp_vel_ratio_zero(self):
+
+        self.compute_amplitude_velocity_ratio(
             start_key='maxFrame',
             end_key='rightZero',
             ratio_key='negAmpVelRatioZero',
             aggregator='min'
         )
 
-    def compute_posAmpVelRatioZero(self, multiplication_constant=100):
+    def compute_pos_amp_vel_ratio_zero(self, multiplication_constant=100):
         """
         (Docstring unchanged)
         """
         # The aggregator remains 'max'.
         # The method signature references multiplication_constant, but we only store 100.
-        # If you truly need a custom multiplier, you can incorporate it into _compute_amplitude_velocity_ratio.
-        self._compute_amplitude_velocity_ratio(
+        # If you truly need a custom multiplier, you can incorporate it into compute_amplitude_velocity_ratio.
+        self.compute_amplitude_velocity_ratio(
             start_key='leftZero',
             end_key='maxFrame',
             ratio_key='posAmpVelRatioZero',
@@ -236,17 +211,13 @@ class BlinkProperties:
         )
 
     def set_blink_amp_velocity_ratio_zero_to_max(self):
-        """
-        (Docstring unchanged)
-        """
-        self.compute_posAmpVelRatioZero()
-        self.compute_negAmpVelRatioZero()
 
-    def compute_posAmpVelRatioBase(self, multiplication_constant=100):
-        """
-        (Docstring unchanged)
-        """
-        self._compute_amplitude_velocity_ratio(
+        self.compute_pos_amp_vel_ratio_zero()
+        self.compute_neg_amp_vel_ratio_zero()
+
+    def compute_pos_amp_vel_ratio_base(self):
+
+        self.compute_amplitude_velocity_ratio(
             start_key='leftBase',
             end_key='maxFrame',
             ratio_key='posAmpVelRatioBase',
@@ -254,22 +225,18 @@ class BlinkProperties:
             idx_col='peaksPosVelBase'
         )
 
-    def compute_posAmpVelRatioBase_X(self, multiplication_constant=100):
-        """
-        (Docstring unchanged)
-        """
-        self._compute_amplitude_velocity_ratio(
+    def compute_pos_amp_vel_ratio_base_x(self):
+
+        self.compute_amplitude_velocity_ratio(
             start_key='leftBase',
             end_key='maxFrame',
             ratio_key='posAmpVelRatioBase',
             aggregator='max'
         )
 
-    def compute_negAmpVelRatioBase(self, multiplication_constant=100):
-        """
-        (Docstring unchanged)
-        """
-        self._compute_amplitude_velocity_ratio(
+    def compute_neg_amp_vel_ratio_base(self):
+
+        self.compute_amplitude_velocity_ratio(
             start_key='maxFrame',
             end_key='rightBase',
             ratio_key='negAmpVelRatioBase',
@@ -277,16 +244,12 @@ class BlinkProperties:
         )
 
     def amplitude_velocity_ratio_base(self):
-        """
-        (Docstring unchanged)
-        """
-        self.compute_posAmpVelRatioBase()
-        self.compute_negAmpVelRatioBase()
+
+        self.compute_pos_amp_vel_ratio_base()
+        self.compute_neg_amp_vel_ratio_base()
 
     def amplitude_velocity_ratio_tent(self):
-        """
-        (Docstring unchanged)
-        """
+
         self.df['negAmpVelRatioTent'] = 100 * abs(self.data[self.df['maxFrame']] / self.df['averRightVelocity']) / self.srate
         self.df['posAmpVelRatioTent'] = 100 * abs(self.data[self.df['maxFrame']] / self.df['averLeftVelocity']) / self.srate
 
@@ -333,9 +296,7 @@ class BlinkProperties:
         return end_shut / srate
 
     def time_zero_shut(self):
-        """
-        (Docstring unchanged)
-        """
+
         self.df['closingTimeZero'] = (self.df['maxFrame'] - self.df['leftZero']) / self.srate
         self.df['reopeningTimeZero'] = (self.df['rightZero'] - self.df['maxFrame']) / self.srate
 
@@ -345,9 +306,7 @@ class BlinkProperties:
 
     @staticmethod
     def compute_time_shut_tent(row, data, srate, shut_amp_fraction):
-        """
-        (Docstring unchanged)
-        """
+
         left = int(row['leftXIntercept'])
         right = int(row['rightXIntercept']) + 1
         max_val = row['maxValue']
@@ -364,9 +323,7 @@ class BlinkProperties:
         return end_shut / srate
 
     def time_base_shut(self):
-        """
-        (Docstring unchanged)
-        """
+
         self.df['timeShutBase'] = self.df.apply(
             lambda row: self.compute_time_shut_base(row, self.data, self.srate, self.shutAmpFraction), axis=1
         )
@@ -378,9 +335,7 @@ class BlinkProperties:
         )
 
     def get_argmax_val(self, row):
-        """
-        (Docstring unchanged)
-        """
+
         left = row['leftXIntercept_int']
         right = row['rightXIntercept_int'] + 1
         start = row['start_shut_tst']
@@ -393,9 +348,7 @@ class BlinkProperties:
             return np.nan
 
     def extract_other_times(self):
-        """
-        (Docstring unchanged)
-        """
+
         self.df['peakMaxBlink'] = self.df['maxValue']
         self.df['peakMaxTent'] = self.df['yIntersect']
         self.df['peakTimeTent'] = self.df['xIntersect'] / self.srate

@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from pyblinkers.getBlinkPositions_vislab import getBlinkPosition
+from pyblinkers.getBlinkPositions_vislab import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
 
 
@@ -16,7 +16,7 @@ class TestBlinkPosition(unittest.TestCase):
         cls.mat_file_path_input = r'..\Devel\step1bi_data_input_getBlinkPositions.mat'
         cls.mat_file_path_output = r'..\Devel\step1bi_data_output_getBlinkPositions.mat'
 
-        # Parameters for `getBlinkPosition`
+        # Parameters for `get_blink_position`
         cls.params = dict(minEventLen=0.05, stdThreshold=1.5, sfreq=100)
 
         # Load MATLAB input and ground truth data
@@ -30,7 +30,7 @@ class TestBlinkPosition(unittest.TestCase):
         Calculate blink positions using the Python implementation.
         """
         blink_comp = input_data['blinkComp']
-        blink_positions = getBlinkPosition(params, blinkComp=blink_comp, ch='No_channel')
+        blink_positions = get_blink_position(params, blink_component=blink_comp, ch='No_channel')
         return blink_positions
 
     def adjust_indices_for_matlab(self, blink_positions, shift_index=1):

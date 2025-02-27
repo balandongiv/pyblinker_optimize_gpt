@@ -2,7 +2,7 @@
 from pyblinkers.matlab_forking import corrMatlab, polyvalMatlab, polyfitMatlab, get_intersection
 from pyblinkers.zero_crossing import get_line_intersection_slope
 import numpy as np
-def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None, yRight=None, yLeft=None, dic_type=True):
+def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None):
     # YES
     yRight = signal[xRight]
     yLeft = signal[xLeft]
@@ -33,4 +33,3 @@ def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None, yRight=None,
     return leftSlope, rightSlope, averLeftVelocity, averRightVelocity, \
         rightR2[0][0], leftR2[0][0], xIntersect, yIntersect, leftXIntercept, rightXIntercept, \
         xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r
-    g=1

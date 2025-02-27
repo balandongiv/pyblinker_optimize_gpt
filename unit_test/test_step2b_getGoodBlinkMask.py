@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import pandas as pd
 from unit_test.debugging_tools import load_matlab_data
-from pyblinkers.extractBlinkProperties import getGoodBlinkMask
+from pyblinkers.extractBlinkProperties import get_good_blink_mask
 
 
 class TestGetGoodBlinkMask(unittest.TestCase):
@@ -22,15 +22,15 @@ class TestGetGoodBlinkMask(unittest.TestCase):
         # Blink fits as DataFrame
         cls.blinkFits = pd.DataFrame.from_records(cls.input_data['blinkFits'])
 
-        # Use fixed zThresholds instead of MATLAB values
+        # Use fixed z_thresholds instead of MATLAB values
         cls.zThresholds = np.array([[0.9, 0.98], [2.0, 5.0]])
 
     def test_good_blink_mask(self):
         """
-        Test the getGoodBlinkMask function output against the MATLAB ground truth.
+        Test the get_good_blink_mask function output against the MATLAB ground truth.
         """
         # Compute good blink mask and selected DataFrame
-        goodBlinkMask, selected_df = getGoodBlinkMask(
+        goodBlinkMask, selected_df = get_good_blink_mask(
             self.blinkFits,
             self.input_data['specifiedMedian'],
             self.input_data['specifiedStd'],

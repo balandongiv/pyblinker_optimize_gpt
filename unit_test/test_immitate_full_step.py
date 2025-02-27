@@ -3,9 +3,9 @@ import pandas as pd
 import numpy as np
 import logging
 from pyblinkers import default_setting
-from pyblinkers.extractBlinkProperties import BlinkProperties, getGoodBlinkMask, get_blink_statistic
+from pyblinkers.extractBlinkProperties import BlinkProperties, get_good_blink_mask, get_blink_statistic
 from pyblinkers.fit_blink import FitBlinks
-from pyblinkers.getBlinkPositions_vislab import getBlinkPosition
+from pyblinkers.getBlinkPositions_vislab import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
 
 # Configure logger
@@ -113,8 +113,8 @@ class TestExtractBlinkProperties(unittest.TestCase):
         ]
 
         # STEP 1: Get blink positions
-        blink_positions = getBlinkPosition(
-            self.params, blinkComp=self.blink_comp, ch='No_channel'
+        blink_positions = get_blink_position(
+            self.params, blink_component=self.blink_comp, ch='No_channel'
         )
 
         # STEP 2: Fit blinks
@@ -123,11 +123,11 @@ class TestExtractBlinkProperties(unittest.TestCase):
         df = fitblinks.frame_blinks
 
         # STEP 3: Extract blink statistics
-        signal_data = get_blink_statistic(df, self.params['zThresholds'], signal=self.blink_comp)
+        signal_data = get_blink_statistic(df, self.params['z_thresholds'], signal=self.blink_comp)
 
         # STEP 4: Get good blink mask
-        good_blink_mask, df = getGoodBlinkMask(
-            df, signal_data['bestMedian'], signal_data['bestRobustStd'], self.params['zThresholds']
+        good_blink_mask, df = get_good_blink_mask(
+            df, signal_data['bestMedian'], signal_data['bestRobustStd'], self.params['z_thresholds']
         )
 
         # STEP 5: Compute blink properties

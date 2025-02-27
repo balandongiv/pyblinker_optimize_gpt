@@ -40,7 +40,7 @@ class FitBlinks:
             'xLineCross_l', 'yLineCross_l', 'xLineCross_r', 'yLineCross_r'
         ]
 
-    def _get_max_frame(self, start_idx, end_idx):
+    def get_max_frame(self, start_idx, end_idx):
         """
         Compute the maximum value in self.data between start_idx and end_idx
         and return (max_value, frame_index_at_max).
@@ -58,7 +58,7 @@ class FitBlinks:
 
         # Find the maxFrame index and maxValue at that maxFrame index
         self.df[['maxValue', 'maxFrame']] = self.df.apply(
-            lambda row: self._get_max_frame(row['startBlinks'], row['endBlinks']),
+            lambda row: self.get_max_frame(row['startBlinks'], row['endBlinks']),
             axis=1,
             result_type='expand'
         )
@@ -124,7 +124,7 @@ class FitBlinks:
 
         # Drop rows with NaN values
         self.frame_blinks.dropna(inplace=True)
-
+        # gg=self.frame_blinks['xLeft'].apply(len)
         # Check lengths of xLeft/xRight to ensure they are > 1
         self.frame_blinks['nsize_xLeft'] = self.frame_blinks['xLeft'].apply(len)
         self.frame_blinks['nsize_xRight'] = self.frame_blinks['xRight'].apply(len)
@@ -136,14 +136,13 @@ class FitBlinks:
             ].reset_index(drop=True)
 
         # Calculate line intersections
+
+
         self.frame_blinks[self.cols_lines_intesection] = self.frame_blinks.apply(
             lambda row: lines_intersection_matlabx(
                 signal=data_local,
                 xRight=row['xRight'],
                 xLeft=row['xLeft'],
-                yRight=data_local[row['xRight']],
-                yLeft=data_local[row['xLeft']],
-                dic_type=False
             ),
             axis=1,
             result_type='expand'
