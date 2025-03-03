@@ -7,7 +7,7 @@ from pyblinkers.zero_crossing import (
     compute_fit_range,
     left_right_zero_crossing
 )
-from pyblinkers.base_left_right import create_left_right_base_vislab
+from pyblinkers.base_left_right import create_left_right_base
 from pyblinkers.line_intersection_matlab import lines_intersection_matlabx
 
 logging.getLogger().setLevel(logging.INFO)
@@ -92,7 +92,7 @@ class FitBlinks:
         data_local = self.data  # Local reference for efficiency
 
         # Create left and right base lines
-        self.frame_blinks = create_left_right_base_vislab(data_local, self.df)
+        self.frame_blinks = create_left_right_base(data_local, self.df)
 
         # Get half height
         self.frame_blinks[self.cols_half_height] = self.frame_blinks.apply(

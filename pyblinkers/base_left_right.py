@@ -1,10 +1,9 @@
-# LLMed on 15 January 2025
-
 import numpy as np
 from pyblinkers.zero_crossing import (_maxPosVelFrame, _get_left_base, _get_right_base)
 
-def create_left_right_base_vislab(data, df):
+def create_left_right_base(data, df):
     """
+
     Computes the left and right base values for each row in the DataFrame df,
     using the blink velocity derived from the input signal data. The function
     also adds columns for the maximum positive and negative velocity frames to df.

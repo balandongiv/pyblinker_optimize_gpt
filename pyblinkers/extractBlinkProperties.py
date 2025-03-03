@@ -1,4 +1,3 @@
-# LLMed on 15 January 2025
 
 import logging
 
@@ -77,7 +76,35 @@ def get_blink_statistic(df, zThresholds, signal=None):
 
 
 def get_good_blink_mask(blink_fits, specified_median, specified_std, z_thresholds):
-  
+    """Generates a boolean mask for 'good' blinks based on blink fit parameters and thresholds.
+
+    This function determines which blinks are considered 'good' based on correlation coefficients
+    (leftR2, rightR2) and maximum blink amplitude (maxValue) from a DataFrame of blink fits.
+    It applies both correlation thresholds and z-score based amplitude thresholds to classify blinks.
+
+    Parameters
+    ----------
+    blink_fits : pandas.DataFrame
+        DataFrame containing blink fit parameters, expected to have columns
+        'leftR2', 'rightR2', and 'maxValue'. Rows with NaN values in these columns will be dropped.
+    specified_median : float
+        Median value of 'good' blinks' maxValue, used as the center for z-score thresholding.
+    specified_std : float
+        Robust standard deviation of 'good' blinks' maxValue, used for z-score thresholding.
+    z_thresholds : list
+        A list containing two lists of thresholds.
+        z_thresholds[0] is a list of correlation thresholds for leftR2 and rightR2.
+        z_thresholds[1] is a list of z-score thresholds for maxValue.
+
+    Returns
+    -------
+    tuple
+        A tuple containing:
+            - good_blink_mask : numpy.ndarray (bool)
+                Boolean mask indicating 'good' blinks (True) and 'bad' blinks (False).
+            - selected_rows : pandas.DataFrame
+                DataFrame containing only the rows from `blink_fits` that correspond to 'good' blinks.
+    """
     blink_fits = blink_fits.dropna(subset=['leftR2', 'rightR2', 'maxValue'])
 
     left_r2 = blink_fits['leftR2'].to_numpy()
@@ -110,8 +137,41 @@ def get_good_blink_mask(blink_fits, specified_median, specified_std, z_threshold
 
 
 class BlinkProperties:
-
+    '''
+    Return a structure with blink shapes and properties for individual blinks
+    % Return a structure with blink shapes and properties for individual blinks
+%
+% Parameters:
+%     signalData    signalData structure
+%     params        params structure with parameters
+%     blinkProps    (output) structure with the blink properties
+%     blinkFits     (output) structure with the blink landmarks
+    '''
     def __init__(self, data, df, srate, params):
+        """Initializes BlinkProperties object to calculate blink features.
+
+       This class calculates various properties of detected blinks based on
+       the input data, DataFrame of blink fits, sampling rate, and parameters.
+       It initializes blink velocity, durations, amplitude-velocity ratios,
+       and time-related features.
+
+       Parameters
+       ----------
+       data : numpy.ndarray
+           The raw signal data from which blinks were detected.
+       df : pandas.DataFrame
+           DataFrame containing blink fit parameters, expected to have columns like
+           'leftBase', 'rightBase', 'leftZero', 'rightZero', 'rightXIntercept', 'leftXIntercept',
+           'leftBaseHalfHeight', 'rightBaseHalfHeight', 'leftZeroHalfHeight', 'rightZeroHalfHeight',
+           'maxFrame', 'maxValue', 'averRightVelocity', 'averLeftVelocity', 'xIntersect', 'yIntersect',
+           'leftXIntercept_int', 'rightXIntercept_int', 'start_shut_tst', 'peaksPosVelBase', 'peaksPosVelZero'.
+       srate : float
+           Sampling rate of the signal data in Hz.
+       params : dict
+           Dictionary of parameters, expected to contain keys:
+               - 'shutAmpFraction': Fraction of maximum amplitude for shut time calculation.
+               - 'z_thresholds': Z-score thresholds (structure of thresholds is assumed to be handled internally by methods using it).
+       """
         self.signal_l = None
         self.blinkVelocity = None
         self.data = data
@@ -123,8 +183,6 @@ class BlinkProperties:
 
         self.df_res = []
         self.reset_index()
-        logging.warning("The error will start from here")
-
         self.set_blink_velocity()
         self.set_blink_duration()
         self.set_blink_amp_velocity_ratio_zero_to_max()
@@ -142,16 +200,20 @@ class BlinkProperties:
         self.blinkVelocity = np.diff(self.data)
 
     def set_blink_duration(self):
-        constant = 1
+
+        '''
+         Calculates 'durationBase', 'durationZero', 'durationTent', 'durationHalfBase', and 'durationHalfZero'
+        and adds them as new columns to the `self.df` DataFrame.
+        Durations are calculated based on different blink landmarks and sampling rate.
+        '''
+        constant = 1 # Constant is for matching Matlab implementation output
         self.df['durationBase'] = (self.df['rightBase'] - self.df['leftBase']) / self.srate
         self.df['durationZero'] = (self.df['rightZero'] - self.df['leftZero']) / self.srate
         self.df['durationTent'] = (self.df['rightXIntercept'] - self.df['leftXIntercept']) / self.srate
         self.df['durationHalfBase'] = ((self.df['rightBaseHalfHeight'] - self.df['leftBaseHalfHeight']) + constant) / self.srate
         self.df['durationHalfZero'] = ((self.df['rightZeroHalfHeight'] - self.df['leftZeroHalfHeight']) + constant) / self.srate
 
-    # --------------------------------------------------------------------------
-    # A helper function to unify amplitude-velocity ratio calculations
-    # --------------------------------------------------------------------------
+
     def compute_amplitude_velocity_ratio(self, start_key, end_key, ratio_key, aggregator='max', idx_col=None):
         """
         Internal helper that computes amplitude-velocity ratio between start_key and end_key.
@@ -187,7 +249,11 @@ class BlinkProperties:
             self.df[idx_col] = df_extreme['index'].to_numpy()
 
     def compute_neg_amp_vel_ratio_zero(self):
+        """
+        Computes and sets negative amplitude-velocity ratio from maxFrame to rightZero in DataFrame.
+        Computes and sets positive amplitude-velocity ratio from leftZero to maxFrame in DataFrame.
 
+        """
         self.compute_amplitude_velocity_ratio(
             start_key='maxFrame',
             end_key='rightZero',
@@ -197,11 +263,9 @@ class BlinkProperties:
 
     def compute_pos_amp_vel_ratio_zero(self, multiplication_constant=100):
         """
-        (Docstring unchanged)
+        Computes and sets positive amplitude-velocity ratio from leftZero to maxFrame in DataFrame.
         """
-        # The aggregator remains 'max'.
-        # The method signature references multiplication_constant, but we only store 100.
-        # If you truly need a custom multiplier, you can incorporate it into compute_amplitude_velocity_ratio.
+
         self.compute_amplitude_velocity_ratio(
             start_key='leftZero',
             end_key='maxFrame',
@@ -211,12 +275,12 @@ class BlinkProperties:
         )
 
     def set_blink_amp_velocity_ratio_zero_to_max(self):
-
+        """"Computes and sets both positive and negative amplitude-velocity ratios (zero-to-max)."""
         self.compute_pos_amp_vel_ratio_zero()
         self.compute_neg_amp_vel_ratio_zero()
 
     def compute_pos_amp_vel_ratio_base(self):
-
+        """Computes and sets positive amplitude-velocity ratio from leftBase to maxFrame in DataFrame."""
         self.compute_amplitude_velocity_ratio(
             start_key='leftBase',
             end_key='maxFrame',
@@ -225,17 +289,8 @@ class BlinkProperties:
             idx_col='peaksPosVelBase'
         )
 
-    def compute_pos_amp_vel_ratio_base_x(self):
-
-        self.compute_amplitude_velocity_ratio(
-            start_key='leftBase',
-            end_key='maxFrame',
-            ratio_key='posAmpVelRatioBase',
-            aggregator='max'
-        )
-
     def compute_neg_amp_vel_ratio_base(self):
-
+        """Computes and sets negative amplitude-velocity ratio from maxFrame to rightBase in DataFrame."""
         self.compute_amplitude_velocity_ratio(
             start_key='maxFrame',
             end_key='rightBase',
@@ -244,64 +299,77 @@ class BlinkProperties:
         )
 
     def amplitude_velocity_ratio_base(self):
-
+        '''
+        Blink amplitude-velocity ratio from base to max
+        :return:
+        '''
         self.compute_pos_amp_vel_ratio_base()
         self.compute_neg_amp_vel_ratio_base()
 
     def amplitude_velocity_ratio_tent(self):
-
+        '''
+         Blink amplitude-velocity ratio estimated from tent slope
+        :return:
+        '''
         self.df['negAmpVelRatioTent'] = 100 * abs(self.data[self.df['maxFrame']] / self.df['averRightVelocity']) / self.srate
         self.df['posAmpVelRatioTent'] = 100 * abs(self.data[self.df['maxFrame']] / self.df['averLeftVelocity']) / self.srate
-
     @staticmethod
-    def compute_time_shut_zero(row, data, srate, shut_amp_fraction):
+    def compute_time_shut(row, data, srate, shut_amp_fraction, key_prefix, default_no_thresh):
         """
-        (Docstring unchanged)
+        Compute shut duration using specified landmarks for a blink.
+        Basiclly, we combine what before having seperate function but mostly overlap syntax
+
+        This code will be use to calculate the  timeShutBase and timeShutZero
+        Parameters:
+          row : pandas.Series
+              A row containing the blink data.
+          data : array-like
+              Signal data from which to compute the duration.
+          srate : float
+              Sampling rate.
+          shut_amp_fraction : float
+              Fraction of the max amplitude used to determine the threshold.
+          key_prefix : str
+              The suffix used in the column names to determine the left/right boundaries.
+              Use 'Zero' for zero-crossing landmarks or 'Base' for base landmarks.
+          default_no_thresh : scalar
+              The value to return if the signal never meets the threshold.
+              For example, np.nan for zero-crossing or 0 for base landmarks.
+
+        Returns:
+          float
+              The computed shut duration in seconds.
         """
-        left_zero = int(row['leftZero'])
-        right_zero = int(row['rightZero'])
-        max_val = row['maxValue']
-        amp_threshold = shut_amp_fraction * max_val
-        data_slice = data[left_zero : right_zero + 1]
+        left = int(row[f'left{key_prefix}'])    # This approach is sensetive should we change the pandas column name in the future
+        right = int(row[f'right{key_prefix}'])  # This approach is sensetive should we change the pandas column name in the future
+        threshold = shut_amp_fraction * row['maxValue']
+        data_slice = data[left:right+1]
 
-        cond_start = (data_slice >= amp_threshold)
-        if cond_start.any():
-            start_idx = np.argmax(cond_start)
-        else:
-            return np.nan
+        # Find the start index where the signal first reaches/exceeds the threshold.
+        cond = data_slice >= threshold
+        if not cond.any():
+            return default_no_thresh
+        start_idx = cond.argmax()
 
-        cond_end = (data_slice[start_idx + 1:] < amp_threshold)
-        end_shut = np.argmax(cond_end) + 1 if cond_end.any() else np.nan
-        return end_shut / srate
+        # Find the first index after start_idx where the signal drops below the threshold.
+        cond = data_slice[start_idx+1:] < threshold
+        end_idx = cond.argmax() + 1 if cond.any() else np.nan
+        return end_idx / srate
 
-    @staticmethod
-    def compute_time_shut_base(row, data, srate, shut_amp_fraction):
-        """
-        (Docstring unchanged)
-        """
-        left_base = int(row['leftBase'])
-        right_base = int(row['rightBase'])
-        max_val = row['maxValue']
-        amp_threshold = shut_amp_fraction * max_val
-        data_slice = data[left_base : right_base + 1]
-
-        cond_start = (data_slice >= amp_threshold)
-        if cond_start.any():
-            start_idx = np.argmax(cond_start)
-        else:
-            return 0
-
-        cond_end = (data_slice[start_idx + 1:] < amp_threshold)
-        end_shut = np.argmax(cond_end) + 1 if cond_end.any() else np.nan
-        return end_shut / srate
 
     def time_zero_shut(self):
-
+        '''
+        Time zero shut
+        :return:
+        '''
         self.df['closingTimeZero'] = (self.df['maxFrame'] - self.df['leftZero']) / self.srate
         self.df['reopeningTimeZero'] = (self.df['rightZero'] - self.df['maxFrame']) / self.srate
 
-        self.df['timeShutZero'] = self.df.apply(
-            lambda row: self.compute_time_shut_zero(row, self.data, self.srate, self.shutAmpFraction), axis=1
+
+        self.df['timeShutBase'] = self.df.apply(
+            lambda row: self.compute_time_shut(row, self.data, self.srate, self.shutAmpFraction,
+                                               key_prefix='Base', default_no_thresh=0),
+            axis=1
         )
 
     @staticmethod
@@ -323,10 +391,18 @@ class BlinkProperties:
         return end_shut / srate
 
     def time_base_shut(self):
+        '''
+        Time base shut
+        :return:
+        '''
+
 
         self.df['timeShutBase'] = self.df.apply(
-            lambda row: self.compute_time_shut_base(row, self.data, self.srate, self.shutAmpFraction), axis=1
+            lambda row: self.compute_time_shut(row, self.data, self.srate, self.shutAmpFraction,
+                                               key_prefix='Base', default_no_thresh=0),
+            axis=1
         )
+        # Below is to calculate the Time shut tent
         self.df['closingTimeTent'] = (self.df['xIntersect'] - self.df['leftXIntercept']) / self.srate
         self.df['reopeningTimeTent'] = (self.df['rightXIntercept'] - self.df['xIntersect']) / self.srate
 
@@ -340,10 +416,9 @@ class BlinkProperties:
         right = row['rightXIntercept_int'] + 1
         start = row['start_shut_tst']
         max_val = row['maxValue']
-        dconstant = self.shutAmpFraction * max_val
         subset = self.data[left:right][start:-1]
         try:
-            return np.argmax(subset < dconstant)
+            return np.argmax(subset < self.shutAmpFraction * max_val)
         except ValueError:
             return np.nan
 
