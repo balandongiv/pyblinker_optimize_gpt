@@ -11,16 +11,24 @@ logging.getLogger().setLevel(logging.INFO)
 
 
 def get_blink_position(params, blink_component=None, ch=None):
-    """
-
-    % Parameters:
-    %    blink_component independent component (IC) of eye-related activations derived from EEG.  This component should
-    %                    be "upright"
-    %    srate:         sample rate at which the EEG data was taken
-
-    %    blinkPositions (output) 2 x n array with start and end frames of blinks
-
-        :return:
+    """Detects blink positions (start and end frames) in a blink component.
+    
+    Parameters
+    ----------
+    params : dict
+        Dictionary containing processing parameters. Must include:
+        - 'sfreq': Sampling frequency of the data.
+        - 'minEventLen': Minimum blink length in seconds.
+        - 'stdThreshold': Standard deviation threshold for blink detection.
+    blink_component : numpy.ndarray
+        1D array representing the blink component (e.g., an independent component related to eye blinks).
+    ch : str, optional
+        Channel name for logging purposes.
+    
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with 'startBlinks' and 'endBlinks' columns, representing the start and end frames of detected blinks. Empty DataFrame if no blinks are detected.
     """
 
     # Ensure 1D array
