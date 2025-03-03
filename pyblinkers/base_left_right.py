@@ -9,11 +9,30 @@ def create_left_right_base_vislab(data, df):
     derived from data. Additional columns maxPosVelFrame and maxNegVelFrame
     are also added to df.
 
-    :param data: 1D numpy array of signal data
-    :param df: Pandas DataFrame containing columns:
-        ['maxFrame', 'leftZero', 'rightZero', 'outerStarts', 'outerEnds', ...]
-    :return: Updated df with columns:
-        ['maxPosVelFrame', 'maxNegVelFrame', 'leftBase', 'rightBase']
+    Parameters
+    ----------
+    data : numpy.ndarray
+        A 1D array of signal data representing the blink component.
+        The length of this array should match the number of rows in df.
+    
+    df : pandas.DataFrame
+        A DataFrame containing the following columns:
+        - 'maxFrame' (int): The maximum frame index for the blink event.
+        - 'leftZero' (int): The index of the left zero crossing.
+        - 'rightZero' (int): The index of the right zero crossing.
+        - 'outerStarts' (int): The starting index of the outer blink event.
+        - 'outerEnds' (int): The ending index of the outer blink event.
+        Additional columns may be present but are not used in this function.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The updated DataFrame with the following additional columns:
+        - 'maxPosVelFrame' (int): The frame index of the maximum positive velocity.
+        - 'maxNegVelFrame' (int): The frame index of the maximum negative velocity.
+        - 'leftBase' (float): The calculated left base value for the blink event.
+        - 'rightBase' (float): The calculated right base value for the blink event.
+        Rows with NaN values in any of these new columns are dropped from the DataFrame.
     """
 
     # Compute blink velocity by differencing the data
