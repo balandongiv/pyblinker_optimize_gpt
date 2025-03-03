@@ -9,12 +9,12 @@ class TestBlinkStatistic(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Set up the test environment by loading input and ground truth data.
+        Set up the test environment by loading input and ground truth candidate_signal.
         """
         cls.mat_file_path_input = r'..\Devel\step1bii_v_input_blinkStatProperties.mat'
         cls.mat_file_path_output = r'..\Devel\step1bii_v_output_blinkStatProperties.mat'
 
-        # Load data
+        # Load candidate_signal
         input_data, output_datax = load_matlab_data(cls.mat_file_path_input, cls.mat_file_path_output)
         cls.input_data = input_data
         cls.output_data = output_datax
@@ -25,7 +25,7 @@ class TestBlinkStatistic(unittest.TestCase):
         # Blink fits as DataFrame
         cls.df = pd.DataFrame.from_records(cls.input_data['blinkFits'])
 
-        # Ground truth signal data
+        # Ground truth signal candidate_signal
         cls.signalData_gt = cls.output_data['blinks']['signalData']
 
         # Remove unwanted keys from the ground truth for comparison

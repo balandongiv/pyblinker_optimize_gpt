@@ -10,7 +10,7 @@ def load_matlab_data(input_path=None, output_path=None):
         output_path (str): Path to the output .mat file.
 
     Returns:
-        tuple: Input data and ground truth output data.
+        tuple: Input candidate_signal and ground truth output candidate_signal.
     """
     if input_path is not None:
         input_data = loadmat(input_path,    squeeze_me=True,

@@ -1,14 +1,6 @@
 
-import numpy as np
 import mne
-import os
-import re
-import shutil
 import pandas as pd
-def mad_matlab(arr, axis=None, keepdims=True):
-    median = np.median(arr, axis=axis, keepdims=True)
-    mad = np.median(np.abs(arr - median), axis=axis, keepdims=keepdims)[0]
-    return mad
 
 
 

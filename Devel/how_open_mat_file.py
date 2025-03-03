@@ -11,7 +11,7 @@ mat_file_path = r'..\Devel\step1bi_data_input_getBlinkPositions.mat'
 # Load the .mat file
 data = loadmat(mat_file_path)
 
-# Display the keys in the loaded data
+# Display the keys in the loaded candidate_signal
 print("Keys in the .mat file:", data.keys())
 
 # Access a specific variable from the file (replace 'variable_name' with an actual key from the .mat file)

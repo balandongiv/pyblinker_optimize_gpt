@@ -9,12 +9,12 @@ class TestGetGoodBlinkMask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Set up the test environment by loading input and ground truth data.
+        Set up the test environment by loading input and ground truth candidate_signal.
         """
         cls.mat_file_path_input = r'..\Devel\step2b_data_input_getGoodBlinkMask.mat'
         cls.mat_file_path_output = r'..\Devel\step2b_data_output_getGoodBlinkMask.mat'
 
-        # Load data
+        # Load candidate_signal
         input_data, output_datax = load_matlab_data(cls.mat_file_path_input, cls.mat_file_path_output)
         cls.input_data = input_data
         cls.goodblinkmask_output = output_datax['goodBlinkMask'].astype(bool)

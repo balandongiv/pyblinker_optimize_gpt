@@ -56,18 +56,18 @@ def viz_complete_blink_prop(data,row,srate):
     plt.scatter(row['maxFrame'], data[row['maxFrame']],label='max Frame')
 
     # plt.scatter([row['leftBase'], row['rightBase']],
-    #             [data[row['leftBase']], data[row['rightBase']]],label='base')
+    #             [candidate_signal[row['leftBase']], candidate_signal[row['rightBase']]],label='base')
     #
     # plt.scatter([row['leftBaseHalfHeight'], row['rightBaseHalfHeight']],
-    #             [data[row['leftBaseHalfHeight']], data[row['rightBaseHalfHeight']]],
+    #             [candidate_signal[row['leftBaseHalfHeight']], candidate_signal[row['rightBaseHalfHeight']]],
     #             marker='<', s=200,label='BaseHalfHeight')
     #
     # plt.scatter([row['rightZeroHalfHeight'], row['leftZeroHalfHeight']],
-    #             [data[row['rightZeroHalfHeight']], data[row['leftZeroHalfHeight']]],
+    #             [candidate_signal[row['rightZeroHalfHeight']], candidate_signal[row['leftZeroHalfHeight']]],
     #             marker='>', s=300,label='ZeroHalfHeight')
     #
     # plt.scatter([row['maxPosVelFrame'],  row['maxNegVelFrame']],
-    #             [data[row['maxPosVelFrame']], data[ row['maxNegVelFrame']]],
+    #             [candidate_signal[row['maxPosVelFrame']], candidate_signal[ row['maxNegVelFrame']]],
     #             marker='>', s=300,label='maxVelFrame')
 
 

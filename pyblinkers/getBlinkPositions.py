@@ -5,8 +5,8 @@ import pandas as pd
 from tqdm import tqdm
 
 from pyblinkers.default_setting import SCALING_FACTOR
-from pyblinkers.misc import mad_matlab
 
+from pyblinkers.matlab_forking import mad_matlab
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -17,7 +17,7 @@ def get_blink_position(params, blink_component=None, ch=None):
     ----------
     params : dict
         A dictionary containing processing parameters, which must include:
-        - 'sfreq' (float): Sampling frequency of the data in Hz.
+        - 'sfreq' (float): Sampling frequency of the candidate_signal in Hz.
         - 'minEventLen' (float): Minimum blink length in seconds.
         - 'stdThreshold' (float): Standard deviation threshold for blink detection.
     blink_component : numpy.ndarray

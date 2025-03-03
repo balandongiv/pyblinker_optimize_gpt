@@ -5,7 +5,7 @@ import logging
 from pyblinkers import default_setting
 from pyblinkers.extractBlinkProperties import BlinkProperties, get_good_blink_mask, get_blink_statistic
 from pyblinkers.fit_blink import FitBlinks
-from pyblinkers.getBlinkPositions_vislab import get_blink_position
+from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
 
 # Configure logger
@@ -60,14 +60,14 @@ class TestExtractBlinkProperties(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Set up the test environment by loading input and ground truth data and initializing parameters.
+        Set up the test environment by loading input and ground truth candidate_signal and initializing parameters.
         """
         cls.params = default_setting.params
         cls.params['sfreq'] = 100
         cls.mat_file_path_input = r'..\Devel\step1bi_data_input_getBlinkPositions.mat'
         cls.mat_file_path_output = r'..\Devel\immitate_full_step.mat'
 
-        # Load MATLAB input and ground truth data
+        # Load MATLAB input and ground truth candidate_signal
         cls.input_data, cls.output_data = load_matlab_data(
             input_path=cls.mat_file_path_input, output_path=cls.mat_file_path_output
         )
@@ -118,7 +118,7 @@ class TestExtractBlinkProperties(unittest.TestCase):
         )
 
         # STEP 2: Fit blinks
-        fitblinks = FitBlinks(data=self.blink_comp, df=blink_positions, params=self.params)
+        fitblinks = FitBlinks(candidate_signal=self.blink_comp, df=blink_positions, params=self.params)
         fitblinks.dprocess()
         df = fitblinks.frame_blinks
 

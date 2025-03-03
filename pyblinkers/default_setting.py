@@ -5,7 +5,7 @@ Default parameters for blink detection and analysis.
 
 This module contains a set of parameters used for configuring the blink detection
 algorithm. These parameters are crucial for tuning the performance of the algorithm
-based on the characteristics of the input data.
+based on the characteristics of the input candidate_signal.
 
 Parameters
 ----------
@@ -68,7 +68,7 @@ z_thresholds : numpy.ndarray
     contains the lower thresholds, and the second row contains the upper thresholds.
 
 sfreq : int
-    The sampling frequency of the data in Hz. This value is used for time-related
+    The sampling frequency of the candidate_signal in Hz. This value is used for time-related
     calculations in the blink detection algorithm.
 """
 

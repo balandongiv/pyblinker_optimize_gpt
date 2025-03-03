@@ -1,17 +1,17 @@
 import numpy as np
-from pyblinkers.zero_crossing import (_maxPosVelFrame, _get_left_base, _get_right_base)
+from pyblinkers.zero_crossing import (_max_pos_vel_frame, _get_left_base, _get_right_base)
 
-def create_left_right_base(data, df):
+def create_left_right_base(candidate_signal, df):
     """
 
     Computes the left and right base values for each row in the DataFrame df,
-    using the blink velocity derived from the input signal data. The function
+    using the blink velocity derived from the input signal candidate_signal. The function
     also adds columns for the maximum positive and negative velocity frames to df.
 
     Parameters
     ----------
-    data : numpy.ndarray
-        A 1D array of signal data representing the blink component. The length
+    candidate_signal : numpy.ndarray
+        A 1D array of signal candidate_signal representing the blink component. The length
         of this array must match the number of rows in the DataFrame df, as it
         is used to compute the blink velocity.
 
@@ -39,19 +39,19 @@ def create_left_right_base(data, df):
         Rows with NaN values in any of these new columns are dropped from the DataFrame.
     """
 
-    # Compute blink velocity by differencing the data
-    blinkVelocity = np.diff(data, axis=0)
+    # Compute blink velocity by differencing the candidate_signal
+    blinkVelocity = np.diff(candidate_signal, axis=0)
 
-    # Remove rows with NaNs so we don't pass invalid data to our calculations
+    # Remove rows with NaNs so we don't pass invalid candidate_signal to our calculations
     df.dropna(inplace=True)
 
     # Calculate maxPosVelFrame and maxNegVelFrame
     df[['maxPosVelFrame', 'maxNegVelFrame']] = df.apply(
-        lambda row: _maxPosVelFrame(
-            blinkVelocity=blinkVelocity,
-            maxFrame=row['maxFrame'],
-            leftZero=row['leftZero'],
-            rightZero=row['rightZero']
+        lambda row: _max_pos_vel_frame(
+            blink_velocity=blinkVelocity,
+            max_frame=row['maxFrame'],
+            left_zero=row['leftZero'],
+            right_zero=row['rightZero']
         ),
         axis=1,
         result_type='expand'
@@ -63,9 +63,9 @@ def create_left_right_base(data, df):
     # Calculate leftBase
     df['leftBase'] = df.apply(
         lambda row: _get_left_base(
-            blinkVelocity=blinkVelocity,
-            leftOuter=row['outerStarts'],
-            maxPosVelFrame=row['maxPosVelFrame']
+            blink_velocity=blinkVelocity,
+            left_outer=row['outerStarts'],
+            max_pos_vel_frame=row['maxPosVelFrame']
         ),
         axis=1
     )
@@ -76,10 +76,10 @@ def create_left_right_base(data, df):
     # Calculate rightBase
     df['rightBase'] = df.apply(
         lambda row: _get_right_base(
-            candidateSignal=data,
-            blinkVelocity=blinkVelocity,
-            rightOuter=row['outerEnds'],
-            maxNegVelFrame=row['maxNegVelFrame']
+            candidate_signal=candidate_signal,
+            blink_velocity=blinkVelocity,
+            right_outer=row['outerEnds'],
+            max_neg_vel_frame=row['maxNegVelFrame']
         ),
         axis=1
     )

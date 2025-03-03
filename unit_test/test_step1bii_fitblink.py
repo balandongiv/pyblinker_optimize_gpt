@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pyblinkers import default_setting
 from pyblinkers.fit_blink import FitBlinks
-from pyblinkers.getBlinkPositions_vislab import get_blink_position
+from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
 
 # Configure logger
@@ -16,16 +16,16 @@ class TestFitBlinks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Set up the test environment by loading input and ground truth data and initializing parameters.
+        Set up the test environment by loading input and ground truth candidate_signal and initializing parameters.
         """
         cls.mat_file_path_input = r'..\Devel\step1bii_data_input_process_FitBlinks.mat'
         cls.mat_file_path_output = r'..\Devel\step1bii_data_output_process_FitBlinks.mat'
 
-        # Load data
+        # Load candidate_signal
         cls.input_data, output_datax = load_matlab_data(cls.mat_file_path_input, cls.mat_file_path_output)
         cls.output_data = output_datax['blinkFits']
 
-        # Convert MATLAB ground truth data to a DataFrame
+        # Convert MATLAB ground truth candidate_signal to a DataFrame
         cls.df_ground_truth = pd.DataFrame.from_records(cls.output_data)
 
         # Drop the 'number' column if it exists
@@ -37,7 +37,7 @@ class TestFitBlinks(unittest.TestCase):
         cls.params['sfreq'] = 100
         cls.channel = 'No_channel'
 
-        # Candidate signal data
+        # Candidate signal candidate_signal
         cls.blink_comp = cls.input_data['candidateSignal']
 
         # Calculate output DataFrame using the Python implementation
@@ -46,13 +46,13 @@ class TestFitBlinks(unittest.TestCase):
     @staticmethod
     def process_blink_data(blink_comp, params, channel):
         """
-        Process blink data using `FitBlinks` and return the output DataFrame.
+        Process blink candidate_signal using `FitBlinks` and return the output DataFrame.
         """
         # Calculate blink positions
         df_blink_positions = get_blink_position(params, blink_component=blink_comp, ch=channel)
 
-        # Process blink data with `FitBlinks`
-        fitblinks = FitBlinks(data=blink_comp, df=df_blink_positions, params=params)
+        # Process blink candidate_signal with `FitBlinks`
+        fitblinks = FitBlinks(candidate_signal=blink_comp, df=df_blink_positions, params=params)
         fitblinks.dprocess()
         df_output = fitblinks.frame_blinks
 

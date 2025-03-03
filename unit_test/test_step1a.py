@@ -2,7 +2,7 @@ import unittest
 
 import pandas as pd
 
-from pyblinkers.getBlinkPositions_vislab import get_blink_position
+from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
 
 
@@ -11,7 +11,7 @@ class TestBlinkPosition(unittest.TestCase):
     def setUpClass(cls):
         """
         Set up the class-level variables for testing.
-        Load MATLAB data and define parameters for the blink position calculation.
+        Load MATLAB candidate_signal and define parameters for the blink position calculation.
         """
         cls.mat_file_path_input = r'..\Devel\step1bi_data_input_getBlinkPositions.mat'
         cls.mat_file_path_output = r'..\Devel\step1bi_data_output_getBlinkPositions.mat'
@@ -19,7 +19,7 @@ class TestBlinkPosition(unittest.TestCase):
         # Parameters for `get_blink_position`
         cls.params = dict(minEventLen=0.05, stdThreshold=1.5, sfreq=100)
 
-        # Load MATLAB input and ground truth data
+        # Load MATLAB input and ground truth candidate_signal
         cls.input_data, cls.output_data = load_matlab_data(
             cls.mat_file_path_input, cls.mat_file_path_output
         )
@@ -70,7 +70,7 @@ class TestBlinkPosition(unittest.TestCase):
 
     def check_data_equality(self, df1, df2):
         """
-        Check if the data in both DataFrames is equal.
+        Check if the candidate_signal in both DataFrames is equal.
         """
         if not df1.equals(df2):
             return df1.compare(df2)
@@ -86,7 +86,7 @@ class TestBlinkPosition(unittest.TestCase):
         # Adjust indices for MATLAB compatibility
         blink_positions_py = self.adjust_indices_for_matlab(blink_positions)
 
-        # Prepare MATLAB ground truth data as a DataFrame
+        # Prepare MATLAB ground truth candidate_signal as a DataFrame
         blinkposition_mat = pd.DataFrame({
             'startBlinks': self.blinkposition_groundtruth[0],
             'endBlinks': self.blinkposition_groundtruth[1]

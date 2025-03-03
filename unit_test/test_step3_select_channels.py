@@ -19,12 +19,12 @@ class TestSelectChannelCompact(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Set up the test environment by loading input and ground truth data.
+        Set up the test environment by loading input and ground truth candidate_signal.
         """
         cls.mat_file_path_input = r'..\Devel\step3a_input_selectChannel_compact.mat'
         cls.mat_file_path_output = r'..\Devel\step3a_output_selectChannel_compact.mat'
 
-        # Load data
+        # Load candidate_signal
         input_data, output_data = load_matlab_data(
             input_path=cls.mat_file_path_input,
             output_path=cls.mat_file_path_output
@@ -32,12 +32,12 @@ class TestSelectChannelCompact(unittest.TestCase):
         cls.input_data = input_data
         cls.output_data = output_data
 
-        # Ground truth signal data
+        # Ground truth signal candidate_signal
         cls.signal_data_gt = pd.DataFrame.from_records(cls.output_data['blinks']['signalData'])
         cls.signal_data_gt = cls.signal_data_gt.drop(columns=['signal', 'blinkPositions', 'signalType', 'signalNumber'])
         cls.signal_data_gt = cls.signal_data_gt.rename(columns={'signalLabel': 'ch'})
 
-        # Signal data for processing
+        # Signal candidate_signal for processing
         cls.signal_data = pd.DataFrame.from_records(cls.input_data['signalData'])
         cls.signal_data = cls.signal_data.drop(columns=['signal', 'blinkPositions', 'signalType', 'signalNumber'])
         cls.signal_data = cls.signal_data.rename(columns={'signalLabel': 'ch'})
@@ -48,7 +48,7 @@ class TestSelectChannelCompact(unittest.TestCase):
     def test_select_channel_compact(self):
         """
         Test the blink signal selection process against MATLAB ground truth.
-        df is the blink statistics for all the channeles. The statistic data include
+        df is the blink statistics for all the channeles. The statistic candidate_signal include
         - channel
         - number blinks
         - number good blinks
@@ -88,13 +88,13 @@ class TestSelectChannelCompact(unittest.TestCase):
 
         # Log differences if any
         if not comparison_report.empty:
-            logger.info("\nDifferences found in signal data output:")
+            logger.info("\nDifferences found in signal candidate_signal output:")
             logger.info(comparison_report)
 
         # Assert no differences
         self.assertTrue(
             comparison_report.empty,
-            f"The processed signal data does not match the ground truth. Differences:\n{comparison_report}"
+            f"The processed signal candidate_signal does not match the ground truth. Differences:\n{comparison_report}"
         )
 
 

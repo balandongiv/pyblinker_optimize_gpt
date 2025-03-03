@@ -7,7 +7,7 @@ from pyblinkers import default_setting
 from pyblinkers.extractBlinkProperties import BlinkProperties, get_good_blink_mask
 from pyblinkers.extractBlinkProperties import get_blink_statistic
 from pyblinkers.fit_blink import FitBlinks
-from pyblinkers.getBlinkPositions_vislab import get_blink_position
+from pyblinkers.getBlinkPositions import get_blink_position
 from pyblinkers.getRepresentativeChannel import channel_selection
 from pyblinkers.misc import create_annotation
 from pyblinkers.viz_pd import viz_complete_blink_prop
@@ -44,7 +44,7 @@ class BlinkDetector:
         df = get_blink_position(self.params, blink_component=self.raw_data.get_data(picks=channel)[0], ch='No_channel')
 
         # STEP 2: Fit blinks
-        fitblinks = FitBlinks(data=self.raw_data.get_data(picks=channel)[0], df=df, params=self.params)
+        fitblinks = FitBlinks(candidate_signal=self.raw_data.get_data(picks=channel)[0], df=df, params=self.params)
         fitblinks.dprocess()
         df = fitblinks.frame_blinks
 

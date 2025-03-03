@@ -14,7 +14,7 @@ def plot_blinks(raw_file):
     """Plot eye close events based on EEG signals.
 
     Args:
-    raw_file (str): Path to the raw EEG data file in .fif format.
+    raw_file (str): Path to the raw EEG candidate_signal file in .fif format.
 
     Returns:
     None

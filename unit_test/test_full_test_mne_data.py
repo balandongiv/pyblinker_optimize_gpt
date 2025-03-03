@@ -24,7 +24,7 @@ class TestFullTestMneData(unittest.TestCase):
             cls.sample_data_folder, 'MEG', 'sample', 'sample_audvis_filt-0-40_raw.fif'
         )
         if not os.path.exists(cls.sample_data_raw_file):
-            raise FileNotFoundError("Sample raw data file not found.")
+            raise FileNotFoundError("Sample raw candidate_signal file not found.")
 
     def setUp(self):
         """Initialize resources for each test."""
@@ -34,7 +34,7 @@ class TestFullTestMneData(unittest.TestCase):
         self.raw.resample(100)
 
     def test_full_test_mne_data(self):
-        """Test blink detection on EEG data."""
+        """Test blink detection on EEG candidate_signal."""
         # Select a subset of EEG channels
         drange = [f'EEG 00{X}' for X in range(10)]
         to_drop_ch = list(set(self.raw.ch_names) - set(drange))

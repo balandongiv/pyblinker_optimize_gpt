@@ -18,7 +18,7 @@
 # from eeg_blinks.utilities.getBlinkPositions_vislab import get_blink_position
 # from eeg_blinks.utilities.misc import mad_matlab
 # from eeg_blinks.utilities.zero_crossing import *
-# from eeg_blinks.utilities.zero_crossing import _maxPosVelFrame, _get_left_base, _get_right_base, _get_half_height
+# from eeg_blinks.utilities.zero_crossing import _max_pos_vel_frame, _get_left_base, _get_right_base, _get_half_height
 #
 # logging.getLogger().setLevel(logging.INFO)
 #
@@ -53,23 +53,23 @@
 #     hkl.dump([candidateSignal, blinkVelocity, df], filename)
 #
 #
-# def fit_blink_pd_approach(data=None, df=None):
-#     if data is None:
+# def fit_blink_pd_approach(candidate_signal=None, df=None):
+#     if candidate_signal is None:
 #         filename = 'data_to_get_zero_crossing_pd_MFF.hkl'
 #         # hkl.dump([candidateSignal, blinkVelocity,df], filename)
-#         data, df = hkl.load(filename)
+#         candidate_signal, df = hkl.load(filename)
 #
-#     blinkVelocity = np.diff(data, axis=0)
+#     blinkVelocity = np.diff(candidate_signal, axis=0)
 #     baseFraction = 0.1  # Fraction from top and bottom
-#     df[['leftZero', 'rightZero']] = df.apply(lambda x: left_right_zero_crossing(data, x['maxFrames'], x['outerStarts'],
+#     df[['leftZero', 'rightZero']] = df.apply(lambda x: left_right_zero_crossing(candidate_signal, x['maxFrames'], x['outerStarts'],
 #                                                                                 x['outerEnds']), axis=1,
 #                                              result_type="expand")
 #
 #     df[['maxPosVelFrame', 'maxNegVelFrame']] = df.apply(
-#         lambda x: _maxPosVelFrame(blinkVelocity, x['maxFrames'], x['leftZero'],
+#         lambda x: _max_pos_vel_frame(blinkVelocity, x['maxFrames'], x['leftZero'],
 #                                   x['rightZero']), axis=1, result_type="expand")
 #
-#     ## Lets check some condition especially for data with anamoly
+#     ## Lets check some condition especially for candidate_signal with anamoly
 #
 #     df = df[df['outerStarts'] < df['maxPosVelFrame']]  # Filter and take only row that normal
 #     df['leftBase'] = df.apply(lambda x: _get_left_base(blinkVelocity, x['outerStarts'], x['maxPosVelFrame']), axis=1)
@@ -77,11 +77,11 @@
 #     df = df.dropna()
 #     # TODO
 #
-#     df['rightBase'] = df.apply(lambda x: _get_right_base(data, blinkVelocity, x['outerEnds'], x['maxNegVelFrame']),
+#     df['rightBase'] = df.apply(lambda x: _get_right_base(candidate_signal, blinkVelocity, x['outerEnds'], x['maxNegVelFrame']),
 #                                axis=1)
 #
 #     cols_half_height = ['leftZeroHalfHeight', 'rightZeroHalfHeight', 'leftBaseHalfHeight', 'rightBaseHalfHeight']
-#     df[cols_half_height] = df.apply(lambda x: _get_half_height(data, x['maxFrames'], x['leftZero'], x['rightZero'],
+#     df[cols_half_height] = df.apply(lambda x: _get_half_height(candidate_signal, x['maxFrames'], x['leftZero'], x['rightZero'],
 #                                                                x['leftBase'], x['outerEnds']), axis=1,
 #                                     result_type="expand")
 #
@@ -89,7 +89,7 @@
 #                       'blinkBottomPoint_l_Y', 'blinkBottomPoint_l_X', 'blinkTopPoint_l_Y', 'blinkTopPoint_l_X',
 #                       'blinkBottomPoint_r_X', 'blinkBottomPoint_r_Y', 'blinkTopPoint_r_X', 'blinkTopPoint_r_Y']
 #
-#     df[cols_fit_range] = df.apply(lambda x: compute_fit_range(data, x['maxFrames'], x['leftZero'], x['rightZero'],
+#     df[cols_fit_range] = df.apply(lambda x: compute_fit_range(candidate_signal, x['maxFrames'], x['leftZero'], x['rightZero'],
 #                                                               baseFraction, top_bottom=True), axis=1,
 #                                   result_type="expand")
 #
@@ -106,13 +106,13 @@
 #                               'rightXIntercept', 'xLineCross_l', 'yLineCross_l', 'xLineCross_r', 'yLineCross_r']
 #
 #     df[cols_lines_intesection] = df.apply(lambda x: lines_intersection(xRight=x['xRight'], xLeft=x['xLeft'],
-#                                                                        yRight=data[x['xRight']], yLeft=data[x['xLeft']],
+#                                                                        yRight=candidate_signal[x['xRight']], yLeft=candidate_signal[x['xLeft']],
 #                                                                        dic_type=False), axis=1, result_type="expand")
 #
 #     # print(df)
-#     if data is None:
+#     if candidate_signal is None:
 #         filename = 'data_to_get_zero_crossing_pd_viz_MFF.hkl'
-#         hkl.dump([data, df], filename)
+#         hkl.dump([candidate_signal, df], filename)
 #     else:
 #         return df
 #
@@ -239,7 +239,7 @@
 #     """
 #
 #     df['start_shut_tst'] = df.apply(
-#     lambda x: np.argmax(data[x['leftXIntercept_int']:x['rightXIntercept_int'] + 1] >= x['ampThreshhold']),
+#     lambda x: np.argmax(candidate_signal[x['leftXIntercept_int']:x['rightXIntercept_int'] + 1] >= x['ampThreshhold']),
 #
 #     While it very tempting to df = df.astype({"start_shut_tst": int}), but since we deal with nan, this is imposible
 #     or
@@ -272,15 +272,15 @@
 #
 #     filename = 'data_to_get_zero_crossing_pd_viz_MFF.hkl'
 #
-#     data, df = hkl.load(filename)
+#     candidate_signal, df = hkl.load(filename)
 #     df.reset_index(drop=True,
 #                    inplace=True)  # To ensure all index are reset, since we concat some index along the pipeline later
 #
 #     # # SLice only good blink. Expect lesser selection number
 #     df, bestMedian, bestRobustStd = get_good_blink_mask(df, z_thresholds)
 #
-#     signal_l = data.shape[0]
-#     blinkVelocity = np.diff(data)  # to cross check whether this is correct?
+#     signal_l = candidate_signal.shape[0]
+#     blinkVelocity = np.diff(candidate_signal)  # to cross check whether this is correct?
 #     cols_int = ['rightBase']
 #     df[cols_int] = df[cols_int].astype(int)
 #
@@ -296,34 +296,34 @@
 #         lambda x: x['leftZero'] + np.argmax(blinkVelocity[x['leftZero']:x['maxFrames'] + 1]), axis=1)
 #
 #     # TODO TO remove the minus 1 >> df['maxFrames']-1
-#     df['RRC'] = data[df['maxFrames'] - 1] / blinkVelocity[df['peaksPosVelZero']]
+#     df['RRC'] = candidate_signal[df['maxFrames'] - 1] / blinkVelocity[df['peaksPosVelZero']]
 #     df['posAmpVelRatioZero'] = (100 * abs(df['RRC'])) / srate
 #
 #     df['downStrokevelFrame_del'] = df.apply(
 #         lambda x: x['maxFrames'] + np.argmin(blinkVelocity[x['maxFrames']:x['rightZero'] + 1]), axis=1)
 #
-#     df['TTT'] = data[df['maxFrames'] - 1] / blinkVelocity[df['downStrokevelFrame_del']]
+#     df['TTT'] = candidate_signal[df['maxFrames'] - 1] / blinkVelocity[df['downStrokevelFrame_del']]
 #     df['negAmpVelRatioZero'] = (100 * abs(df['TTT'])) / srate
 #
 #     ## Blink amplitude-velocity ratio from base to max
 #
 #     df['peaksPosVelBase'] = df.apply(
 #         lambda x: x['leftBase'] + np.argmax(blinkVelocity[x['leftBase']:x['maxFrames'] + 1]), axis=1)
-#     df['KKK'] = data[df['maxFrames'] - 1] / blinkVelocity[df['peaksPosVelBase']]
+#     df['KKK'] = candidate_signal[df['maxFrames'] - 1] / blinkVelocity[df['peaksPosVelBase']]
 #     df['posAmpVelRatioBase'] = (100 * abs(df['KKK'])) / srate
 #
 #     df['downStroke_del'] = df.apply(
 #         lambda x: x['maxFrames'] + np.argmin(blinkVelocity[x['maxFrames']:x['rightBase'] + 1]), axis=1)
-#     df['KKK'] = data[df['maxFrames'] - 1] / blinkVelocity[df['downStroke_del']]
+#     df['KKK'] = candidate_signal[df['maxFrames'] - 1] / blinkVelocity[df['downStroke_del']]
 #     df['negAmpVelRatioBase'] = (100 * abs(df['KKK'])) / srate
 #
 #     ## Blink amplitude-velocity ratio estimated from tent slope
 #
 #     # TODO TO remove the minus 1 >> df['maxFrames']-1
-#     df['pop'] = data[df['maxFrames'] - 1] / df['averRightVelocity']
+#     df['pop'] = candidate_signal[df['maxFrames'] - 1] / df['averRightVelocity']
 #     df['negAmpVelRatioTent'] = (100 * abs(df['pop'])) / srate
 #
-#     df['opi'] = data[df['maxFrames'] - 1] / df['averLeftVelocity']
+#     df['opi'] = candidate_signal[df['maxFrames'] - 1] / df['averLeftVelocity']
 #     df['WE'] = (100 * abs(df['opi']))
 #     df['posAmpVelRatioTent'] = df['WE'] / srate
 #
@@ -335,10 +335,10 @@
 #
 #     df['ampThreshhold'] = shutAmpFraction * df['maxValues']
 #     df['start_shut_tzs'] = df.apply(
-#         lambda x: np.argmax(data[x['leftZero']:x['rightZero'] + 1] >= x['ampThreshhold']), axis=1)
+#         lambda x: np.argmax(candidate_signal[x['leftZero']:x['rightZero'] + 1] >= x['ampThreshhold']), axis=1)
 #
 #     df['endShut_tzs'] = df.apply(
-#         lambda x: np.argmax(data[x['leftZero']:x['rightZero'] + 1][x['start_shut_tzs'] + 1:-1] <
+#         lambda x: np.argmax(candidate_signal[x['leftZero']:x['rightZero'] + 1][x['start_shut_tzs'] + 1:-1] <
 #                             shutAmpFraction * x['maxValues']), axis=1)
 #
 #     ## PLease expect error here, some value maybe zero or lead to empty cell
@@ -350,10 +350,10 @@
 #
 #     df['ampThreshhold_tbs'] = shutAmpFraction * df['maxValues']
 #     df['start_shut_tbs'] = df.apply(
-#         lambda x: np.argmax(data[x['leftBase']:x['rightBase'] + 1] >= x['ampThreshhold_tbs']), axis=1)
+#         lambda x: np.argmax(candidate_signal[x['leftBase']:x['rightBase'] + 1] >= x['ampThreshhold_tbs']), axis=1)
 #
 #     df['endShut_tbs'] = df.apply(
-#         lambda x: np.argmax(data[x['leftBase']:x['rightBase'] + 1][x['start_shut_tbs']:-1] <
+#         lambda x: np.argmax(candidate_signal[x['leftBase']:x['rightBase'] + 1][x['start_shut_tbs']:-1] <
 #                             shutAmpFraction * x['maxValues']), axis=1)
 #
 #     df['timeShutBase'] = df.apply(
@@ -369,7 +369,7 @@
 #         int)
 #
 #     df['start_shut_tst'] = df.apply(
-#         lambda x: _start_shut(data, x['leftXIntercept_int'], x['rightXIntercept_int'], x['ampThreshhold']), axis=1)
+#         lambda x: _start_shut(candidate_signal, x['leftXIntercept_int'], x['rightXIntercept_int'], x['ampThreshhold']), axis=1)
 #
 #     def _end_shut(arr, leftXIntercept, rightXIntercept, start_shut, maxVal, shutAmpFraction):
 #         try:
@@ -381,7 +381,7 @@
 #     ###### WIP GOT ISSUE
 #
 #     df['endShut_tst'] = df.apply(
-#         lambda x: _end_shut(data, x['leftXIntercept_int'], x['rightXIntercept_int'], x['start_shut_tst'],
+#         lambda x: _end_shut(candidate_signal, x['leftXIntercept_int'], x['rightXIntercept_int'], x['start_shut_tst'],
 #                             x['maxValues'], shutAmpFraction), axis=1)
 #
 #     df['timeShutTent'] = df.apply(
@@ -425,10 +425,10 @@
 #
 #     print(df)
 #     filename = 'data_to_selected_blink_pd_viz_MFF.hkl'
-#     hkl.dump([data, df_res], filename)
+#     hkl.dump([candidate_signal, df_res], filename)
 #
 #
-# def viz_fit_blink_pd_approach(data=None,df=None):
+# def viz_fit_blink_pd_approach(candidate_signal=None,df=None):
 #     """
 #
 #     TODO Viz
@@ -440,9 +440,9 @@
 #     from eeg_blinks.viz.viz_pd import viz_complete_blink_prop
 #     import mne
 #
-#     if data is None:
+#     if candidate_signal is None:
 #         filename = 'data_to_selected_blink_pd_viz_MFF.hkl'
-#         data, df = hkl.load(filename)
+#         candidate_signal, df = hkl.load(filename)
 #
 #     title = 'sddd'
 #     rep = mne.Report(title=title)
@@ -455,7 +455,7 @@
 #     # for index, row in df.iloc[1:].iterrows():
 #     for index, row in df.iterrows():
 #
-#         dfig = viz_complete_blink_prop(data, row)
+#         dfig = viz_complete_blink_prop(candidate_signal, row)
 #
 #         if row['blink_quality'] == 'Good':
 #             fig_good_blink.append(dfig)
@@ -531,7 +531,7 @@
 #
 # def _peak_vallay_frame_matlab():
 #     g=1
-# def prepare_df_compatible(ch_data=None, data=None, params=None, srate=None):
+# def prepare_df_compatible(ch_data=None, candidate_signal=None, params=None, srate=None):
 #     if ch_data is None:
 #         import hickle as hkl
 #         filename = 'data_to_df_compatble_MFF.hkl'
@@ -540,12 +540,12 @@
 #         ch_data = blinkPositions_list[0]
 #         ch = ch_data['ch']
 #         print(ch)
-#         data = raw.get_data(picks=ch)[0]
+#         candidate_signal = raw.get_data(picks=ch)[0]
 #
 #     startBlinks = ch_data['start_blink']  # ch_data is equivalent to blinkPosition
 #     endBlinks = ch_data['end_blink']
 #
-#     maxValues, maxFrames = zip(*[_get_max_frame(data, dstartBlinks, dendBlinks) for
+#     maxValues, maxFrames = zip(*[_get_max_frame(candidate_signal, dstartBlinks, dendBlinks) for
 #                                  dstartBlinks, dendBlinks in zip(startBlinks, endBlinks)])
 #     ## Calculate the fits
 #
@@ -553,7 +553,7 @@
 #     maxFrames = np.array(maxFrames)
 #     maxValues = np.array(maxValues)
 #     outerStarts = np.append(0, maxFrames[0:-1])
-#     outerEnds = np.append(maxFrames[1:], data.size)
+#     outerEnds = np.append(maxFrames[1:], candidate_signal.size)
 #
 #     df = pd.DataFrame(dict(maxFrames=maxFrames, maxValues=maxValues, startBlinks=startBlinks, endBlinks=endBlinks,
 #                            outerStarts=outerStarts, outerEnds=outerEnds))
@@ -568,7 +568,7 @@
 #         # Data are all store within the same folder of this main file
 #         import hickle as hkl
 #         filename = 'data_to_get_zero_crossing_pd_MFF.hkl'
-#         hkl.dump([data, df], filename)
+#         hkl.dump([candidate_signal, df], filename)
 #     else:
 #         return df
 #
@@ -585,9 +585,9 @@
 #         ch = bp['ch']
 #         print(ch)
 #         # signal_eeg = raw.get_data(picks=ch)[0]
-#         df = prepare_df_compatible(ch_data=bp, data=raw.get_data(picks=ch)[0],
+#         df = prepare_df_compatible(ch_data=bp, candidate_signal=raw.get_data(picks=ch)[0],
 #                                    params=params, srate=srate)
-#         df = fit_blink_pd_approach(df=df, data=raw.get_data(picks=ch)[0])
+#         df = fit_blink_pd_approach(df=df, candidate_signal=raw.get_data(picks=ch)[0])
 #         d = _get_param_for_selection(signal=raw.get_data(picks=ch)[0], df=df, params=params, ch=ch)
 #         # df_s=pd.DataFrame(d)
 #         all_data_info.append(df)
@@ -707,5 +707,5 @@
 #
 # # raw, params, ch_selected, all_data_info = hkl.load('data_to_viz_complete.hkl')
 #
-# # viz_fit_blink_pd_approach(data=raw,params=params,ch_selected=ch_selected,ch_info=all_data_info)  # This is working
+# # viz_fit_blink_pd_approach(candidate_signal=raw,params=params,ch_selected=ch_selected,ch_info=all_data_info)  # This is working
 #

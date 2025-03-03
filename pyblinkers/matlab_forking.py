@@ -1,11 +1,20 @@
+"""
+
+The following code is base on MATLAB internal lib implementation
+"""
+
 import numpy as np
 from scipy.linalg import qr, solve_triangular
 from scipy.stats import pearsonr, spearmanr, kendalltau
 
+def mad_matlab(arr, axis=None, keepdims=True):
+    median = np.median(arr, axis=axis, keepdims=True)
+    mad = np.median(np.abs(arr - median), axis=axis, keepdims=keepdims)[0]
+    return mad
 
 def corrMatlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None):
     """
-    Computes correlation coefficient(s) and p-values between pairs of data.
+    Computes correlation coefficient(s) and p-values between pairs of candidate_signal.
 
     Parameters:
         x: array-like, shape (n_samples, n_features1)
@@ -42,7 +51,7 @@ def corrMatlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None)
 
     # Handle 'rows' parameter
     if rows == 'all':
-        # Use all data (including NaNs)
+        # Use all candidate_signal (including NaNs)
         pass
     elif rows == 'complete':
         # Use only rows with no missing values
@@ -168,7 +177,7 @@ def weighted_corr(x, y, w):
 
 def polyfitMatlab(x, y, n):
     """
-    Fit a polynomial of degree n to data using least squares.
+    Fit a polynomial of degree n to candidate_signal using least squares.
 
     Parameters:
     x : array_like, shape (M,)

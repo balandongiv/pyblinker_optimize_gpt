@@ -15,7 +15,7 @@ class TestBlinkProperties(unittest.TestCase):
     def setUpClass(cls):
         """
         Set up class-level variables and configurations for testing.
-        Load MATLAB data and define parameters for the blink properties calculation.
+        Load MATLAB candidate_signal and define parameters for the blink properties calculation.
         """
         cls.mat_file_path_input = r'..\Devel\step2c_data_input_computeBlinkProperties.mat'
         cls.mat_file_path_output = r'..\Devel\step2c_data_output_computeBlinkProperties.mat'
@@ -30,7 +30,7 @@ class TestBlinkProperties(unittest.TestCase):
             'leftBaseHalfHeight', 'rightBaseHalfHeight'
         ]
 
-        # Load and preprocess data
+        # Load and preprocess candidate_signal
         cls.df_input, cls.df_ground_truth, cls.df_output = cls.load_and_preprocess_data(
             cls.mat_file_path_input, cls.mat_file_path_output, cls.columns_to_decrease
         )
@@ -38,7 +38,7 @@ class TestBlinkProperties(unittest.TestCase):
     @staticmethod
     def load_and_preprocess_data(mat_file_path_input, mat_file_path_output, columns_to_decrease):
         """
-        Load and preprocess MATLAB data, adjust indices, and calculate output DataFrame.
+        Load and preprocess MATLAB candidate_signal, adjust indices, and calculate output DataFrame.
         """
         input_data, output_data = load_matlab_data(mat_file_path_input, mat_file_path_output)
 
@@ -99,7 +99,7 @@ class TestBlinkProperties(unittest.TestCase):
                 gt_value = df_ground_truth.at[idx, column]
                 output_value = df_output.at[idx, column]
 
-                # Handle NaN values for scalar or array-like data
+                # Handle NaN values for scalar or array-like candidate_signal
                 gt_is_nan = pd.isna(gt_value).all() if isinstance(gt_value, (np.ndarray, pd.Series)) else pd.isna(gt_value)
                 output_is_nan = pd.isna(output_value).all() if isinstance(output_value, (np.ndarray, pd.Series)) else pd.isna(output_value)
 

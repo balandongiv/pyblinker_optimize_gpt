@@ -52,25 +52,8 @@ def viz_line_intersection(candidateSignal,xRight,xLeft,leftXIntercept,rightXInte
 
     plt.show()
 
-
-
-
-
-    # leftRange_x=[leftRange[0]/srate,leftRange[1]/srate]
-    #
-    # plt.scatter(leftRange_x,[0,0])
-
-
-
-
-
-    # plt.show()
-    hh=1
-
 def viz_blink_top_buttom_point(candidateSignal,blinkRange,blinkTop,blinkBottom,maxFrame,rightZero,leftRange,rightRange):
-    # blinkTopPoint_ = np.argmax(candidateSignal[blinkRange] < blinkTop)
-    #
-    # blinkBottomPoint_ = np.argmin(candidateSignal[blinkRange] > blinkBottom) - 1  # The minus 1 is introduced in Python
+
     srate=1
     npad=20
     idx_t=(np.arange ( maxFrame-npad, rightZero +npad))

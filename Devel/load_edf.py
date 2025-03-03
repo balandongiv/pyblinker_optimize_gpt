@@ -2,7 +2,7 @@ import mne
 import numpy as np
 from scipy.io import savemat
 '''
-This script is used to export edf file from raw data.
+This script is used to export edf file from raw candidate_signal.
 There are two type of file that can be exported:
 1. Export all channels to edf file
 2. Export only selected channel to edf file
@@ -15,7 +15,7 @@ Basiclly, all of the output assertion in the unit test is based on the single ch
 Wheras,the all channels edf file is used when we migrating or understand
 how the BLINKER algortihm select the best channel for blink detection.
 '''
-# Load the sample data
+# Load the sample candidate_signal
 data_path = mne.datasets.sample.data_path()
 raw_fname = data_path / "MEG" / "sample" / "sample_audvis_raw.fif"
 raw = mne.io.read_raw_fif(raw_fname, preload=True)
@@ -30,17 +30,17 @@ raw.resample(srate, npad="auto")
 # raw.save('resampled_raw.fif', overwrite=True)
 mne.export.export_raw('resampled_raw_all_channels.edf', raw,overwrite=True)
 # mne.export.export_raw('resampled_raw.edf', raw,overwrite=True)
-# Get the data
+# Get the candidate_signal
 data = raw.get_data()
 
-# Extract the data into a 1D array
+# Extract the candidate_signal into a 1D array
 blinkComp = data[0, :]  # Shape: (N,)
 
 # Define sampling rate and standard deviation threshold
 srate = 20
 stdThreshold = 1.5
 
-# Calculate the standard deviation of the data
+# Calculate the standard deviation of the candidate_signal
 std_dev = np.std(blinkComp)
 
 # Identify indices where the signal exceeds the threshold
@@ -54,11 +54,11 @@ blinkComp_cleaned[artifact_indices] = 0
 # Convert blinkComp_cleaned to single precision (float32)
 blinkComp_cleaned = blinkComp_cleaned.astype(np.float32)
 
-# Save the cleaned data to a .mat file with single precision
+# Save the cleaned candidate_signal to a .mat file with single precision
 savemat('blinkComp_cleaned.mat', {
     'blink_component': blinkComp_cleaned,
     'srate': srate,
     'stdThreshold': stdThreshold
 })
 
-print("Cleaned data saved to 'blinkComp_cleaned.mat' successfully as type single.")
+print("Cleaned candidate_signal saved to 'blinkComp_cleaned.mat' successfully as type single.")
