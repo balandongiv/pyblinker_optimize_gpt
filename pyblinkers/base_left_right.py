@@ -5,33 +5,38 @@ from pyblinkers.zero_crossing import (_maxPosVelFrame, _get_left_base, _get_righ
 
 def create_left_right_base_vislab(data, df):
     """
-    Computes leftBase and rightBase for each row in df, using blinkVelocity
-    derived from data. Additional columns maxPosVelFrame and maxNegVelFrame
-    are also added to df.
+    Computes the left and right base values for each row in the DataFrame df,
+    using the blink velocity derived from the input signal data. The function
+    also adds columns for the maximum positive and negative velocity frames to df.
 
     Parameters
     ----------
     data : numpy.ndarray
-        A 1D array of signal data representing the blink component.
-        The length of this array should match the number of rows in df.
-    
+        A 1D array of signal data representing the blink component. The length
+        of this array must match the number of rows in the DataFrame df, as it
+        is used to compute the blink velocity.
+
     df : pandas.DataFrame
-        A DataFrame containing the following columns:
+        A DataFrame containing the following required columns:
         - 'maxFrame' (int): The maximum frame index for the blink event.
         - 'leftZero' (int): The index of the left zero crossing.
         - 'rightZero' (int): The index of the right zero crossing.
         - 'outerStarts' (int): The starting index of the outer blink event.
         - 'outerEnds' (int): The ending index of the outer blink event.
-        Additional columns may be present but are not used in this function.
+        Additional columns may be present but are not utilized in this function.
 
     Returns
     -------
     pandas.DataFrame
         The updated DataFrame with the following additional columns:
-        - 'maxPosVelFrame' (int): The frame index of the maximum positive velocity.
-        - 'maxNegVelFrame' (int): The frame index of the maximum negative velocity.
-        - 'leftBase' (float): The calculated left base value for the blink event.
-        - 'rightBase' (float): The calculated right base value for the blink event.
+        - 'maxPosVelFrame' (int): The frame index of the maximum positive velocity
+          calculated from the blink velocity.
+        - 'maxNegVelFrame' (int): The frame index of the maximum negative velocity
+          calculated from the blink velocity.
+        - 'leftBase' (float): The calculated left base value for the blink event,
+          derived from the blink velocity and the specified outer start index.
+        - 'rightBase' (float): The calculated right base value for the blink event,
+          derived from the blink velocity and the specified outer end index.
         Rows with NaN values in any of these new columns are dropped from the DataFrame.
     """
 
