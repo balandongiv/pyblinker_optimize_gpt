@@ -16,19 +16,22 @@ def get_blink_position(params, blink_component=None, ch=None):
     Parameters
     ----------
     params : dict
-        Dictionary containing processing parameters. Must include:
-        - 'sfreq': Sampling frequency of the data.
-        - 'minEventLen': Minimum blink length in seconds.
-        - 'stdThreshold': Standard deviation threshold for blink detection.
+        A dictionary containing processing parameters, which must include:
+        - 'sfreq' (float): Sampling frequency of the data in Hz.
+        - 'minEventLen' (float): Minimum blink length in seconds.
+        - 'stdThreshold' (float): Standard deviation threshold for blink detection.
     blink_component : numpy.ndarray
-        1D array representing the blink component (e.g., an independent component related to eye blinks).
+        A 1D array representing the blink component (e.g., an independent component related to eye blinks).
     ch : str, optional
-        Channel name for logging purposes.
+        The name of the channel for logging purposes. Default is None.
     
     Returns
     -------
     pandas.DataFrame
-        DataFrame with 'startBlinks' and 'endBlinks' columns, representing the start and end frames of detected blinks. Empty DataFrame if no blinks are detected.
+        A DataFrame containing two columns:
+        - 'startBlinks' (numpy.ndarray): Indices of the start frames of detected blinks.
+        - 'endBlinks' (numpy.ndarray): Indices of the end frames of detected blinks.
+        If no blinks are detected, an empty DataFrame with the same column names is returned.
     """
 
     # Ensure 1D array
