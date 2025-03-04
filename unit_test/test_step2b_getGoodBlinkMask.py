@@ -11,8 +11,8 @@ class TestGetGoodBlinkMask(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        cls.mat_file_path_input = r'..\Devel\step2b_data_input_getGoodBlinkMask.mat'
-        cls.mat_file_path_output = r'..\Devel\step2b_data_output_getGoodBlinkMask.mat'
+        cls.mat_file_path_input = r'..\migration_files\step2b_data_input_getGoodBlinkMask.mat'
+        cls.mat_file_path_output = r'..\migration_files\step2b_data_output_getGoodBlinkMask.mat'
 
         # Load candidate_signal
         input_data, output_datax = load_matlab_data(cls.mat_file_path_input, cls.mat_file_path_output)

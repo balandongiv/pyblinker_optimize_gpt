@@ -21,8 +21,8 @@ class TestSelectChannelCompact(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        cls.mat_file_path_input = r'..\Devel\step3a_input_selectChannel_compact.mat'
-        cls.mat_file_path_output = r'..\Devel\step3a_output_selectChannel_compact.mat'
+        cls.mat_file_path_input = r'..\migration_files\step3a_input_selectChannel_compact.mat'
+        cls.mat_file_path_output = r'..\migration_files\step3a_output_selectChannel_compact.mat'
 
         # Load candidate_signal
         input_data, output_data = load_matlab_data(

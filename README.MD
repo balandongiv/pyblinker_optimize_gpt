@@ -1,5 +1,5 @@
 ---
-title: MNE-Pyblinker: A Python package for automated eye-blink artifact detection in biosignals
+title: pyblinkers: A Python package for automated eye-blink artifact detection in biosignals
 tags:
   - Python
   - Biosignals

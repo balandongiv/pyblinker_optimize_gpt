@@ -11,8 +11,8 @@ class TestBlinkStatistic(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        cls.mat_file_path_input = r'..\Devel\step1bii_v_input_blinkStatProperties.mat'
-        cls.mat_file_path_output = r'..\Devel\step1bii_v_output_blinkStatProperties.mat'
+        cls.mat_file_path_input = r'..\migration_files\step1bii_v_input_blinkStatProperties.mat'
+        cls.mat_file_path_output = r'..\migration_files\step1bii_v_output_blinkStatProperties.mat'
 
         # Load candidate_signal
         input_data, output_datax = load_matlab_data(cls.mat_file_path_input, cls.mat_file_path_output)

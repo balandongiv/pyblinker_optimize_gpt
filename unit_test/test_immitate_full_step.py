@@ -64,8 +64,8 @@ class TestExtractBlinkProperties(unittest.TestCase):
         """
         cls.params = default_setting.params
         cls.params['sfreq'] = 100
-        cls.mat_file_path_input = r'..\Devel\step1bi_data_input_getBlinkPositions.mat'
-        cls.mat_file_path_output = r'..\Devel\immitate_full_step.mat'
+        cls.mat_file_path_input = r'..\migration_files\step1bi_data_input_getBlinkPositions.mat'
+        cls.mat_file_path_output = r'..\migration_files\immitate_full_step.mat'
 
         # Load MATLAB input and ground truth candidate_signal
         cls.input_data, cls.output_data = load_matlab_data(
