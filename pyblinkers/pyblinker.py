@@ -1,4 +1,5 @@
 import logging
+
 import pandas as pd
 from tqdm import tqdm
 
@@ -22,7 +23,7 @@ class BlinkDetector:
                  filter_bad=False,
                  filter_low=0.5,
                  filter_high=20.5,
-                 resample_rate=100,
+                 resample_rate=30,
                  n_jobs=1,
                  use_multiprocessing=False,
                  pick_types_options=None):
