@@ -68,7 +68,9 @@ class BlinkDetector:
         """
         logger.info("Preparing raw signal: picking channels, filtering, and resampling.")
         self.raw_data.pick_types(**self.pick_types_options)
-        self.raw_data.filter(self.filter_low, self.filter_high, fir_design='firwin', n_jobs=self.n_jobs)
+        self.raw_data.filter(self.filter_low, self.filter_high,
+                             fir_design='firwin',
+                             n_jobs=self.n_jobs)
         self.raw_data.resample(self.resample_rate, n_jobs=self.n_jobs)
         logger.info(f"Signal prepared with resample rate: {self.resample_rate} Hz")
         return self.raw_data
