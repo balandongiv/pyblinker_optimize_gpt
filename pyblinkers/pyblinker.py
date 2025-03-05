@@ -1,4 +1,4 @@
-import logging
+from pyblinkers.utils._logging import logger
 
 import pandas as pd
 from tqdm import tqdm
@@ -11,8 +11,6 @@ from pyblinkers.getBlinkPositions import get_blink_position
 from pyblinkers.getRepresentativeChannel import channel_selection
 from pyblinkers.misc import create_annotation
 from pyblinkers.viz_pd import viz_complete_blink_prop
-
-logging.getLogger().setLevel(logging.INFO)
 
 
 class BlinkDetector:
