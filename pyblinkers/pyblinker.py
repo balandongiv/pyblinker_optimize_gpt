@@ -1,6 +1,7 @@
 from pyblinkers.utils._logging import logger
 
 import pandas as pd
+import logging
 from tqdm import tqdm
 
 from pyblinkers import default_setting
