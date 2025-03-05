@@ -2,16 +2,22 @@
 
 function step1bii_process_FitBlinks()
     % processBlinkComp loads blinkComp.mat and processes blink positions
-    
+        % Load configuration
+    config; % Load paths from config.m
+
+    % Define file paths dynamically
+    input_file = fullfile(main_folder, 'step1bii_data_input_process_FitBlinks.mat');
+    output_file = fullfile(main_folder, 'step1bii_data_output_process_FitBlinks.mat');
+
     % Load the data from blinkComp.mat
-    data = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step1bii_data_input_process_FitBlinks.mat');  % Loads blinkComp, blinkPositions
+    data = load(input_file);  % Loads blinkComp, blinkPositions
     candidateSignal = data.candidateSignal; 
     blinkPositions = data.blinkPositions;
 
     % Call the fitBlinks function to get blink fit data
     blinkFits = fitBlinks(candidateSignal, blinkPositions);
     
-    data_output = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step1bii_data_output_process_FitBlinks'); 
+    data_output = load(output_file); 
     blinkFits_output=data_output.blinkFits;
     [areStructsEqual, diffDetails] = compareblinkpropertiesstructure(blinkFits , blinkFits_output);
     % Define the blink index to be plotted (e.g., 1 for the first blink)

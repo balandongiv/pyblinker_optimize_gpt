@@ -1,9 +1,17 @@
 function step2c_computeBlinkProperties()
-    data_output = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step2c_data_output_computeBlinkProperties.mat');  % Loads blinkComp, blinkPositions
+
+% Load configuration
+    config; % Load paths from config.m
+
+    % Define file paths dynamically
+    input_file = fullfile(main_folder, 'step2c_data_output_computeBlinkProperties.mat');
+    output_file = fullfile(main_folder, 'step2c_data_input_computeBlinkProperties.mat');
+
+    data_output = load(input_file);  % Loads blinkComp, blinkPositions
     
     blinkProps_output=data_output.blinkProps;
     
-    data = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step2c_data_input_computeBlinkProperties.mat');  % Loads blinkComp, blinkPositions
+    data = load(output_file);  % Loads blinkComp, blinkPositions
     blinkFits= data.blinkFits;
     signalData= data.signalData;
     params= data.params;

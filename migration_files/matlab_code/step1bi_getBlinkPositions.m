@@ -2,9 +2,14 @@
 
 function step1bi_getBlinkPositions()
     % processBlinkComp loads blinkComp.mat and processes blink positions
-    
-    % Load the data from blinkComp.mat
-    data = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step1bi_data_input_getBlinkPositions.mat');  % Loads blinkComp, srate, stdThreshold
+    % Load configuration
+    config; % Load paths from config.m
+
+    % Define file paths dynamically
+    input_file = fullfile(main_folder, 'step1bi_data_input_getBlinkPositions.mat');
+    output_file = fullfile(main_folder, 'step1bi_data_output_getBlinkPositions.mat');
+    % Load the input data
+    data = load(input_file);  
     
     % Ensure that the required variables are present
     if ~isfield(data, 'blinkComp') || ~isfield(data, 'srate') || ~isfield(data, 'stdThreshold')
@@ -29,8 +34,7 @@ function step1bi_getBlinkPositions()
 
     % Call the getBlinkPositions function
     blinkPositions = getBlinkPositions(blinkComp, srate, stdThreshold); % 79 (using output) vs 83 (using input)
-    
-    data_output = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step1bi_data_output_getBlinkPositions.mat'); % This is the output if we use intermediate data
+    data_output = load(output_file);
     blinkPositions_output = data_output.blinkPositions; % This is the data output if we run the code from the beginning of pop_blinker
     % Read the note above about unequal length of  the data input and data
     % output

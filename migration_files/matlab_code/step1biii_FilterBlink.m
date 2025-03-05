@@ -6,7 +6,10 @@ function processFitBlinks()
     % code process both the getBlinkPositions (STEP 1bi)  and fitBlinks
     % (STEP 1bii) since I am to lazy to refactor the code after line 71 as
     % a single block code
-    data = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step1biii_data_input_process_step_FilterBlink.mat');  % Loads blinkComp, blinkPositions
+    % Load configuration
+    config; % Load paths from config.m
+    input_file = fullfile(main_folder, 'step1biii_data_input_process_step_FilterBlink.mat');
+    data = load(input_file);  % Loads blinkComp, blinkPositions
     candidateSignals= data.candidateSignals; 
     params = data.params;
     signalType= data.signalType;
@@ -30,5 +33,5 @@ function processFitBlinks()
     data_output = load('C:\Users\balan\IdeaProjects\pyblinkers\Devel\step1biii_data_output_process_step_FilterBlink.mat');
     blinks_output=data_output.blinks;
     [areStructsEqual, diffDetails] = compareblinkpropertiesstructure(blinks.signalData, blinks_output.signalData)
-    h=2
+ 
 end
