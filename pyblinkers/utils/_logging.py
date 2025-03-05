@@ -39,10 +39,11 @@ def set_log_file(filename=None):
     handler.setFormatter(logging.Formatter("%(frame_info)s %(message)s"))
     logger.addHandler(handler)
 
-def warn(message, category=RuntimeWarning):
-    """Emit a warning and log it."""
-    warnings.warn(message, category)
-    logger.warning(message)
+def warn(message, category=RuntimeWarning, verbose=True):
+    """Emit a warning and log it based on verbosity."""
+    if verbose:
+        warnings.warn(message, category)
+        logger.warning(message)
 
 def _frame_info(n):
     """Retrieve frame information for logging."""
