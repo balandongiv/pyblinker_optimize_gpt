@@ -78,12 +78,12 @@ class BlinkDetector:
     def process_channel_data(self, channel, verbose=True):
         """Process data for a single channel."""
         logger.info(f"Processing channel: {channel}")
-        
+
         # STEP 1: Get blink positions
         df = get_blink_position(self.params,
                                 blink_component=self.raw_data.get_data(picks=channel)[0],
                                 ch=channel)
-        
+
         if df.empty and verbose:
             logger.warning(f"No blinks detected in channel: {channel}")
 
@@ -150,7 +150,7 @@ class BlinkDetector:
     def process_all_channels(self):
         """Process all channels available in the raw data."""
         logger.info(f"Processing {len(self.channel_list)} channels.")
-        for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel"):
+        for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel",colour="BLACK"):
             self.process_channel_data(channel)
         logger.info("Finished processing all channels.")
 
@@ -185,21 +185,21 @@ class BlinkDetector:
             - Generate visualizations (optional)
         """
         logger.info("Starting blink detection pipeline.")
-        
+
         self.prepare_raw_signal()
         self.process_all_channels()
-        
+
         ch_selected = self.select_representative_channel()
         logger.info(f"Selected representative channel: {ch_selected.loc[0, 'ch']}")
-        
+
         ch, data, df = self.get_representative_blink_data(ch_selected)
         annot = self.create_annotations(df)
-        
+
         fig_data = self.generate_viz(data, df) if self.viz_data else []
         n_good_blinks = ch_selected.loc[0, 'numberGoodBlinks']
-        
+
         logger.info(f"Blink detection completed. {n_good_blinks} good blinks detected.")
-        
+
         return annot, ch, n_good_blinks, df, fig_data, ch_selected
 
 
@@ -234,7 +234,7 @@ def run_blink_detection_pipeline(raw_data, config=None):
               }
     """
     logger.info("Initializing blink detection pipeline.")
-    
+
     # Default configuration parameters
     default_config = {
         'visualize': False,

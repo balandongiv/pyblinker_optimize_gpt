@@ -1,9 +1,9 @@
 import numpy as np
+import pandas as pd
 from pyblinkers.zero_crossing import (_max_pos_vel_frame, _get_left_base, _get_right_base)
 
 def create_left_right_base(candidate_signal, df):
     """
-
     Computes the left and right base values for each row in the DataFrame df,
     using the blink velocity derived from the input signal candidate_signal. The function
     also adds columns for the maximum positive and negative velocity frames to df.
@@ -39,13 +39,16 @@ def create_left_right_base(candidate_signal, df):
         Rows with NaN values in any of these new columns are dropped from the DataFrame.
     """
 
+    # Ensure df is a fresh copy to prevent SettingWithCopyWarning
+    df = df.copy()
+
     # Compute blink velocity by differencing the candidate_signal
     blinkVelocity = np.diff(candidate_signal, axis=0)
 
     # Remove rows with NaNs so we don't pass invalid candidate_signal to our calculations
     df.dropna(inplace=True)
 
-    # Calculate maxPosVelFrame and maxNegVelFrame
+    # Calculate maxPosVelFrame and maxNegVelFrame safely
     df[['maxPosVelFrame', 'maxNegVelFrame']] = df.apply(
         lambda row: _max_pos_vel_frame(
             blink_velocity=blinkVelocity,
@@ -57,24 +60,24 @@ def create_left_right_base(candidate_signal, df):
         result_type='expand'
     )
 
-    # Filter out anomalous rows where outerStarts >= maxPosVelFrame
-    df = df[df['outerStarts'] < df['maxPosVelFrame']]
+    # Ensure df is a new variable after filtering
+    df = df[df['outerStarts'] < df['maxPosVelFrame']].copy()
 
-    # Calculate leftBase
-    df['leftBase'] = df.apply(
+    # Compute leftBase safely using .assign()
+    df = df.assign(leftBase=df.apply(
         lambda row: _get_left_base(
             blink_velocity=blinkVelocity,
             left_outer=row['outerStarts'],
             max_pos_vel_frame=row['maxPosVelFrame']
         ),
         axis=1
-    )
+    ))
 
     # Drop rows with NaNs again if any were introduced
     df.dropna(inplace=True)
 
-    # Calculate rightBase
-    df['rightBase'] = df.apply(
+    # Compute rightBase safely using .assign()
+    df = df.assign(rightBase=df.apply(
         lambda row: _get_right_base(
             candidate_signal=candidate_signal,
             blink_velocity=blinkVelocity,
@@ -82,6 +85,6 @@ def create_left_right_base(candidate_signal, df):
             max_neg_vel_frame=row['maxNegVelFrame']
         ),
         axis=1
-    )
+    ))
 
     return df

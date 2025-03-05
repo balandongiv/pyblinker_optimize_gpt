@@ -66,3 +66,4 @@ def _frame_info(n):
         return ["unknown"]
     finally:
         del frame
+

@@ -124,8 +124,6 @@ class FitBlinks:
 
         # Drop rows with NaN values
         self.frame_blinks.dropna(inplace=True)
-
-
         self.frame_blinks['nsize_xLeft'] = self.frame_blinks['xLeft'].apply(len)
         self.frame_blinks['nsize_xRight'] = self.frame_blinks['xRight'].apply(len)
 
@@ -146,3 +144,5 @@ class FitBlinks:
             axis=1,
             result_type='expand'
         )
+
+
