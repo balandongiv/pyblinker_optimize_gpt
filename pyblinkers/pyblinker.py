@@ -66,17 +66,24 @@ class BlinkDetector:
           - filter
           - resample
         """
+        logger.info("Preparing raw signal: picking channels, filtering, and resampling.")
         self.raw_data.pick_types(**self.pick_types_options)
         self.raw_data.filter(self.filter_low, self.filter_high, fir_design='firwin', n_jobs=self.n_jobs)
         self.raw_data.resample(self.resample_rate, n_jobs=self.n_jobs)
+        logger.info(f"Signal prepared with resample rate: {self.resample_rate} Hz")
         return self.raw_data
 
     def process_channel_data(self, channel):
         """Process data for a single channel."""
+        logger.info(f"Processing channel: {channel}")
+        
         # STEP 1: Get blink positions
         df = get_blink_position(self.params,
                                 blink_component=self.raw_data.get_data(picks=channel)[0],
-                                ch='No_channel')
+                                ch=channel)
+        
+        if df.empty:
+            logger.warning(f"No blinks detected in channel: {channel}")
 
         # STEP 2: Fit blinks
         fitblinks = FitBlinks(
@@ -140,8 +147,10 @@ class BlinkDetector:
 
     def process_all_channels(self):
         """Process all channels available in the raw data."""
+        logger.info(f"Processing {len(self.channel_list)} channels.")
         for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel"):
             self.process_channel_data(channel)
+        logger.info("Finished processing all channels.")
 
     def select_representative_channel(self):
         """Select the best representative channel based on blink statistics."""
@@ -173,13 +182,22 @@ class BlinkDetector:
             - Create annotations
             - Generate visualizations (optional)
         """
+        logger.info("Starting blink detection pipeline.")
+        
         self.prepare_raw_signal()
         self.process_all_channels()
+        
         ch_selected = self.select_representative_channel()
+        logger.info(f"Selected representative channel: {ch_selected.loc[0, 'ch']}")
+        
         ch, data, df = self.get_representative_blink_data(ch_selected)
         annot = self.create_annotations(df)
+        
         fig_data = self.generate_viz(data, df) if self.viz_data else []
         n_good_blinks = ch_selected.loc[0, 'numberGoodBlinks']
+        
+        logger.info(f"Blink detection completed. {n_good_blinks} good blinks detected.")
+        
         return annot, ch, n_good_blinks, df, fig_data, ch_selected
 
 
@@ -213,6 +231,8 @@ def run_blink_detection_pipeline(raw_data, config=None):
                 'selected_channel_data': ...
               }
     """
+    logger.info("Initializing blink detection pipeline.")
+    
     # Default configuration parameters
     default_config = {
         'visualize': False,
@@ -232,6 +252,8 @@ def run_blink_detection_pipeline(raw_data, config=None):
     detector = BlinkDetector(raw_data, **default_config)
     annot, ch, number_good_blinks, df, fig_data, ch_selected = detector.get_blink()
 
+    logger.info(f"Pipeline completed. Selected channel: {ch}, Good blinks: {number_good_blinks}")
+
     return {
         'annotations': annot,
         'channel': ch,
@@ -248,7 +270,7 @@ def main():
     Replace placeholder code (comments) with actual data loading or
     configuration logic as needed.
     """
-    print("Starting blink detection pipeline...")
+    logger.info("Starting blink detection pipeline...")
 
     # TODO: Load your raw EEG data here. For example:
     # raw = mne.io.read_raw_fif('path_to_your_file.fif', preload=True)
