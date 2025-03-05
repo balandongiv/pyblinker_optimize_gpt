@@ -75,7 +75,7 @@ class BlinkDetector:
         logger.info(f"Signal prepared with resample rate: {self.resample_rate} Hz")
         return self.raw_data
 
-    def process_channel_data(self, channel):
+    def process_channel_data(self, channel, verbose=True):
         """Process data for a single channel."""
         logger.info(f"Processing channel: {channel}")
         
@@ -84,7 +84,7 @@ class BlinkDetector:
                                 blink_component=self.raw_data.get_data(picks=channel)[0],
                                 ch=channel)
         
-        if df.empty:
+        if df.empty and verbose:
             logger.warning(f"No blinks detected in channel: {channel}")
 
         # STEP 2: Fit blinks
