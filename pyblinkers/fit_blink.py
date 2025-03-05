@@ -1,5 +1,5 @@
 # LLMed on 15 January 2025
-import logging
+from pyblinkers.utils._logging import logger
 import numpy as np
 
 from pyblinkers.zero_crossing import (
@@ -9,8 +9,6 @@ from pyblinkers.zero_crossing import (
 )
 from pyblinkers.base_left_right import create_left_right_base
 from pyblinkers.line_intersection_matlab import lines_intersection_matlabx
-
-logging.getLogger().setLevel(logging.INFO)
 
 
 class FitBlinks:

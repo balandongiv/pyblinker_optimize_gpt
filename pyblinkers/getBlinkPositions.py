@@ -1,4 +1,4 @@
-import logging
+from pyblinkers.utils._logging import logger
 
 import numpy as np
 import pandas as pd
@@ -7,7 +7,6 @@ from tqdm import tqdm
 from pyblinkers.default_setting import SCALING_FACTOR
 
 from pyblinkers.matlab_forking import mad_matlab
-logging.getLogger().setLevel(logging.INFO)
 
 
 def get_blink_position(params, blink_component=None, ch=None):
