@@ -67,3 +67,38 @@ def _frame_info(n):
     finally:
         del frame
 
+def _pbar(iterable, desc, verbose=True, **kwargs):
+    """
+    from pyblinkers.utils._logging import _pbar
+    interp_channels=[1,2,3]
+    verbose=True
+    pos=2
+    for epoch_idx, interp_chs in _pbar(
+            list(enumerate(interp_channels)),
+            desc='Repairing epochs',
+            position=pos, leave=True, verbose=verbose):
+        g=1
+
+    """
+    raise_error = False
+    if isinstance(verbose, str):
+        if verbose not in {"tqdm", "tqdm_notebook", "progressbar"}:
+            raise_error = True
+        verbose = bool(verbose)
+    elif isinstance(verbose, (int, bool)):
+        verbose = bool(verbose)  # this can happen with pickling
+    else:
+        raise_error = True
+        warnings.warn(
+            (f"verbose flag only supports boolean inputs. Option {verbose} "
+             f"coerced into type {bool(verbose)}"), DeprecationWarning)
+        verbose = bool(verbose)
+    if raise_error:
+        raise ValueError(
+            f"verbose must be a boolean value. Got {repr(verbose)}")
+    if verbose:
+        from mne.utils.progressbar import ProgressBar
+        pbar = ProgressBar(iterable, mesg=desc, **kwargs)
+    else:
+        pbar = iterable
+    return pbar
