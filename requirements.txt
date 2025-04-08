@@ -4,6 +4,5 @@ numpy
 pandas
 tqdm
 seaborn
-# pip3 install -U scidownl  : https://github.com/Tishacy/SciDownl
 
 
