@@ -176,7 +176,7 @@ class BlinkDetector:
                                     ch=channel,
                                     threshold=threshold,min_blink_frames=min_blink_frames)
 
-            plot_epoch_signal(epoch_data, global_idx=0, ch_idx=1, sampling_rate=self.raw_data.info['sfreq'])
+            # plot_epoch_signal(epoch_data, global_idx=0, ch_idx=1, sampling_rate=self.raw_data.info['sfreq'])
             if df.empty:
                 if verbose:
                     logger.warning(f"No blinks detected in channel: {channel}")
@@ -191,7 +191,11 @@ class BlinkDetector:
             fitblinks.dprocess()
             df = fitblinks.frame_blinks
 
-
+            # 🔥 NEW CHECK
+            if df.empty:
+                if verbose:
+                    logger.warning(f"FitBlinks found no valid blinks for channel {channel} in epoch {orig_idx}")
+                continue
             df["kept_epoch_id"]     = kept_idx      # index after bad epochs removed
             df["original_epoch_id"] = orig_idx      # index in the raw 0…N‑1 sequence
 
