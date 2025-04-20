@@ -16,6 +16,26 @@ from pyblinkers.misc import create_annotation
 from pyblinkers.utils._logging import logger
 from pyblinkers.viz_pd import viz_complete_blink_prop
 
+def compute_global_stats(good_data, ch_idx, params):
+    """
+    Compute global statistics for blink detection.
+
+    Parameters:
+        good_data (numpy.ndarray): Valid epoch data.
+        ch_idx (int): Index of the channel to process.
+        params (dict): Parameters for blink detection.
+
+    Returns:
+        tuple: (mu, robust_std, threshold, min_blink_frames)
+    """
+    blink_component = good_data[:, ch_idx, :].reshape(-1)
+    mu = np.mean(blink_component, dtype=np.float64)
+    mad_val = mad_matlab(blink_component)
+    robust_std = SCALING_FACTOR * mad_val
+    min_blink_frames = params['minEventLen'] * params['sfreq']
+    min_blink_frames=1 # For epoch, we need to set it to 1
+    threshold = mu + params['stdThreshold'] * robust_std
+    return mu, robust_std, threshold, min_blink_frames,mad_val
 
 def plot_epoch_signal(epoch_data, global_idx, ch_idx, sampling_rate=None):
     """
@@ -113,7 +133,7 @@ class BlinkDetector:
 
 
         logger.info(f"Processing channel: {channel}")
-        params = self.params
+
 
         # Validate channel
         ch_names = self.raw_data.info['ch_names']
@@ -122,48 +142,47 @@ class BlinkDetector:
         ch_idx = ch_names.index(channel)
 
         # Get data and drop log
+        # Get data
         epoch_data = self.raw_data.get_data()  # shape: (n_epochs, n_channels, n_times)
+
+        # GOOD way to get valid epochs after drop
+        selection = self.raw_data.selection  # This is array of kept epochs' original indices
         drop_log = self.raw_data.drop_log
-        good_epoch_mask = np.array([not bool(log) for log in drop_log])
+
+        good_epoch_mask = np.array([not bool(drop_log[orig_idx]) for orig_idx in selection])
         good_epoch_indices = np.where(good_epoch_mask)[0]
         good_data = epoch_data[good_epoch_mask]
+
 
         if good_data.size == 0:
             print(f"[Warning] All epochs are rejected for channel '{channel}'.")
             return
 
-        # Flatten full channel data across valid epochs to compute global stats
-        blink_component = good_data[:, ch_idx, :].reshape(-1)
-        mu = np.mean(blink_component, dtype=np.float64)
-        mad_val = mad_matlab(blink_component)
-        robust_std = SCALING_FACTOR * mad_val
-        min_blink_frames = params['minEventLen'] * params['sfreq']
-        threshold = mu + params['stdThreshold'] * robust_std
-        # threshold  = 2.288828372476259e-06
-        min_blink_frames=1
+        mu, robust_std, threshold, min_blink_frames,mad_val = compute_global_stats(good_data, ch_idx, self.params)
         if verbose:
             print(f"[Stats] Channel: {channel}")
             print(f" Mean = {mu:.3f}, MAD = {mad_val:.3f}, Robust STD = {robust_std:.3f}")
             print(f" Threshold = {threshold:.3f}")
+
         all_dfs = []
         all_signals = []
         # Loop through each good epoch and process
-        for local_idx, global_idx in enumerate(good_epoch_indices):
-            epoch_signal = epoch_data[global_idx, ch_idx, :]  # shape: (n_times,)
+        for kept_idx, orig_idx in enumerate(selection):
+            epoch_signal = epoch_data[kept_idx, ch_idx, :]  # shape: (n_times,)
 
             # Step 1: Blink detection
-            df = get_blink_position(params,
+            df = get_blink_position(self.params,
                                     blink_component=epoch_signal,
                                     ch=channel,
                                     threshold=threshold,min_blink_frames=min_blink_frames)
-            sfreq = self.raw_data.info['sfreq']
-            # plot_epoch_signal(epoch_data, global_idx=0, ch_idx=1, sampling_rate=sfreq)
-            if df.empty and verbose:
-                logger.warning(f"No blinks detected in channel: {channel}")
+
+            plot_epoch_signal(epoch_data, global_idx=0, ch_idx=1, sampling_rate=self.raw_data.info['sfreq'])
             if df.empty:
+                if verbose:
+                    logger.warning(f"No blinks detected in channel: {channel}")
                 continue
             # STEP 2: Fit blinks
-            logger.info(f'Now to FitBlinks for epoch {local_idx}')
+            logger.info(f'Now to FitBlinks for epoch {orig_idx}')
             fitblinks = FitBlinks(
                 candidate_signal=epoch_signal,
                 df=df,
@@ -172,11 +191,12 @@ class BlinkDetector:
             fitblinks.dprocess()
             df = fitblinks.frame_blinks
 
-            df['good_epoch_id']=global_idx  # Since there is epoch that being rejected, therefore, we need keep track of the good epoch id
-            if not df.empty:
-                # 🔄 NEW: Store for later global stats
-                all_dfs.append(df)
-                all_signals.append(epoch_signal)
+
+            df["kept_epoch_id"]     = kept_idx      # index after bad epochs removed
+            df["original_epoch_id"] = orig_idx      # index in the raw 0…N‑1 sequence
+
+            all_dfs.append(df)
+            all_signals.append(epoch_signal)
 
 
         # Compute global blink stats across all epochs
@@ -197,7 +217,8 @@ class BlinkDetector:
                 print(f"[Info] No valid blinks to analyze in channel '{channel}'.")
         # STEP 4: Get good blink mask _epoch
         df_all = pd.concat(all_dfs, ignore_index=True)
-        _, df = get_good_blink_mask(
+
+        _, df_masked = get_good_blink_mask(
             df_all,
             blink_stats['bestMedian'],
             blink_stats['bestRobustStd'],
@@ -208,7 +229,7 @@ class BlinkDetector:
         #TODO: Modify here so that it can process all epochs simultaneously
         df = BlinkProperties(
             self.raw_data.get_data(picks=channel)[0],
-            df,
+            df_masked,
             self.params['sfreq'],
             self.params
         ).df

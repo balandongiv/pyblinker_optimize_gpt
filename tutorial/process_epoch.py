@@ -44,6 +44,8 @@ def plot_blinks(raw_file):
 
     events = mne.make_fixed_length_events(raw, duration=epoch_length)
     epochs = mne.Epochs(raw, events, tmin=0.0, tmax=epoch_length, baseline=None, preload=True)
+    drop_indices = [1, 5]
+    epochs.drop(indices=drop_indices)
     # epochs.plot(block=True,n_epochs=4)
     # raw.plot(block=True)
 
