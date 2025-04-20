@@ -1,15 +1,16 @@
 
 import logging
 
-import numpy as np
 import pandas as pd
 
 # from pyblinkers.misc import mad_matlab
 from pyblinkers.matlab_forking import mad_matlab
+
 logging.getLogger().setLevel(logging.INFO)
-
 from pyblinkers.default_setting import SCALING_FACTOR
-
+import matplotlib.pyplot as plt
+import numpy as np
+import time
 
 def calculate_within_range(all_values, best_median, best_robust_std):
 
@@ -27,8 +28,149 @@ def calculate_good_ratio(all_values, best_median, best_robust_std, all_x):
     return np.sum(within_mask) / all_x
 
 
-def get_blink_statistic(df, zThresholds, signal=None):
+def plot_blink_masks(signal, dfx, positive_mask, inside_blink, outside_blink, title='Blink Mask Visualization', debug=False):
+    """
+    Returns the figure only if debug=True. Otherwise returns None.
+    """
+    if not debug:
+        return None  # If not debugging, skip plotting completely
 
+    indices = np.arange(len(signal))
+    fig, ax = plt.subplots(figsize=(16, 6))
+
+    # Plot the raw signal
+    ax.plot(indices, signal, label='Signal', color='black', alpha=0.7)
+
+    # Highlight positive_mask
+    ax.scatter(indices[positive_mask], signal[positive_mask], color='grey', s=10, label='Positive Signal (>0)', alpha=0.5)
+
+    # Inside blink
+    ax.scatter(indices[inside_blink], signal[inside_blink], color='blue', s=30, label='Inside Blink', alpha=0.8)
+
+    # Outside blink
+    ax.scatter(indices[outside_blink], signal[outside_blink], color='green', s=30, label='Outside Blink', alpha=0.8)
+
+    # Arrows for leftZero and rightZero
+    ymin, ymax = ax.get_ylim()
+
+    for lz, rz in zip(dfx["leftZero"], dfx["rightZero"]):
+        ax.axvline(lz, color='red', linestyle='--', alpha=0.8)
+        ax.axvline(rz, color='red', linestyle='--', alpha=0.8)
+
+        ax.annotate('LZ', xy=(lz, ymax*0.8), xytext=(lz, ymax*0.9),
+                    arrowprops=dict(facecolor='red', shrink=0.05, width=1.2, headwidth=8),
+                    ha='center', color='red', fontsize=10)
+
+        ax.annotate('RZ', xy=(rz, ymax*0.8), xytext=(rz, ymax*0.9),
+                    arrowprops=dict(facecolor='red', shrink=0.05, width=1.2, headwidth=8),
+                    ha='center', color='red', fontsize=10)
+
+    ax.set_xlabel('Frame')
+    ax.set_ylabel('Amplitude')
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(True)
+    plt.tight_layout()
+
+    return fig  # ✅ Return the figure only if debug is True
+
+def get_blink_statistic_epoch_aggregated(df_list, zThresholds, signal_list=None):
+    """
+    Compute blink statistics across multiple epochs by aggregating blinks.
+
+    Parameters:
+        df_list: list of DataFrames from each epoch (blinks per epoch)
+        zThresholds: correlation thresholds [(bottom, top)]
+        signal_list: list of 1D signals (one per epoch)
+
+    Returns:
+        A dict of blink statistics computed over all epochs.
+    """
+    debug=False
+    if debug:
+        import mne
+        report = mne.Report(title='Blink Signal Quality Check')
+    # -- New: flatten df across epochs --
+    df_all = pd.concat(df_list, ignore_index=True)
+    # df_all.to_excel("df_all.xlsx", index=False)
+    # -- New: prepare to aggregate inside and outside blink signals --
+    global_inside_blinks = []
+    global_outside_blinks = []
+
+    for i,(df_epoch, signal) in enumerate(zip(df_list, signal_list)):
+        dfx = df_epoch.copy()
+        dfx[['leftZero', 'rightZero']] = dfx[['leftZero', 'rightZero']] - 1  # same as original
+
+        indices = np.arange(len(signal))
+        blink_mask = np.any(
+            [(indices >= lz) & (indices <= rz) for lz, rz in zip(dfx["leftZero"], dfx["rightZero"])],
+            axis=0
+        )
+
+        # -- Important: preserve only signal > 0 like in original logic --
+        positive_mask = signal > 0
+        inside_blink = blink_mask & positive_mask   # This is signal that is in blink (in between left_zero and right_zero) and greater than 0
+        outside_blink = (~blink_mask) & positive_mask # This is signal that is greater than 0 but not in blink
+
+        # Now call the plotting function
+        if debug:
+            fig = plot_blink_masks(signal, dfx, positive_mask, inside_blink, outside_blink, title=f'Signal {i}', debug=debug)
+            report.add_figure(fig, title=f'Signal {i}', section='Blinks')
+            plt.close(fig)
+
+        global_inside_blinks.append(signal[inside_blink])
+        global_outside_blinks.append(signal[outside_blink])
+
+    if debug:
+        report.save('blink_report.html', overwrite=True)
+
+    # -- Aggregated blink amplitude ratio --
+    if global_inside_blinks and global_outside_blinks:
+        inside_all = np.concatenate(global_inside_blinks)   # This is signal that is in blink (in between left_zero and right_zero) and greater than 0
+        outside_all = np.concatenate(global_outside_blinks) # This is signal that is greater than 0 but not in blink
+
+        if inside_all.size > 0 and outside_all.size > 0:
+            blink_amp_ratio = np.mean(inside_all) / np.mean(outside_all)
+        else:
+            blink_amp_ratio = np.nan
+    else:
+        blink_amp_ratio = np.nan
+
+    # -- Same logic: threshold masks based on global df --
+    correlation_threshold_bottom, correlation_threshold_top = zThresholds[0]
+    df_data = df_all[['leftR2', 'rightR2', 'maxValue']]
+
+    good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
+    good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
+
+    best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
+    worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
+    good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
+
+    best_median = np.nanmedian(best_values)
+    best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
+    worst_median = np.nanmedian(worst_values)
+    worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
+
+    cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
+
+    all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
+    good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
+
+    number_good_blinks = np.sum(good_mask_bottom)
+
+    return dict(
+        numberBlinks=len(df_data),
+        numberGoodBlinks=number_good_blinks,
+        blinkAmpRatio=blink_amp_ratio,
+        cutoff=cutoff,
+        bestMedian=best_median,
+        bestRobustStd=best_robust_std,
+        goodRatio=good_ratio
+    )
+
+def get_blink_statistic(df, zThresholds, signal=None):
+    # its sister function but for epochs is under the name get_blink_statistic_epoch_aggregated
     dfx = df.copy()
     dfx[['leftZero', 'rightZero']] = dfx[['leftZero', 'rightZero']] - 1
 

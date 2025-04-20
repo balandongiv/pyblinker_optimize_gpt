@@ -1,6 +1,6 @@
 import warnings
 import numpy as np
-
+import pandas as pd
 def get_line_intersection_slope(x_intersect, y_intersect, left_x_intersect, right_x_intersect):
     """
     Original logic retained. Computes slopes at the intersection point.
@@ -21,10 +21,81 @@ def get_average_velocity(p_left, p_right, x_left, x_right):
     return aver_left_velocity, aver_right_velocity
 
 
+
+def compute_outer_bounds(df: pd.DataFrame, data_size: int) -> pd.DataFrame:
+    """
+    Computes 'outerStarts' and 'outerEnds' for each row in a DataFrame based on the 'maxFrame' column.
+
+    Each blink potential range is defined as the interval:
+        [outerStarts, outerEnds)
+
+    Where:
+    - 'outerStarts' is the maxFrame of the **previous** row (or 0 if first row)
+    - 'outerEnds' is the maxFrame of the **next** row (or data_size if last row)
+
+    This creates a window around each blink's maxFrame to define its surrounding range.
+
+    ASCII Example:
+        Input:
+            index | maxFrame
+            ------|---------
+              0   |   10
+              1   |   25
+              2   |   40
+              3   |   60
+
+        Output after compute_outer_bounds(df, data_size=80):
+            index | maxFrame | outerStarts | outerEnds
+            ------|----------|-------------|-----------
+              0   |   10     |     0       |    25
+              1   |   25     |    10       |    40
+              2   |   40     |    25       |    60
+              3   |   60     |    40       |    80
+
+        Visualized as:
+            Row 0: [ 0  ---> 25 ]
+            Row 1: [10  ---> 40 ]
+            Row 2: [25  ---> 60 ]
+            Row 3: [40  ---> 80 ]
+
+    Args:
+        df (pd.DataFrame): A DataFrame that must contain a 'maxFrame' column.
+        data_size (int): The total length of the candidate signal (used for the final 'outerEnd').
+
+    Returns:
+        pd.DataFrame: A new DataFrame with added 'outerStarts' and 'outerEnds' columns.
+    """
+    df = df.copy()
+    df['outerStarts'] = df['maxFrame'].shift(1, fill_value=0)
+    df['outerEnds'] = df['maxFrame'].shift(-1, fill_value=data_size)
+    return df
+
+
+
 def left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_ends):
     """
     Identify the left zero crossing and right zero crossing of the signal
     between outer_starts->max_frame and max_frame->outer_ends.
+    Signal timeline (index):
+
+    |----------------|----------------|----------------|
+    0          outer_starts      max_frame       outer_ends
+
+    candidate_signal = [...- +, +, +, 0, +, +, +, +, +, -,...]
+                            ^               ^
+                    left_zero        right_zero
+
+    The goal:
+    - Find the first negative value BEFORE `max_frame` (from `outer_starts` to `max_frame`) → left_zero
+    - Find the first negative value AFTER `max_frame` (from `max_frame` to `outer_ends`) → right_zero
+
+    If not found:
+    - For left_zero, we extend the search beyond the outer_starts, in this case,we assume the start_idx (i.e.,previous max frame of previous blink is imperfect), so we will find the first negative, but is this a good approach?
+    - For right_zero, fallback to searching [max_frame, end_of_signal]
+
+    - If no negative values are found, set left_zero or right_zero to np.nan. This especially true when
+    we deal with epoch format, as the signal windows might be small, therefore,we cannot extend the search window
+    to extreme.
     """
     start_idx = int(outer_starts)
     m_frame = int(max_frame)
@@ -38,10 +109,15 @@ def left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_en
     if s_ind_left_zero.size > 0:
         left_zero = left_range[s_ind_left_zero[-1]]
     else:
-        # Fall back if no negative crossing found in left_range
+        # There is instance where there is no negative crossing found within the stipulated range,
+        # In this case, in left_range
         full_left_range = np.arange(0, m_frame).astype(int)
         left_neg_idx = np.flatnonzero(candidate_signal[full_left_range] < 0)
-        left_zero = full_left_range[left_neg_idx[-1]]
+        if left_neg_idx.size > 0:
+            left_zero = full_left_range[left_neg_idx[-1]]
+        else:
+            # No negative values found, set a default fallback (e.g., 0 or np.nan)
+            left_zero = np.nan # or np.nan, depending on your use case
 
     # Right side search
     right_range = np.arange(m_frame, end_idx)
@@ -52,24 +128,15 @@ def left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_en
         right_zero = right_range[s_ind_right_zero[0]]
     else:
         # Extreme remedy by extending beyond outer_ends to the max signal length
-        try:
-            extreme_outer = np.arange(m_frame, candidate_signal.shape[0]).astype(int)
-        except TypeError:
-            print('Error')
-            # If this except triggers, raise or handle accordingly
-            return left_zero, None
 
+        extreme_outer = np.arange(m_frame, candidate_signal.shape[0]).astype(int)
         s_ind_right_zero_ex = np.flatnonzero(candidate_signal[extreme_outer] < 0)
         if s_ind_right_zero_ex.size > 0:
             right_zero = extreme_outer[s_ind_right_zero_ex[0]]
         else:
-            return left_zero, None
+            right_zero=np.nan
 
-    if left_zero > m_frame:
-        raise ValueError("Validation error: left_zero = {left_zero}, max_frame = {max_frame}. Ensure left_zero <= max_frame.")
 
-    if m_frame > right_zero:
-        raise ValueError("Validation error: max_frame = {max_frame}, right_zero = {right_zero}. Ensure max_frame <= right_zero.")
 
     return left_zero, right_zero
 
@@ -105,15 +172,29 @@ def _max_pos_vel_frame(blink_velocity, max_frame, left_zero, right_zero):
     max_pos_vel_idx = np.argmax(blink_velocity[up_stroke])
     max_pos_vel_frame = up_stroke[max_pos_vel_idx]
 
+
     # Maximum negative velocity in the down_stroke region, if it exists
     if down_stroke.size > 0:
-        max_neg_vel_idx = np.argmin(blink_velocity[down_stroke])
-        max_neg_vel_frame = down_stroke[max_neg_vel_idx]
+        # Case: down_stroke contains only one index and it equals the last index of blink_velocity
+        if down_stroke.size == 1 and down_stroke[0] == len(blink_velocity) - 1:
+            max_neg_vel_frame = np.nan
+        else:
+            # Remove the last index if it's in down_stroke
+            down_stroke = down_stroke[down_stroke != len(blink_velocity)]
+
+            if down_stroke.size > 0:
+                max_neg_vel_idx = np.argmin(blink_velocity[down_stroke])
+                max_neg_vel_frame = down_stroke[max_neg_vel_idx]
+            else:
+                warnings.warn('Force nan but require further investigation why it happened like this')
+                max_neg_vel_frame = np.nan
     else:
-        warnings.warn('Force nan but require further investigation why happen like this')
+        warnings.warn('Force nan but require further investigation why it happened like this')
         max_neg_vel_frame = np.nan
 
     return max_pos_vel_frame, max_neg_vel_frame
+
+
 
 def _get_left_base(blink_velocity, left_outer, max_pos_vel_frame):
     """

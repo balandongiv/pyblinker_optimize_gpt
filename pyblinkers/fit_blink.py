@@ -1,4 +1,4 @@
-# LLMed on 15 January 2025
+
 from pyblinkers.utils._logging import logger
 import numpy as np
 
@@ -9,6 +9,18 @@ from pyblinkers.zero_crossing import (
 )
 from pyblinkers.base_left_right import create_left_right_base
 from pyblinkers.line_intersection_matlab import lines_intersection_matlabx
+
+import pandas as pd
+
+def compute_outer_bounds(df: pd.DataFrame, data_size: int) -> pd.DataFrame:
+    """
+    Given a DataFrame with a 'maxFrame' column, compute 'outerStarts' and 'outerEnds'
+    using shifted versions of 'maxFrame'. Returns a modified DataFrame.
+    """
+    df = df.copy()
+    df['outerStarts'] = df['maxFrame'].shift(1, fill_value=0)
+    df['outerEnds'] = df['maxFrame'].shift(-1, fill_value=data_size)
+    return df
 
 
 class FitBlinks:
@@ -65,10 +77,8 @@ class FitBlinks:
         # Ensure the maxFrame is integer
         self.df['maxFrame'] = self.df['maxFrame'].astype(int)
 
-        # Shifts for outer starts/ends
-        self.df['outerStarts'] = self.df['maxFrame'].shift(1, fill_value=0)
-        self.df['outerEnds'] = self.df['maxFrame'].shift(-1, fill_value=data_size)
 
+        self.df = compute_outer_bounds(self.df, data_size)
         # Add columns for leftZero/rightZero
         self.df[['leftZero', 'rightZero']] = self.df.apply(
             lambda row: left_right_zero_crossing(
@@ -132,6 +142,10 @@ class FitBlinks:
             (self.frame_blinks['nsize_xLeft'] > 1) &
             (self.frame_blinks['nsize_xRight'] > 1)
             ].reset_index(drop=True)
+
+        # Early exit if there's nothing left to process
+        if self.frame_blinks.empty:
+            return
 
         # Calculate line intersections
 

@@ -6,6 +6,8 @@ def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None):
 
     yRight = signal[xRight]
     yLeft = signal[xLeft]
+
+    # The value n equals 1 means that we are fitting a line (degree 1 polynomial)
     n=1
     pLeft, SLeft, muLeft = polyfitMatlab(xLeft, yLeft, n)
     yPred, delta = polyvalMatlab(pLeft, xLeft, S=SLeft, mu= muLeft)

@@ -1,19 +1,52 @@
-from pyblinkers.utils._logging import logger
-
+import matplotlib.pyplot as plt
+import mne
+import numpy as np
 import pandas as pd
-import logging
 from tqdm import tqdm
 
 from pyblinkers import default_setting
+from pyblinkers.default_setting import SCALING_FACTOR
 from pyblinkers.extractBlinkProperties import BlinkProperties, get_good_blink_mask
-from pyblinkers.extractBlinkProperties import get_blink_statistic
+from pyblinkers.extractBlinkProperties import get_blink_statistic,get_blink_statistic_epoch_aggregated
 from pyblinkers.fit_blink import FitBlinks
 from pyblinkers.getBlinkPositions import get_blink_position
 from pyblinkers.getRepresentativeChannel import channel_selection
+from pyblinkers.matlab_forking import mad_matlab
 from pyblinkers.misc import create_annotation
+from pyblinkers.utils._logging import logger
 from pyblinkers.viz_pd import viz_complete_blink_prop
 
 
+def plot_epoch_signal(epoch_data, global_idx, ch_idx, sampling_rate=None):
+    """
+    Plots the signal from a specific epoch and channel.
+
+    Parameters:
+    - epoch_data: 3D array of shape (n_epochs, n_channels, n_times)
+    - global_idx: int, index of the epoch to plot
+    - ch_idx: int, index of the channel to plot
+    - sampling_rate: float or int, optional. If provided, x-axis will be in seconds
+    """
+    epoch_signal = epoch_data[global_idx, ch_idx, :]
+    n_times = epoch_signal.shape[0]
+
+    if sampling_rate:
+        time = [i / sampling_rate for i in range(n_times)]
+        xlabel = 'Time (s)'
+    else:
+        time = range(n_times)
+        xlabel = 'Time (samples)'
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(time, epoch_signal)
+    plt.title(f'Epoch Signal - Epoch: {global_idx}, Channel: {ch_idx}')
+    plt.xlabel(xlabel)
+    plt.ylabel('Amplitude')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('test.png')
+    # plt.show()
+    v=1
 class BlinkDetector:
     def __init__(self,
                  raw_data,
@@ -74,6 +107,121 @@ class BlinkDetector:
         self.raw_data.resample(self.resample_rate, n_jobs=self.n_jobs)
         logger.info(f"Signal prepared with resample rate: {self.resample_rate} Hz")
         return self.raw_data
+    def process_channel_data_epoch(self, channel, verbose=True):
+        """Process data for a single EEG channel across valid (non-rejected) epochs."""
+
+
+
+        logger.info(f"Processing channel: {channel}")
+        params = self.params
+
+        # Validate channel
+        ch_names = self.raw_data.info['ch_names']
+        if channel not in ch_names:
+            raise ValueError(f"Channel '{channel}' not found in epoch data.")
+        ch_idx = ch_names.index(channel)
+
+        # Get data and drop log
+        epoch_data = self.raw_data.get_data()  # shape: (n_epochs, n_channels, n_times)
+        drop_log = self.raw_data.drop_log
+        good_epoch_mask = np.array([not bool(log) for log in drop_log])
+        good_epoch_indices = np.where(good_epoch_mask)[0]
+        good_data = epoch_data[good_epoch_mask]
+
+        if good_data.size == 0:
+            print(f"[Warning] All epochs are rejected for channel '{channel}'.")
+            return
+
+        # Flatten full channel data across valid epochs to compute global stats
+        blink_component = good_data[:, ch_idx, :].reshape(-1)
+        mu = np.mean(blink_component, dtype=np.float64)
+        mad_val = mad_matlab(blink_component)
+        robust_std = SCALING_FACTOR * mad_val
+        min_blink_frames = params['minEventLen'] * params['sfreq']
+        threshold = mu + params['stdThreshold'] * robust_std
+        # threshold  = 2.288828372476259e-06
+        min_blink_frames=1
+        if verbose:
+            print(f"[Stats] Channel: {channel}")
+            print(f" Mean = {mu:.3f}, MAD = {mad_val:.3f}, Robust STD = {robust_std:.3f}")
+            print(f" Threshold = {threshold:.3f}")
+        all_dfs = []
+        all_signals = []
+        # Loop through each good epoch and process
+        for local_idx, global_idx in enumerate(good_epoch_indices):
+            epoch_signal = epoch_data[global_idx, ch_idx, :]  # shape: (n_times,)
+
+            # Step 1: Blink detection
+            df = get_blink_position(params,
+                                    blink_component=epoch_signal,
+                                    ch=channel,
+                                    threshold=threshold,min_blink_frames=min_blink_frames)
+            sfreq = self.raw_data.info['sfreq']
+            # plot_epoch_signal(epoch_data, global_idx=0, ch_idx=1, sampling_rate=sfreq)
+            if df.empty and verbose:
+                logger.warning(f"No blinks detected in channel: {channel}")
+            if df.empty:
+                continue
+            # STEP 2: Fit blinks
+            logger.info(f'Now to FitBlinks for epoch {local_idx}')
+            fitblinks = FitBlinks(
+                candidate_signal=epoch_signal,
+                df=df,
+                params=self.params
+            )
+            fitblinks.dprocess()
+            df = fitblinks.frame_blinks
+
+            df['good_epoch_id']=global_idx  # Since there is epoch that being rejected, therefore, we need keep track of the good epoch id
+            if not df.empty:
+                # 🔄 NEW: Store for later global stats
+                all_dfs.append(df)
+                all_signals.append(epoch_signal)
+
+
+        # Compute global blink stats across all epochs
+        if all_dfs:
+            blink_stats = get_blink_statistic_epoch_aggregated(
+                df_list=all_dfs,
+                zThresholds=self.params['z_thresholds'],
+                signal_list=all_signals
+            )
+            blink_stats['ch'] = channel
+
+            if verbose:
+                print(f"[Blink Stats] Channel {channel}:")
+                for k, v in blink_stats.items():
+                    print(f"  {k}: {v}")
+        else:
+            if verbose:
+                print(f"[Info] No valid blinks to analyze in channel '{channel}'.")
+        # STEP 4: Get good blink mask _epoch
+        df_all = pd.concat(all_dfs, ignore_index=True)
+        _, df = get_good_blink_mask(
+            df_all,
+            blink_stats['bestMedian'],
+            blink_stats['bestRobustStd'],
+            self.params['z_thresholds']
+        )
+
+        # STEP 5: Compute blink properties
+        #TODO: Modify here so that it can process all epochs simultaneously
+        df = BlinkProperties(
+            self.raw_data.get_data(picks=channel)[0],
+            df,
+            self.params['sfreq'],
+            self.params
+        ).df
+
+        # STEP 6: Apply pAVR restriction
+        condition_1 = df['posAmpVelRatioZero'] < self.params['pAVRThreshold']
+        condition_2 = df['maxValue'] < (blink_stats['bestMedian'] - blink_stats['bestRobustStd'])
+        df = df[~(condition_1 & condition_2)]
+
+        # Store results
+        self.all_data_info.append(dict(df=df, ch=channel))
+        self.all_data.append(blink_stats)
+
 
     def process_channel_data(self, channel, verbose=True):
         """Process data for a single channel."""
@@ -103,7 +251,7 @@ class BlinkDetector:
         )
         blink_stats['ch'] = channel
 
-        # STEP 4: Get good blink mask
+        # STEP 4: Get good blink mask _ori
         good_blink_mask, df = get_good_blink_mask(
             df,
             blink_stats['bestMedian'],
@@ -150,8 +298,14 @@ class BlinkDetector:
     def process_all_channels(self):
         """Process all channels available in the raw data."""
         logger.info(f"Processing {len(self.channel_list)} channels.")
-        for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel",colour="BLACK"):
-            self.process_channel_data(channel)
+
+        is_epochs = isinstance(self.raw_data, mne.Epochs)
+        if is_epochs:
+            for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel",colour="BLACK"):
+                self.process_channel_data_epoch(channel)
+        else:
+            for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel",colour="BLACK"):
+                self.process_channel_data(channel)
         logger.info("Finished processing all channels.")
 
     def select_representative_channel(self):
