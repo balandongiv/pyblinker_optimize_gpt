@@ -59,28 +59,7 @@ def create_left_right_base(candidate_signal, df):
         axis=1,
         result_type='expand'
     )
-    max_pos_vel_frames = []
-    # max_neg_vel_frames = []
 
-    # Safely compute maxPosVelFrame and maxNegVelFrame
-    # for _, row in df.iterrows():
-    #     try:
-    #         max_pos, max_neg = _max_pos_vel_frame(
-    #             blink_velocity=blinkVelocity,
-    #             max_frame=row['maxFrame'],
-    #             left_zero=row['leftZero'],
-    #             right_zero=row['rightZero']
-    #         )
-    #         max_pos_vel_frames.append(max_pos)
-    #         max_neg_vel_frames.append(max_neg)
-    #     except Exception as e:
-    #         # Log warning and fill with NaN if any error
-    #         print(f"Warning: Could not compute max velocities for row {row.name}: {e}")
-    #         max_pos_vel_frames.append(np.nan)
-    #         max_neg_vel_frames.append(np.nan)
-
-    # df['maxPosVelFrame'] = max_pos_vel_frames
-    # df['maxNegVelFrame'] = max_neg_vel_frames
     # Ensure df is a new variable after filtering
     df = df[df['outerStarts'] < df['maxPosVelFrame']].copy()
 

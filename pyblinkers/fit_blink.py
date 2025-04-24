@@ -75,7 +75,7 @@ class FitBlinks:
             result_type='expand'
         )
         # Ensure the maxFrame is integer
-        self.df['maxFrame'] = self.df['maxFrame'].astype(int)
+
 
 
         self.df = compute_outer_bounds(self.df, data_size)
@@ -92,12 +92,19 @@ class FitBlinks:
         )
 
         self.df.dropna(inplace=True)
+        # self.df['maxFrame'] = self.df['maxFrame'].astype(int)
+
         if self.df.empty:
 
             print("DataFrame is empty after dropping NaNs. Setting frame_blinks to empty and exiting.")
             self.frame_blinks = pd.DataFrame()  # <-- create empty DataFrame
             return
 
+        # Cast all columns to uint16 except 'maxValue' (which holds float precision signal peak)
+        # since all positions are always positive and don't require full 64-bit precision
+        self.df = self.df.astype({
+            col: 'uint16' for col in self.df.columns if col != 'maxValue'
+        })
         self.fit()
 
     def fit(self):
