@@ -374,7 +374,16 @@ class BlinkProperties:
         all_indices = all_indices[mask].astype(int)
 
         row_idx_all = np.repeat(np.arange(len(lengths)), lengths)
-        velocities = blink_vel[all_indices]
+        try:
+            velocities = blink_vel[all_indices]
+        except IndexError:
+            # Handle the case where all_indices exceeds the length of blink_vel
+            # check whether the last item of the all_indices is greater than the length of blink_vel, if yes, drop only the last item.
+            # By doing, we ensure that the last item of all_indices is not greater than the length of blink_vel which can cause the IndexError
+            if all_indices[-1] >= len(blink_vel):
+                all_indices = all_indices[:-1]
+                row_idx_all = row_idx_all[:-1]
+                velocities = blink_vel[all_indices]
 
         temp_df = pd.DataFrame({'row_idx': row_idx_all, 'velocity': velocities, 'index': all_indices})
         if aggregator == 'max':

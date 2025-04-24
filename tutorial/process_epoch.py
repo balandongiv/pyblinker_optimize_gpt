@@ -31,7 +31,7 @@ def plot_blinks(raw_file):
         # 'EEG 001',
         'EEG 002',
         'EEG 003',
-        # 'EEG 004', 'EEG 005',
+        'EEG 004', 'EEG 005',
         # 'EEG 006',
         # 'EEG 007',
         # 'EEG 008',
@@ -47,14 +47,14 @@ def plot_blinks(raw_file):
     epochs = mne.Epochs(raw, events, tmin=0.0, tmax=epoch_length, baseline=None, preload=True)
     # drop_indices = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29]
     # drop_indices =
-    drop_indices = list(range(90))
-    # exclude = {33, 38, 42, 45, 47, 51, 64, 72, 73}  # <<< make it a set (no duplicates)
-    #
-    exclude = {33, 38, 42, 45, 47, 51}  # <<< make it a set (no duplicates)
-#
-    for num in exclude:
-        drop_indices.remove(num)
-    epochs.drop(indices=drop_indices)
+#     drop_indices = list(range(90))
+#     exclude = {33, 38, 42, 45, 47, 51, 64, 72, 73}  # <<< make it a set (no duplicates)
+#     #
+#     exclude = {33, 38, 42, 45, 47, 51}  # <<< make it a set (no duplicates)
+# #
+#     for num in exclude:
+#         drop_indices.remove(num)
+#     epochs.drop(indices=drop_indices)
     # epochs.plot(block=True,n_epochs=4)
     # raw.plot(block=True)
 

@@ -305,9 +305,9 @@ class BlinkDetector:
         final_df = self.filter_and_compute_properties(blink_dfs, signals, epoch_ids,agg)
         if final_df.empty:
             # update the stats status
-            stats["blinkwithproperties"] = 0
+            stats["total_blink_with_properties"] = 0
         else:
-            stats["blinkwithproperties"] = len(final_df)
+            stats["total_blink_with_properties"] = len(final_df)
 
         # self.store_results(final_df, agg, channel, ch_idx)
         info = {"df": final_df, "ch": channel,
