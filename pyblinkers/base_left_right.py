@@ -48,7 +48,7 @@ def create_left_right_base(candidate_signal, df):
     # Remove rows with NaNs so we don't pass invalid candidate_signal to our calculations
     df.dropna(inplace=True)
 
-    # Calculate maxPosVelFrame and maxNegVelFrame safely
+    # # Calculate maxPosVelFrame and maxNegVelFrame safely
     df[['maxPosVelFrame', 'maxNegVelFrame']] = df.apply(
         lambda row: _max_pos_vel_frame(
             blink_velocity=blinkVelocity,
@@ -59,32 +59,66 @@ def create_left_right_base(candidate_signal, df):
         axis=1,
         result_type='expand'
     )
+    max_pos_vel_frames = []
+    # max_neg_vel_frames = []
 
+    # Safely compute maxPosVelFrame and maxNegVelFrame
+    # for _, row in df.iterrows():
+    #     try:
+    #         max_pos, max_neg = _max_pos_vel_frame(
+    #             blink_velocity=blinkVelocity,
+    #             max_frame=row['maxFrame'],
+    #             left_zero=row['leftZero'],
+    #             right_zero=row['rightZero']
+    #         )
+    #         max_pos_vel_frames.append(max_pos)
+    #         max_neg_vel_frames.append(max_neg)
+    #     except Exception as e:
+    #         # Log warning and fill with NaN if any error
+    #         print(f"Warning: Could not compute max velocities for row {row.name}: {e}")
+    #         max_pos_vel_frames.append(np.nan)
+    #         max_neg_vel_frames.append(np.nan)
+
+    # df['maxPosVelFrame'] = max_pos_vel_frames
+    # df['maxNegVelFrame'] = max_neg_vel_frames
     # Ensure df is a new variable after filtering
     df = df[df['outerStarts'] < df['maxPosVelFrame']].copy()
 
-    # Compute leftBase safely using .assign()
-    df = df.assign(leftBase=df.apply(
-        lambda row: _get_left_base(
-            blink_velocity=blinkVelocity,
-            left_outer=row['outerStarts'],
-            max_pos_vel_frame=row['maxPosVelFrame']
-        ),
-        axis=1
-    ))
+    left_bases = []
+    for idx, row in df.iterrows():
+        try:
+            base = _get_left_base(
+                blink_velocity=blinkVelocity,
+                left_outer=row['outerStarts'],
+                max_pos_vel_frame=row['maxPosVelFrame']
+            )
+            left_bases.append(base)
+        except Exception as e:
+            print(f"Warning: Failed left base at row {idx}: {e}")
+            left_bases.append(np.nan)
+
+    df['leftBase'] = left_bases
+    df.dropna(subset=['leftBase'], inplace=True)
 
     # Drop rows with NaNs again if any were introduced
     df.dropna(inplace=True)
 
     # Compute rightBase safely using .assign()
-    df = df.assign(rightBase=df.apply(
-        lambda row: _get_right_base(
-            candidate_signal=candidate_signal,
-            blink_velocity=blinkVelocity,
-            right_outer=row['outerEnds'],
-            max_neg_vel_frame=row['maxNegVelFrame']
-        ),
-        axis=1
-    ))
+    right_bases = []
+    for idx, row in df.iterrows():
+        try:
+            base = _get_right_base(
+                candidate_signal=candidate_signal,
+                blink_velocity=blinkVelocity,
+                right_outer=row['outerEnds'],
+                max_neg_vel_frame=row['maxNegVelFrame']
+            )
+            right_bases.append(base)
+        except Exception as e:
+            print(f"Warning: Failed right base at row {idx}: {e}")
+            right_bases.append(np.nan)
+
+    df['rightBase'] = right_bases
+    df.dropna(subset=['rightBase'], inplace=True)
 
     return df

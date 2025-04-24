@@ -91,7 +91,13 @@ class FitBlinks:
             result_type='expand'
         )
 
-        # Perform fitting calculations
+        self.df.dropna(inplace=True)
+        if self.df.empty:
+
+            print("DataFrame is empty after dropping NaNs. Setting frame_blinks to empty and exiting.")
+            self.frame_blinks = pd.DataFrame()  # <-- create empty DataFrame
+            return
+
         self.fit()
 
     def fit(self):
@@ -100,24 +106,50 @@ class FitBlinks:
         and line intersections.
         """
         # candidate_signal = self.candidate_signal  # Local reference for efficiency
-
+        if (self.df['startBlinks'] == 0).all() and (self.df['endBlinks'] == 2).all():
+            print("startblinks and endblinks are correctly set.")
         # Create left and right base lines
         self.frame_blinks = create_left_right_base(self.candidate_signal, self.df)
-
+        # Check if frame_blinks is empty
+        if self.frame_blinks.empty:
+            logger.warning("frame_blinks is empty. Exiting fit early.")
+            return  # Exit the function
         # Get half height
-        self.frame_blinks[self.cols_half_height] = self.frame_blinks.apply(
-            lambda row: _get_half_height(
-                self.candidate_signal,
-                row['maxFrame'],
-                row['leftZero'],
-                row['rightZero'],
-                row['leftBase'],
-                row['outerEnds']
-            ),
-            axis=1,
-            result_type='expand'
-        )
 
+        try:
+            self.frame_blinks[self.cols_half_height] = self.frame_blinks.apply(
+                lambda row: _get_half_height(
+                    self.candidate_signal,
+                    row['maxFrame'],
+                    row['leftZero'],
+                    row['rightZero'],
+                    row['leftBase'],
+                    row['outerEnds']
+                ),
+                axis=1,
+                result_type='expand'
+            )
+        except ValueError as e:
+            logger.error(f"Error in half height calculation: {e}")
+            logger.info("Attempting to debug by processing row-by-row...")
+            # Create an empty list to store results
+            results = []
+            for idx, row in self.frame_blinks.iterrows():
+                try:
+                    result = _get_half_height(
+                        self.candidate_signal,
+                        row['maxFrame'],
+                        row['leftZero'],
+                        row['rightZero'],
+                        row['leftBase'],
+                        row['outerEnds']
+                    )
+                except Exception as row_error:
+                    logger.error(f"Error processing row {idx}: {row_error}")
+                    result = np.nan  # or whatever default you want if a row fails
+                results.append(result)
+            # Assign the results back
+            self.frame_blinks[self.cols_half_height] = results
         # Compute fit ranges
         self.frame_blinks[self.cols_fit_range] = self.frame_blinks.apply(
             lambda row: compute_fit_range(

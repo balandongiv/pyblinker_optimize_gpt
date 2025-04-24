@@ -1,3 +1,5 @@
+
+
 import matplotlib.pyplot as plt
 import mne
 import numpy as np
@@ -28,14 +30,20 @@ def compute_global_stats(good_data, ch_idx, params):
     Returns:
         tuple: (mu, robust_std, threshold, min_blink_frames)
     """
-    blink_component = good_data[:, ch_idx, :].reshape(-1)
+    blink_component = good_data[:, ch_idx, :].reshape(-1) # This is a 1D array of all the epochs now being flattened into 1D
     mu = np.mean(blink_component, dtype=np.float64)
     mad_val = mad_matlab(blink_component)
     robust_std = SCALING_FACTOR * mad_val
     min_blink_frames = params['minEventLen'] * params['sfreq']
     min_blink_frames=1 # For epoch, we need to set it to 1
     threshold = mu + params['stdThreshold'] * robust_std
-    return mu, robust_std, threshold, min_blink_frames,mad_val
+    return dict(
+        mu=mu,
+        robust_std=robust_std,
+        threshold=threshold,
+        min_blink_frames=min_blink_frames,
+        mad_val=mad_val
+    )
 
 def plot_epoch_signal(epoch_data, global_idx, ch_idx, sampling_rate=None):
     """
@@ -125,127 +133,193 @@ class BlinkDetector:
                              fir_design='firwin',
                              n_jobs=self.n_jobs)
         self.raw_data.resample(self.resample_rate, n_jobs=self.n_jobs)
-        logger.info(f"Signal prepared with resample rate: {self.resample_rate} Hz")
-        return self.raw_data
-    def process_channel_data_epoch(self, channel, verbose=True):
-        """Process data for a single EEG channel across valid (non-rejected) epochs."""
+        logger.info(f"Resampled data to {self.resample_rate} Hz.")
+        # return self.raw_data
+
+
+    @staticmethod
+    def filter_point(ch, all_data_info):
+        """Helper to extract data information for a specific channel."""
+        return list(filter(lambda data: data['ch'] == ch, all_data_info))[0]
+
+    def filter_bad_blink(self, df):
+        """Optionally filter out bad blinks."""
+        if self.filter_bad:
+            df = df[df['blink_quality'] == 'Good']
+        return df
+
+    def generate_viz(self, data, df):
+        """Generate visualization for each blink if visualization is enabled."""
+        fig_data = [
+            viz_complete_blink_prop(data, row, self.sfreq)
+            for _, row in df.iterrows()
+        ]
+        return fig_data
+
+    def process_all_channels(self):
+        """Process all channels available in the raw data."""
+        logger.info(f"Processing {len(self.channel_list)} channels.")
+
+        is_epochs = isinstance(self.raw_data, mne.Epochs)
+
+        for channel in tqdm(self.channel_list, desc="Processing Channels", unit="ch",colour="BLACK"):
+            if is_epochs:
+                self.process_channel_epochs(channel)
+            else:
+                self.process_channel_data(channel)
+        logger.info("Completed processing all channels.")
+
+    def select_good_epochs(self):
+        data = self.raw_data.get_data()
+        sel = self.raw_data.selection
+        drops = self.raw_data.drop_log
+        mask = np.array([not bool(drops[i]) for i in sel])
+        good = data[mask]
+        origs = [orig for keep, orig in zip(mask, sel) if keep]
+        return good, origs
 
 
 
-        logger.info(f"Processing channel: {channel}")
+    def print_stats(self, channel, stats):
+        print(
+            f"[Stats] {channel}: mean={stats['mu']:.3f}, "
+            f"MAD={stats['mad_val']:.3f}, std={stats['robust_std']:.3f}, "
+            f"thr={stats['threshold']:.3f}"
+        )
+    def print_aggregated_stats(self, channel, stats):
+        print(f"[Blink Stats] {channel}:")
+        for k, v in stats.items():
+            print(f"  {k}: {v}")
+    def filter_and_compute_properties(self, dfs, signals, epoch_ids,stats):
 
 
-        # Validate channel
-        ch_names = self.raw_data.info['ch_names']
-        if channel not in ch_names:
-            raise ValueError(f"Channel '{channel}' not found in epoch data.")
-        ch_idx = ch_names.index(channel)
-
-        # Get data and drop log
-        # Get data
-        epoch_data = self.raw_data.get_data()  # shape: (n_epochs, n_channels, n_times)
-
-        # GOOD way to get valid epochs after drop
-        selection = self.raw_data.selection  # This is array of kept epochs' original indices
-        drop_log = self.raw_data.drop_log
-
-        good_epoch_mask = np.array([not bool(drop_log[orig_idx]) for orig_idx in selection])
-        good_epoch_indices = np.where(good_epoch_mask)[0]
-        good_data = epoch_data[good_epoch_mask]
-
-
-        if good_data.size == 0:
-            print(f"[Warning] All epochs are rejected for channel '{channel}'.")
-            return
-
-        mu, robust_std, threshold, min_blink_frames,mad_val = compute_global_stats(good_data, ch_idx, self.params)
-        if verbose:
-            print(f"[Stats] Channel: {channel}")
-            print(f" Mean = {mu:.3f}, MAD = {mad_val:.3f}, Robust STD = {robust_std:.3f}")
-            print(f" Threshold = {threshold:.3f}")
-
-        all_dfs = []
-        all_signals = []
-        # Loop through each good epoch and process
-        for kept_idx, orig_idx in enumerate(selection):
-            epoch_signal = epoch_data[kept_idx, ch_idx, :]  # shape: (n_times,)
-
-            # Step 1: Blink detection
-            df = get_blink_position(self.params,
-                                    blink_component=epoch_signal,
-                                    ch=channel,
-                                    threshold=threshold,min_blink_frames=min_blink_frames)
-
-            # plot_epoch_signal(epoch_data, global_idx=0, ch_idx=1, sampling_rate=self.raw_data.info['sfreq'])
-            if df.empty:
-                if verbose:
-                    logger.warning(f"No blinks detected in channel: {channel}")
-                continue
-            # STEP 2: Fit blinks
-            logger.info(f'Now to FitBlinks for epoch {orig_idx}')
-            fitblinks = FitBlinks(
-                candidate_signal=epoch_signal,
-                df=df,
-                params=self.params
-            )
-            fitblinks.dprocess()
-            df = fitblinks.frame_blinks
-
-            # 🔥 NEW CHECK
-            if df.empty:
-                if verbose:
-                    logger.warning(f"FitBlinks found no valid blinks for channel {channel} in epoch {orig_idx}")
-                continue
-            df["kept_epoch_id"]     = kept_idx      # index after bad epochs removed
-            df["original_epoch_id"] = orig_idx      # index in the raw 0…N‑1 sequence
-
-            all_dfs.append(df)
-            all_signals.append(epoch_signal)
-
-
-        # Compute global blink stats across all epochs
-        if all_dfs:
-            blink_stats = get_blink_statistic_epoch_aggregated(
-                df_list=all_dfs,
-                zThresholds=self.params['z_thresholds'],
-                signal_list=all_signals
-            )
-            blink_stats['ch'] = channel
-
-            if verbose:
-                print(f"[Blink Stats] Channel {channel}:")
-                for k, v in blink_stats.items():
-                    print(f"  {k}: {v}")
-        else:
-            if verbose:
-                print(f"[Info] No valid blinks to analyze in channel '{channel}'.")
         # STEP 4: Get good blink mask _epoch
-        df_all = pd.concat(all_dfs, ignore_index=True)
+        all_df = pd.concat(dfs, ignore_index=True)
 
-        _, df_masked = get_good_blink_mask(
-            df_all,
-            blink_stats['bestMedian'],
-            blink_stats['bestRobustStd'],
-            self.params['z_thresholds']
+        _, masked = get_good_blink_mask(
+            all_df,
+            stats["bestMedian"],
+            stats["bestRobustStd"],
+            self.params["z_thresholds"]
         )
 
+        ## Check whether the masked dataframe is empty
+        if masked.empty:
+            logger.warning("No blinks detected after filtering.")
+            return pd.DataFrame()
+
+
         # STEP 5: Compute blink properties
-        #TODO: Modify here so that it can process all epochs simultaneously
-        df = BlinkProperties(
-            self.raw_data.get_data(picks=channel)[0],
-            df_masked,
-            self.params['sfreq'],
-            self.params
-        ).df
+        ## First we get the unique kept_epoch_id
+        props_list = []
+        for eid in masked["kept_epoch_id"].unique():
+            df_e = masked[masked["kept_epoch_id"] == eid]
+            signal_ep = signals[epoch_ids.index(eid)]
+
+            # Now we can extract the data from the epoch_signal
+            props = BlinkProperties(signal_ep, df_e, self.sfreq, self.params).df
+            props_list.append(props)
+
+        combined = pd.concat(props_list, ignore_index=True)
 
         # STEP 6: Apply pAVR restriction
-        condition_1 = df['posAmpVelRatioZero'] < self.params['pAVRThreshold']
-        condition_2 = df['maxValue'] < (blink_stats['bestMedian'] - blink_stats['bestRobustStd'])
-        df = df[~(condition_1 & condition_2)]
+        cond = (
+                (combined["posAmpVelRatioZero"] < self.params["pAVRThreshold"])
+                & (combined["maxValue"] < stats["bestMedian"] - stats["bestRobustStd"])
+        )
+        return combined[~cond].reset_index(drop=True)
 
-        # Store results
-        self.all_data_info.append(dict(df=df, ch=channel))
-        self.all_data.append(blink_stats)
+
+    def detect_and_fit_blinks(self, data, ch_idx, orig_idxs):
+        '''
+
+
+        :param data: is a 3D array of shape (n_epochs, n_channels, n_times)
+        :param ch_idx: is the index of the channel to process
+        :param orig_idxs: is the original indices of the epochs, if non rejected epoch,this should show int of all epoch, but if
+        reject, this should show the int of the epochs that are not rejected
+        :return:
+        '''
+        dfs = []
+        sigs = []
+        epoch_ids=[]
+        stats = compute_global_stats(data, ch_idx, self.params)
+        for kept_idx, orig_idx in enumerate(orig_idxs):
+            sig = data[kept_idx, ch_idx, :]
+            df = get_blink_position(
+                self.params,
+                blink_component=sig,
+                ch=ch_idx,
+                threshold=stats['threshold'],
+                min_blink_frames=stats['min_blink_frames']
+            )
+            if df.empty:
+                continue
+            logger.info(f'Now to FitBlinks for epoch {orig_idx}')
+            fitter = FitBlinks(sig, df, self.params)
+            fitter.dprocess()
+            fit_df = fitter.frame_blinks
+            if fit_df.empty:
+                continue
+
+            fit_df["kept_epoch_id"] = kept_idx  # index after bad epochs removed
+            fit_df["original_epoch_id"] =orig_idx  # index in the raw 0…N‑1 sequence
+            dfs.append(fit_df)
+                # fit_df)
+            sigs.append(sig)
+            epoch_ids.append(kept_idx)
+
+        return (dfs,
+                sigs,epoch_ids,
+                stats)
+
+
+
+
+    def process_channel_epochs(self, channel, verbose=True):
+        """Process data for a single EEG channel across valid (non-rejected) epochs."""
+
+        logger.info(f"[Epochs] Channel: {channel}")
+        ch_idx = self.raw_data.info["ch_names"].index(channel)
+        epochs, orig_idxs = self.select_good_epochs()
+        if epochs.size == 0:
+            logger.warning(f"No valid epochs for channel '{channel}'.")
+            return
+
+        blink_dfs, signals,epoch_ids,stats = self.detect_and_fit_blinks(epochs, ch_idx, orig_idxs)
+
+        if len(blink_dfs)>0:
+            agg  = get_blink_statistic_epoch_aggregated(
+                df_list=blink_dfs,
+                zThresholds=self.params['z_thresholds'],
+                signal_list=signals
+            )
+            agg['ch'] = channel
+
+            if verbose:
+                self.print_aggregated_stats(channel, agg)
+        else:
+            logger.warning(f"No blinks detected in channel '{channel}'.")
+            return
+
+        final_df = self.filter_and_compute_properties(blink_dfs, signals, epoch_ids,agg)
+        if final_df.empty:
+            # update the stats status
+            stats["blinkwithproperties"] = 0
+        else:
+            stats["blinkwithproperties"] = len(final_df)
+
+        # self.store_results(final_df, agg, channel, ch_idx)
+        info = {"df": final_df, "ch": channel,
+                "ch_idx": ch_idx,}
+        info.update(stats)
+
+        # print in detail all the info
+        print(f"{channel} : {stats['mu']:.3f}, {stats['mad_val']:.3f}, {stats['robust_std']:.3f}, {stats['threshold']:.3f}")
+        self.all_data_info.append(info)
+
+
+
 
 
     def process_channel_data(self, channel, verbose=True):
@@ -300,38 +374,6 @@ class BlinkDetector:
         # Store results
         self.all_data_info.append(dict(df=df, ch=channel))
         self.all_data.append(blink_stats)
-
-    @staticmethod
-    def filter_point(ch, all_data_info):
-        """Helper to extract data information for a specific channel."""
-        return list(filter(lambda data: data['ch'] == ch, all_data_info))[0]
-
-    def filter_bad_blink(self, df):
-        """Optionally filter out bad blinks."""
-        if self.filter_bad:
-            df = df[df['blink_quality'] == 'Good']
-        return df
-
-    def generate_viz(self, data, df):
-        """Generate visualization for each blink if visualization is enabled."""
-        fig_data = [
-            viz_complete_blink_prop(data, row, self.sfreq)
-            for _, row in df.iterrows()
-        ]
-        return fig_data
-
-    def process_all_channels(self):
-        """Process all channels available in the raw data."""
-        logger.info(f"Processing {len(self.channel_list)} channels.")
-
-        is_epochs = isinstance(self.raw_data, mne.Epochs)
-        if is_epochs:
-            for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel",colour="BLACK"):
-                self.process_channel_data_epoch(channel)
-        else:
-            for channel in tqdm(self.channel_list, desc="Processing Channels", unit="channel",colour="BLACK"):
-                self.process_channel_data(channel)
-        logger.info("Finished processing all channels.")
 
     def select_representative_channel(self):
         """Select the best representative channel based on blink statistics."""

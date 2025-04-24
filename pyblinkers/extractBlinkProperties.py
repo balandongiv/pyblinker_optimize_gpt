@@ -3,14 +3,13 @@ import logging
 
 import pandas as pd
 
-# from pyblinkers.misc import mad_matlab
 from pyblinkers.matlab_forking import mad_matlab
 
 logging.getLogger().setLevel(logging.INFO)
 from pyblinkers.default_setting import SCALING_FACTOR
 import matplotlib.pyplot as plt
 import numpy as np
-import time
+
 
 def calculate_within_range(all_values, best_median, best_robust_std):
 
