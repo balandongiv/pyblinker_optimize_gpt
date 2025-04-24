@@ -243,6 +243,17 @@ def _get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_f
     right_base = m_neg_vel + right_base_index + 1
     return right_base
 
+def _to_ints(*args):
+    """
+    Convert multiple values to native Python int.
+
+    This is used to ensure all indexing-related variables are type-safe.
+    When using `pandas.apply`, mixed dtypes (like float32 and int32) can result in float64 values
+    being passed to functions, which may cause issues with NumPy indexing.
+
+    Accepts any number of inputs and returns their `int()` equivalents in order.
+    """
+    return tuple(int(x) for x in args)
 
 def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_base, right_outer):
     """
@@ -253,12 +264,10 @@ def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_ba
         The coordinate of the signal halfway (in height) between
         the blink maximum and the right base value.
     """
-    m_frame = int(max_frame)
-    l_zero = int(left_zero)
-    r_zero = int(right_zero)
-    l_base = int(left_base)
-    r_outer = int(right_outer)
 
+    m_frame, l_zero, r_zero, l_base, r_outer = _to_ints(
+        max_frame, left_zero, right_zero, left_base, right_outer
+    )
     # Halfway point (vertical) from candidate_signal[max_frame] to candidate_signal[left_base]
     max_val = candidate_signal[m_frame]
     left_base_val = candidate_signal[l_base]
