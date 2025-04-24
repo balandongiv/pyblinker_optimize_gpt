@@ -315,9 +315,8 @@ def get_left_range(left_zero, max_frame, candidate_signal, blink_top, blink_bott
     Identify the left blink range based on blink_top/blink_bottom thresholds
     within candidate_signal.
     """
-    l_zero = int(left_zero)
-    m_frame = int(max_frame)
 
+    l_zero,m_frame = _to_ints(left_zero,max_frame)
     blink_range = np.arange(l_zero, m_frame + 1, dtype=int)
     cand_slice = candidate_signal[blink_range]
 
@@ -345,9 +344,8 @@ def get_right_range(max_frame, right_zero, candidate_signal, blink_top, blink_bo
     Identify the right blink range based on blink_top/blink_bottom thresholds
     within candidate_signal.
     """
-    m_frame = int(max_frame)
-    r_zero = int(right_zero)
 
+    m_frame,r_zero= _to_ints(max_frame, right_zero)
     blink_range = np.arange(m_frame, r_zero + 1, dtype=int)
     cand_slice = candidate_signal[blink_range]
 
@@ -379,10 +377,8 @@ def compute_fit_range(candidate_signal, max_frame, left_zero, right_zero, base_f
     plus optional top/bottom blink points,
     for the candidate_signal around a blink event.
     """
-    m_frame = int(max_frame)
-    l_zero = int(left_zero)
-    r_zero = int(right_zero)
 
+    m_frame,l_zero,r_zero= _to_ints(max_frame, left_zero, right_zero)
     # Compute the blink_top/blink_bottom for thresholding
     blink_height = candidate_signal[m_frame] - candidate_signal[l_zero]
     blink_top = candidate_signal[m_frame] - base_fraction * blink_height

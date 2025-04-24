@@ -8,8 +8,8 @@ def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None):
     yLeft = signal[xLeft]
 
     # The value n equals 1 means that we are fitting a line (degree 1 polynomial)
-    n=1
-    pLeft, SLeft, muLeft = polyfitMatlab(xLeft, yLeft, n)
+    poly_degree=1
+    pLeft, SLeft, muLeft = polyfitMatlab(xLeft, yLeft, poly_degree)
     yPred, delta = polyvalMatlab(pLeft, xLeft, S=SLeft, mu= muLeft)
     leftR2, _ = corrMatlab(yLeft , yPred)
 
@@ -30,8 +30,7 @@ def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None):
     averLeftVelocity=pLeft[0]/muLeft[1]
     averRightVelocity=pRight[0]/muRight[1]
 
-    # I am not sure about the following lines, and whether it will be use or not
-    xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r=np.nan, np.nan, np.nan, np.nan
+
     return leftSlope, rightSlope, averLeftVelocity, averRightVelocity, \
         rightR2[0][0], leftR2[0][0], xIntersect, yIntersect, leftXIntercept, rightXIntercept, \
-        xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r
+

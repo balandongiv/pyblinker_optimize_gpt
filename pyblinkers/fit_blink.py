@@ -47,8 +47,7 @@ class FitBlinks:
         self.cols_lines_intesection = [
             'leftSlope', 'rightSlope', 'averLeftVelocity', 'averRightVelocity',
             'rightR2', 'leftR2', 'xIntersect', 'yIntersect',
-            'leftXIntercept', 'rightXIntercept',
-            'xLineCross_l', 'yLineCross_l', 'xLineCross_r', 'yLineCross_r'
+            'leftXIntercept', 'rightXIntercept'
         ]
 
     def get_max_frame(self, start_idx, end_idx):
