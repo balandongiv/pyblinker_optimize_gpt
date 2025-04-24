@@ -1,28 +1,30 @@
 def filter_blink_amplitude_ratios(df, params):
     """
-    Reduce the number of candidate signals based on the blink amplitude ratios.
-    Filter rows based on blink amplitude range.
-    If no rows remain, set status and select the row with the max numberGoodBlinks.
+    Filter rows based on blink amplitude ratio range.
+    If no rows remain, fallback to the row with the highest number of good blinks.
     """
-    # Filter DataFrame based on the blink amplitude ratio range
+    min_ratio = params['blinkAmpRange_1']
+    max_ratio = params['blinkAmpRange_2']
+
     filtered_df = df[
-        (df['blinkAmpRatio'] >= params['blinkAmpRange_1'])
-        &
-        (df['blinkAmpRatio'] <= params['blinkAmpRange_2'])
+        (df['blinkAmpRatio'] >= min_ratio) &
+        (df['blinkAmpRatio'] <= max_ratio)
         ]
 
-    if filtered_df.empty:
-        # Handle the case where no rows pass the filter
-        df['status'] = "Blink amplitude too low -- may be noise"
-        df['select'] = False  # Initialize the 'select' column
-        max_good_blinks_idx = df['numberGoodBlinks'].idxmax()  # Get the index of the max value
-        df.loc[max_good_blinks_idx, 'select'] = True  # Mark the row as selected
-        return df
-    else:
-        # Add status and select columns for filtered rows
-        # filtered_df['status'] = "Blink amplitude within acceptable range."
-        # filtered_df['select'] = True
+    if not filtered_df.empty:
+        filtered_df['select'] = True
         return filtered_df
+
+    # Fallback: select the best available candidate
+    max_idx = df['numberGoodBlinks'].idxmax()
+    df['select'] = False  # Ensure the column exists
+    df.loc[max_idx, ['select', 'status']] = [
+        True,
+        "Blink amplitude too low — selected row with highest numberGoodBlinks."
+    ]
+
+    return df
+
 
 
 
@@ -32,87 +34,90 @@ def filter_good_blinks(df, params):
     Filter rows based on number of good blinks.
     If no rows remain, set status and select the row with max numberGoodBlinks.
     """
+    threshold=params['minGoodBlinks']
     # Filter DataFrame based on minimum good blinks
     filtered_df = df[df['numberGoodBlinks'] > params['minGoodBlinks']]
 
-    if filtered_df.empty:
-        # Handle the case where no rows meet the threshold
-        df['status'] = "Fewer than {} minimum Good Blinks were found".format(params['minGoodBlinks'])
-        df['select'] = False  # Initialize 'select' column
-        max_good_blinks_idx = df['numberGoodBlinks'].idxmax()  # Find the index of the max value
-        df.loc[max_good_blinks_idx, 'select'] = True  # Mark the row as selected
-        return df
-    else:
-        # Add status and select columns for the filtered rows
-        # filtered_df['status'] = "Meets minimum good blinks threshold."
-        # filtered_df['select'] = True
+    if not filtered_df.empty:
+        filtered_df['select'] = True
         return filtered_df
+
+    # Fallback: no rows meet threshold, select the best available
+    max_idx = df['numberGoodBlinks'].idxmax()
+    df['select'] = False  # Ensure column exists
+    df.loc[max_idx, ['select', 'status']] = [True, f"Fewer than {threshold} minimum Good Blinks were found"]
+
+    return df
+
+
 
 
 def filter_good_ratio(df, params):
     """
     Filter rows based on good ratio threshold.
-    If no rows meet the criteria, add a status column and select the row with the maximum number of good blinks.
+    If none meet the threshold, select the row with the highest number of good blinks.
     """
-    # Filter based on good ratio threshold
-    filtered_df = df[df['goodRatio'] >= params['goodRatioThreshold']]
+    threshold = params['goodRatioThreshold']
+    filtered_df = df[df['goodRatio'] >= threshold]
 
-    if filtered_df.empty:
-        # Create a status column
-        df['status'] = "Good ratio too low. We will select the row with the maximum number of good blinks."
-
-        # Find the index of the row with the maximum number of good blinks
-        max_minGoodBlinks_idx = df['numberGoodBlinks'].idxmax()
-
-        # Add a 'select' column to indicate the selected row
-        df['select'] = False
-        df.loc[max_minGoodBlinks_idx, 'select'] = True
-
-        return df
-    else:
-        # # Add a status column for the filtered rows
-        # filtered_df['status'] = "Good ratio meets threshold."
-        #
-        # # Add a 'select' column to indicate all rows that pass the filter
-        # filtered_df['select'] = True
-
+    if not filtered_df.empty:
+        filtered_df['select'] = True
         return filtered_df
+
+    # Fallback: no rows pass the threshold
+    max_idx = df['numberGoodBlinks'].idxmax()
+    df['select'] = False  # Ensure column exists
+    df.loc[max_idx, ['select', 'status']] = [
+        True,
+        "Good ratio too low — selecting row with max number of good blinks."
+    ]
+
+    return df
+
 
 
 
 def select_max_good_blinks(df):
     """
-    Ensure that the row with the maximum numberGoodBlinks is selected if no row is already selected.
+    Ensure that the row with the maximum number of good blinks is selected
+    if no row is currently marked as selected.
     """
-    # Check if the 'select' column exists and if any value is True
     if 'select' in df.columns and df['select'].any():
-        # If there is already a selection, do nothing
-        # df['status'] = "Selection already exists."
-        return df
-    else:
-        # If 'select' column does not exist or no row is selected, proceed with the logic
-        max_number_good_blinks_idx = df['numberGoodBlinks'].idxmax()
-        df['status'] = "Complete all checking"
-        df['select'] = False  # Initialize 'select' column if it doesn't exist
-        df.loc[max_number_good_blinks_idx, 'select'] = True  # Select the row with the maximum value
-        return df
+        df['select'] = True
+        return df  # Selection already exists
+
+    # No selection yet — fallback to the row with max number of good blinks
+    max_idx = df['numberGoodBlinks'].idxmax()
+    df['select'] = False  # Ensure the column exists
+    df.loc[max_idx, ['select', 'status']] = [True, "Complete all checking"]
+
+    return df
+
+
+
 
 def channel_selection(channel_blink_stats, params):
-    # Apply the blink signal selection process
+    channel_blink_stats=filter_blink_amplitude_ratios(channel_blink_stats, params)
 
-    channel_blink_stats = filter_blink_amplitude_ratios(channel_blink_stats, params)
+    # Return early if exactly one True in 'select' column
+    if channel_blink_stats['select'].sum() == 1:
+        return channel_blink_stats
+
+
     channel_blink_stats = filter_good_blinks(channel_blink_stats, params)
+    # Return early if exactly one True in 'select' column
+    if channel_blink_stats['select'].sum() == 1:
+        return channel_blink_stats
+
     channel_blink_stats = filter_good_ratio(channel_blink_stats, params)
+
+    # Return early if exactly one True in 'select' column
+    if channel_blink_stats['select'].sum() == 1:
+        return channel_blink_stats
+
     signal_data_output = select_max_good_blinks(channel_blink_stats)
 
-    # Columns to ignore
-    columns_to_ignore = ['status', 'select']
 
-
-
-    # Remove `status` and `select` columns from the comparison
-    signal_data_output = signal_data_output.drop(columns=columns_to_ignore, errors='ignore')
 
     return signal_data_output
-
 

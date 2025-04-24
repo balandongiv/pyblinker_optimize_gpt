@@ -31,7 +31,7 @@ def plot_blinks(raw_file):
         # 'EEG 001',
         'EEG 002',
         'EEG 003',
-        'EEG 004', 'EEG 005',
+        # 'EEG 004', 'EEG 005',
         # 'EEG 006',
         # 'EEG 007',
         # 'EEG 008',
@@ -71,11 +71,10 @@ def plot_blinks(raw_file):
                                }
     }
     # results = run_blink_detection_pipeline(raw, config=config)
-    annot, ch, number_good_blinks, df, fig_data, ch_selected = BlinkDetector(epochs, visualize=False, annot_label=None,
+    status = BlinkDetector(epochs, visualize=False, annot_label=None,
                                                                              filter_low=0.5, filter_high=20.5, resample_rate=100,
                                                                              n_jobs=2,use_multiprocessing=True).get_blink()
-    raw.set_annotations(annot)
-    raw.plot(block=True, title=f'Eye close based on channel {ch}')
+    print(status)
 
 if __name__ == '__main__':
     sample_data_folder = mne.datasets.sample.data_path()

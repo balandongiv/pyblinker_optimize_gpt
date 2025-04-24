@@ -309,14 +309,15 @@ class BlinkDetector:
         else:
             stats["total_blink_with_properties"] = len(final_df)
 
-        # self.store_results(final_df, agg, channel, ch_idx)
-        info = {"df": final_df, "ch": channel,
-                "ch_idx": ch_idx,}
-        info.update(stats)
+
+        self.all_data_info.append(dict(df=final_df, ch=channel,
+                                       ch_idx=ch_idx))
+        stats.update(agg)
+        self.all_data.append(stats)
 
         # print in detail all the info
         print(f"{channel} : {stats['mu']:.3f}, {stats['mad_val']:.3f}, {stats['robust_std']:.3f}, {stats['threshold']:.3f}")
-        self.all_data_info.append(info)
+        # self.all_data_info.append(info)
 
 
 
@@ -411,17 +412,30 @@ class BlinkDetector:
         self.process_all_channels()
 
         ch_selected = self.select_representative_channel()
-        logger.info(f"Selected representative channel: {ch_selected.loc[0, 'ch']}")
+        # logger.info(f"Selected representative channel: {ch_selected.loc[0, 'ch']}")
+        selected_rows = ch_selected[ch_selected['select'] == True]
 
-        ch, data, df = self.get_representative_blink_data(ch_selected)
-        annot = self.create_annotations(df)
+        if selected_rows.empty:
+            logger.warning("No channel was selected (select column has no True value).")
+        else:
+            logger.info(f"Selected representative channel: {selected_rows.iloc[0]['ch']}")
 
-        fig_data = self.generate_viz(data, df) if self.viz_data else []
-        n_good_blinks = ch_selected.loc[0, 'numberGoodBlinks']
+        is_epochs = isinstance(self.raw_data, mne.Epochs)
 
-        logger.info(f"Blink detection completed. {n_good_blinks} good blinks detected.")
 
-        return annot, ch, n_good_blinks, df, fig_data, ch_selected
+        if is_epochs:
+            return 'success'
+
+        else:
+            ch, data, df = self.get_representative_blink_data(ch_selected)
+            annot = self.create_annotations(df)
+
+            fig_data = self.generate_viz(data, df) if self.viz_data else []
+            n_good_blinks = ch_selected.loc[0, 'numberGoodBlinks']
+
+            logger.info(f"Blink detection completed. {n_good_blinks} good blinks detected.")
+
+            return annot, ch, n_good_blinks, df, fig_data, ch_selected
 
 
 def run_blink_detection_pipeline(raw_data, config=None):

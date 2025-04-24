@@ -156,7 +156,7 @@ def get_blink_statistic_epoch_aggregated(df_list, zThresholds, signal_list=None)
     all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
     good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
 
-    number_good_blinks = np.sum(good_mask_bottom)
+    number_good_blinks = int(np.sum(good_mask_bottom))
 
     return dict(
         numberBlinks=len(df_data),
