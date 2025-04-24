@@ -122,41 +122,19 @@ class FitBlinks:
             logger.warning("frame_blinks is empty. Exiting fit early.")
             return  # Exit the function
         # Get half height
+        self.frame_blinks[self.cols_half_height] = self.frame_blinks.apply(
+            lambda row: _get_half_height(
+                self.candidate_signal,
+                row['maxFrame'],
+                row['leftZero'],
+                row['rightZero'],
+                row['leftBase'],
+                row['outerEnds']
+            ),
+            axis=1,
+            result_type='expand'
+        )
 
-        try:
-            self.frame_blinks[self.cols_half_height] = self.frame_blinks.apply(
-                lambda row: _get_half_height(
-                    self.candidate_signal,
-                    row['maxFrame'],
-                    row['leftZero'],
-                    row['rightZero'],
-                    row['leftBase'],
-                    row['outerEnds']
-                ),
-                axis=1,
-                result_type='expand'
-            )
-        except ValueError as e:
-            logger.error(f"Error in half height calculation: {e}")
-            logger.info("Attempting to debug by processing row-by-row...")
-            # Create an empty list to store results
-            results = []
-            for idx, row in self.frame_blinks.iterrows():
-                try:
-                    result = _get_half_height(
-                        self.candidate_signal,
-                        row['maxFrame'],
-                        row['leftZero'],
-                        row['rightZero'],
-                        row['leftBase'],
-                        row['outerEnds']
-                    )
-                except Exception as row_error:
-                    logger.error(f"Error processing row {idx}: {row_error}")
-                    result = np.nan  # or whatever default you want if a row fails
-                results.append(result)
-            # Assign the results back
-            self.frame_blinks[self.cols_half_height] = results
         # Compute fit ranges
         self.frame_blinks[self.cols_fit_range] = self.frame_blinks.apply(
             lambda row: compute_fit_range(
