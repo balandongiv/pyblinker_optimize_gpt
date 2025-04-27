@@ -111,11 +111,12 @@ class TestExtractBlinkProperties(unittest.TestCase):
         ignore_cases = [
             {'row': 41, 'column': 'yIntersect', 'ground_truth_value': 43.0, 'output_value': 44.0},
         ]
-
+        min_blink_frames=5.0
+        threshold=12.241726391783821
         # STEP 1: Get blink positions
         blink_positions = get_blink_position(
-            self.params, blink_component=self.blink_comp, ch='No_channel'
-        )
+            self.params, blink_component=self.blink_comp, ch='No_channel',threshold=threshold,
+        min_blink_frames=min_blink_frames)
 
         # STEP 2: Fit blinks
         fitblinks = FitBlinks(candidate_signal=self.blink_comp, df=blink_positions, params=self.params)

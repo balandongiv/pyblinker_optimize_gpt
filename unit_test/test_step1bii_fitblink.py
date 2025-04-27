@@ -49,7 +49,11 @@ class TestFitBlinks(unittest.TestCase):
         Process blink candidate_signal using `FitBlinks` and return the output DataFrame.
         """
         # Calculate blink positions
-        df_blink_positions = get_blink_position(params, blink_component=blink_comp, ch=channel)
+        min_blink_frames=5.0
+        threshold=12.241726391783821
+        df_blink_positions = get_blink_position(params, blink_component=blink_comp, ch=channel,
+                                                threshold=threshold,
+                                                min_blink_frames=min_blink_frames)
 
         # Process blink candidate_signal with `FitBlinks`
         fitblinks = FitBlinks(candidate_signal=blink_comp, df=df_blink_positions, params=params)

@@ -30,12 +30,18 @@ def compute_global_stats(good_data, ch_idx, params):
     Returns:
         tuple: (mu, robust_std, threshold, min_blink_frames)
     """
-    blink_component = good_data[:, ch_idx, :].reshape(-1) # This is a 1D array of all the epochs now being flattened into 1D
+    if good_data.ndim == 1:
+        blink_component=good_data
+        min_blink_frames = params['minEventLen'] * params['sfreq'] # for continous, we use what has been used in the original implementation
+    else:
+
+        blink_component = good_data[:, ch_idx, :].reshape(-1) # This is a 1D array of all the epochs now being flattened into 1D
+        min_blink_frames=1 # For epoch, we need to set it to 1
     mu = np.mean(blink_component, dtype=np.float64)
     mad_val = mad_matlab(blink_component)
     robust_std = SCALING_FACTOR * mad_val
-    min_blink_frames = params['minEventLen'] * params['sfreq']
-    min_blink_frames=1 # For epoch, we need to set it to 1
+
+
     threshold = mu + params['stdThreshold'] * robust_std
     return dict(
         mu=mu,
@@ -327,14 +333,17 @@ class BlinkDetector:
         """Process data for a single channel."""
         logger.info(f"Processing channel: {channel}")
 
+        stats = compute_global_stats(self.raw_data.get_data(picks=channel)[0], channel, self.params)
         # STEP 1: Get blink positions
         df = get_blink_position(self.params,
                                 blink_component=self.raw_data.get_data(picks=channel)[0],
-                                ch=channel)
+                                ch=channel,
+                                threshold=stats['threshold'],
+                                min_blink_frames=stats['min_blink_frames'])
 
         if df.empty and verbose:
             logger.warning(f"No blinks detected in channel: {channel}")
-
+            return
         # STEP 2: Fit blinks
         fitblinks = FitBlinks(
             candidate_signal=self.raw_data.get_data(picks=channel)[0],

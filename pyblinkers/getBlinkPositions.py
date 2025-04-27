@@ -1,12 +1,6 @@
-from pyblinkers.utils._logging import logger
-
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-
-from pyblinkers.default_setting import SCALING_FACTOR
-
-from pyblinkers.matlab_forking import mad_matlab
 
 
 def get_blink_position(params, blink_component=None, ch=None,threshold=None,min_blink_frames=None):
@@ -32,21 +26,22 @@ def get_blink_position(params, blink_component=None, ch=None,threshold=None,min_
         - 'endBlinks' (numpy.ndarray): Indices of the end frames of detected blinks.
         If no blinks are detected, an empty DataFrame with the same column names is returned.
     """
-    if threshold is None:
-        # Ensure 1D array
-        # assert blink_component.ndim == 1, "blink_component must be a 1D array"
-
-        # Compute basic statistics
-        mu = np.mean(blink_component, dtype=np.float64)
-        mad_val = mad_matlab(blink_component)
-        robust_std= SCALING_FACTOR * mad_val
-
-        # Minimum blink length in frames
-        min_blink_frames = params['minEventLen'] * params['sfreq']
-        threshold = mu + params['stdThreshold'] * robust_std
-    else:
-        threshold=threshold
-        min_blink_frames=min_blink_frames
+    # Will be deprecated in future versions. Keep it here# for backward compatibility
+    # if threshold is None:
+    #     # Ensure 1D array
+    #     # assert blink_component.ndim == 1, "blink_component must be a 1D array"
+    #
+    #     # Compute basic statistics
+    #     mu = np.mean(blink_component, dtype=np.float64)
+    #     mad_val = mad_matlab(blink_component)
+    #     robust_std= SCALING_FACTOR * mad_val
+    #
+    #     # Minimum blink length in frames
+    #     min_blink_frames = params['minEventLen'] * params['sfreq']
+    #     threshold = mu + params['stdThreshold'] * robust_std
+    # else:
+    #     threshold=threshold
+    #     min_blink_frames=min_blink_frames
     in_blink = False
     start_blinks = []
     end_blinks = []

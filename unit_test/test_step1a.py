@@ -30,7 +30,10 @@ class TestBlinkPosition(unittest.TestCase):
         Calculate blink positions using the Python implementation.
         """
         blink_comp = input_data['blinkComp']
-        blink_positions = get_blink_position(params, blink_component=blink_comp, ch='No_channel')
+        min_blink_frames=5.0
+        threshold=12.241726391783821
+        blink_positions = get_blink_position(params, blink_component=blink_comp, ch='No_channel',threshold=threshold,
+                                             min_blink_frames=min_blink_frames)
         return blink_positions
 
     def adjust_indices_for_matlab(self, blink_positions, shift_index=1):
