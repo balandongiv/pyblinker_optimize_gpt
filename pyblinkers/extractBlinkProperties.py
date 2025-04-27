@@ -177,38 +177,6 @@ def get_blink_statistic_epoch_aggregated(df_list, z_thresholds, signal_list=None
     else:
         blink_amp_ratio = np.nan
 
-    # # -- Same logic: threshold masks based on global df --
-    # correlation_threshold_bottom, correlation_threshold_top = z_thresholds[0]
-    # df_data = df_all[['leftR2', 'rightR2', 'maxValue']]
-    #
-    # good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
-    # good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
-    #
-    # best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
-    # worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
-    # good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
-    #
-    # best_median = np.nanmedian(best_values)
-    # best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
-    # worst_median = np.nanmedian(worst_values)
-    # worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
-    #
-    # cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
-    #
-    # all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
-    # good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
-    #
-    # number_good_blinks = int(np.sum(good_mask_bottom))
-    #
-    # return dict(
-    #     numberBlinks=len(df_data),
-    #     numberGoodBlinks=number_good_blinks,
-    #     blinkAmpRatio=blink_amp_ratio,
-    #     cutoff=cutoff,
-    #     bestMedian=best_median,
-    #     bestRobustStd=best_robust_std,
-    #     goodRatio=good_ratio
-    # )
     return compute_blink_statistics_core(df_all, z_thresholds, blink_amp_ratio)
 def get_blink_statistic(df, zThresholds, signal=None):
     # its sister function but for epochs is under the name get_blink_statistic_epoch_aggregated
@@ -225,37 +193,6 @@ def get_blink_statistic(df, zThresholds, signal=None):
     outside_blink = (signal > 0) & ~blink_mask
     blink_amp_ratio = np.mean(signal[inside_blink]) / np.mean(signal[outside_blink])
 
-    # correlation_threshold_bottom, correlation_threshold_top = zThresholds[0]
-    # df_data = df[['leftR2', 'rightR2', 'maxValue']]
-    #
-    # good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
-    # good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
-    #
-    # best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
-    # worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
-    # good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
-    #
-    # best_median = np.nanmedian(best_values)
-    # best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
-    # worst_median = np.nanmedian(worst_values)
-    # worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
-    #
-    # cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
-    #
-    # all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
-    # good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
-    #
-    # number_good_blinks = np.sum(good_mask_bottom)
-    #
-    # return dict(
-    #     numberBlinks=len(df_data),
-    #     numberGoodBlinks=number_good_blinks,
-    #     blinkAmpRatio=blink_amp_ratio,
-    #     cutoff=cutoff,
-    #     bestMedian=best_median,
-    #     bestRobustStd=best_robust_std,
-    #     goodRatio=good_ratio
-    # )
     return compute_blink_statistics_core(df, zThresholds, blink_amp_ratio)
 
 def get_good_blink_mask(blink_fits, specified_median, specified_std, z_thresholds):
@@ -322,13 +259,13 @@ def get_good_blink_mask(blink_fits, specified_median, specified_std, z_threshold
 class BlinkProperties:
     '''
     Return a structure with blink shapes and properties for individual blinks
-    % Return a structure with blink shapes and properties for individual blinks
-%
-% Parameters:
-%     signalData    signalData structure
-%     params        params structure with parameters
-%     blinkProps    (output) structure with the blink properties
-%     blinkFits     (output) structure with the blink landmarks
+    Return a structure with blink shapes and properties for individual blinks
+
+    Parameters:
+    signalData    signalData structure
+    params        params structure with parameters
+    blinkProps    (output) structure with the blink properties
+    blinkFits     (output) structure with the blink landmarks
     '''
     def __init__(self, candidate_signal, df, srate, params):
         """Initializes BlinkProperties object to calculate blink features.
