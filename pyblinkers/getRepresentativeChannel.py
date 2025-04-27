@@ -12,7 +12,8 @@ def filter_blink_amplitude_ratios(df, params):
         ]
 
     if not filtered_df.empty:
-        filtered_df['select'] = True
+        filtered_df = filtered_df.copy()
+        filtered_df.loc[:, 'select'] = True
         return filtered_df
 
     # Fallback: select the best available candidate
@@ -39,7 +40,7 @@ def filter_good_blinks(df, params):
     filtered_df = df[df['numberGoodBlinks'] > params['minGoodBlinks']]
 
     if not filtered_df.empty:
-        filtered_df['select'] = True
+        filtered_df.loc[:, 'select'] = True
         return filtered_df
 
     # Fallback: no rows meet threshold, select the best available
@@ -61,7 +62,8 @@ def filter_good_ratio(df, params):
     filtered_df = df[df['goodRatio'] >= threshold]
 
     if not filtered_df.empty:
-        filtered_df['select'] = True
+        # filtered_df['select'] = True
+        filtered_df.loc[:, 'select'] = True
         return filtered_df
 
     # Fallback: no rows pass the threshold

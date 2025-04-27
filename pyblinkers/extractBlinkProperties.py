@@ -348,6 +348,7 @@ class BlinkProperties:
         Durations are calculated based on different blink landmarks and sampling rate.
         '''
         constant = 1 # Constant is for matching Matlab implementation output
+        self.df = self.df.copy()
         self.df['durationBase'] = (self.df['rightBase'] - self.df['leftBase']) / self.srate
         self.df['durationZero'] = (self.df['rightZero'] - self.df['leftZero']) / self.srate
         self.df['durationTent'] = (self.df['rightXIntercept'] - self.df['leftXIntercept']) / self.srate
@@ -461,8 +462,11 @@ class BlinkProperties:
          Blink amplitude-velocity ratio estimated from tent slope
         :return:
         '''
-        self.df['negAmpVelRatioTent'] = 100 * abs(self.candidate_signal[self.df['maxFrame']] / self.df['averRightVelocity']) / self.srate
-        self.df['posAmpVelRatioTent'] = 100 * abs(self.candidate_signal[self.df['maxFrame']] / self.df['averLeftVelocity']) / self.srate
+        self.df.loc[:, 'negAmpVelRatioTent'] = 100 * abs(self.candidate_signal[self.df['maxFrame']] / self.df['averRightVelocity']) / self.srate
+        self.df.loc[:, 'posAmpVelRatioTent'] = 100 * abs(self.candidate_signal[self.df['maxFrame']] / self.df['averLeftVelocity']) / self.srate
+
+        # self.df['negAmpVelRatioTent'] = 100 * abs(self.candidate_signal[self.df['maxFrame']] / self.df['averRightVelocity']) / self.srate
+        # self.df['posAmpVelRatioTent'] = 100 * abs(self.candidate_signal[self.df['maxFrame']] / self.df['averLeftVelocity']) / self.srate
     @staticmethod
     def compute_time_shut(row, data, srate, shut_amp_fraction, key_prefix, default_no_thresh):
         """

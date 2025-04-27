@@ -138,7 +138,7 @@ class TestComputeOuterBounds(unittest.TestCase):
         assert_frame_equal(result, expected)
 
         # Visualize
-        plot_outer_bounds(result, signal)
+        # plot_outer_bounds(result, signal)
 
 
 if __name__ == '__main__':
