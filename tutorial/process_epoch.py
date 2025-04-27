@@ -71,10 +71,10 @@ def plot_blinks(raw_file):
                                }
     }
     # results = run_blink_detection_pipeline(raw, config=config)
-    status = BlinkDetector(epochs, visualize=False, annot_label=None,
+    selected_rows = BlinkDetector(epochs, visualize=False, annot_label=None,
                                                                              filter_low=0.5, filter_high=20.5, resample_rate=100,
                                                                              n_jobs=2,use_multiprocessing=True).get_blink()
-    print(status)
+
 
 if __name__ == '__main__':
     sample_data_folder = mne.datasets.sample.data_path()

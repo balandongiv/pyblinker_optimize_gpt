@@ -423,7 +423,7 @@ class BlinkDetector:
         ch_selected = self.select_representative_channel()
         # logger.info(f"Selected representative channel: {ch_selected.loc[0, 'ch']}")
         selected_rows = ch_selected[ch_selected['select'] == True]
-
+        # selected_rows.to_pickle("file_test_epoch_full_pipeline.pkl")
         if selected_rows.empty:
             logger.warning("No channel was selected (select column has no True value).")
         else:
@@ -433,7 +433,7 @@ class BlinkDetector:
 
 
         if is_epochs:
-            return 'success'
+            return selected_rows
 
         else:
             ch, data, df = self.get_representative_blink_data(ch_selected)

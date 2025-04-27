@@ -4,15 +4,15 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from unit_test.develop_blink_position import get_blink_position
-
+# from unit_test.develop_blink_position import get_blink_position
+from pyblinkers.getBlinkPositions import get_blink_position
 
 class TestGetBlinkPosition(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         # Load debug data once for all tests
-        with open('debug_blink_position.pkl', 'rb') as f:
+        with open('file_test_blink_position.pkl', 'rb') as f:
             cls.debug_data = pickle.load(f)
 
     def test_blink_detection(self):
