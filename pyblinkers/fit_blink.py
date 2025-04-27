@@ -44,7 +44,7 @@ class FitBlinks:
             'blinkBottomPoint_r_X', 'blinkBottomPoint_r_Y',
             'blinkTopPoint_r_X', 'blinkTopPoint_r_Y'
         ]
-        self.cols_lines_intesection = [
+        self.cols_lines_intersection = [
             'leftSlope', 'rightSlope', 'averLeftVelocity', 'averRightVelocity',
             'rightR2', 'leftR2', 'xIntersect', 'yIntersect',
             'leftXIntercept', 'rightXIntercept'
@@ -64,7 +64,7 @@ class FitBlinks:
         max_fr = blink_range[max_idx]
         return max_val, max_fr
 
-    def dprocess(self):
+    def process_blink_candidate(self):
         data_size = self.candidate_signal.size  # store locally to avoid repeated lookups
 
         # Find the maxFrame index and maxValue at that maxFrame index
@@ -162,7 +162,7 @@ class FitBlinks:
 
         # Calculate line intersections
 
-        self.frame_blinks[self.cols_lines_intesection] = self.frame_blinks.apply(
+        self.frame_blinks[self.cols_lines_intersection] = self.frame_blinks.apply(
             lambda row: lines_intersection_matlabx(
                 signal=self.candidate_signal,
                 xRight=row['xRight'],

@@ -26,7 +26,49 @@ def calculate_good_ratio(all_values, best_median, best_robust_std, all_x):
     within_mask = (all_values >= lower_bound) & (all_values <= upper_bound)
     return np.sum(within_mask) / all_x
 
+def compute_blink_statistics_core(df, z_thresholds, blink_amp_ratio=None):
+    """
+    Core computation for blink statistics.
 
+    Parameters:
+        df: DataFrame containing blink features (leftR2, rightR2, maxValue)
+        z_thresholds: correlation thresholds [(bottom, top)]
+        blink_amp_ratio: precomputed blink amplitude ratio (optional)
+
+    Returns:
+        A dictionary of blink statistics.
+    """
+    correlation_threshold_bottom, correlation_threshold_top = z_thresholds[0]
+    df_data = df[['leftR2', 'rightR2', 'maxValue']]
+
+    good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
+    good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
+
+    best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
+    worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
+    good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
+
+    best_median = np.nanmedian(best_values)
+    best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
+    worst_median = np.nanmedian(worst_values)
+    worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
+
+    cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
+
+    all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
+    good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
+
+    number_good_blinks = int(np.sum(good_mask_bottom))
+
+    return dict(
+        numberBlinks=len(df_data),
+        numberGoodBlinks=number_good_blinks,
+        blinkAmpRatio=blink_amp_ratio,
+        cutoff=cutoff,
+        bestMedian=best_median,
+        bestRobustStd=best_robust_std,
+        goodRatio=good_ratio
+    )
 def plot_blink_masks(signal, dfx, positive_mask, inside_blink, outside_blink, title='Blink Mask Visualization', debug=False):
     """
     Returns the figure only if debug=True. Otherwise returns None.
@@ -73,13 +115,13 @@ def plot_blink_masks(signal, dfx, positive_mask, inside_blink, outside_blink, ti
 
     return fig  # ✅ Return the figure only if debug is True
 
-def get_blink_statistic_epoch_aggregated(df_list, zThresholds, signal_list=None):
+def get_blink_statistic_epoch_aggregated(df_list, z_thresholds, signal_list=None):
     """
     Compute blink statistics across multiple epochs by aggregating blinks.
 
     Parameters:
         df_list: list of DataFrames from each epoch (blinks per epoch)
-        zThresholds: correlation thresholds [(bottom, top)]
+        z_thresholds: correlation thresholds [(bottom, top)]
         signal_list: list of 1D signals (one per epoch)
 
     Returns:
@@ -135,39 +177,39 @@ def get_blink_statistic_epoch_aggregated(df_list, zThresholds, signal_list=None)
     else:
         blink_amp_ratio = np.nan
 
-    # -- Same logic: threshold masks based on global df --
-    correlation_threshold_bottom, correlation_threshold_top = zThresholds[0]
-    df_data = df_all[['leftR2', 'rightR2', 'maxValue']]
-
-    good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
-    good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
-
-    best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
-    worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
-    good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
-
-    best_median = np.nanmedian(best_values)
-    best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
-    worst_median = np.nanmedian(worst_values)
-    worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
-
-    cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
-
-    all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
-    good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
-
-    number_good_blinks = int(np.sum(good_mask_bottom))
-
-    return dict(
-        numberBlinks=len(df_data),
-        numberGoodBlinks=number_good_blinks,
-        blinkAmpRatio=blink_amp_ratio,
-        cutoff=cutoff,
-        bestMedian=best_median,
-        bestRobustStd=best_robust_std,
-        goodRatio=good_ratio
-    )
-
+    # # -- Same logic: threshold masks based on global df --
+    # correlation_threshold_bottom, correlation_threshold_top = z_thresholds[0]
+    # df_data = df_all[['leftR2', 'rightR2', 'maxValue']]
+    #
+    # good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
+    # good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
+    #
+    # best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
+    # worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
+    # good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
+    #
+    # best_median = np.nanmedian(best_values)
+    # best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
+    # worst_median = np.nanmedian(worst_values)
+    # worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
+    #
+    # cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
+    #
+    # all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
+    # good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
+    #
+    # number_good_blinks = int(np.sum(good_mask_bottom))
+    #
+    # return dict(
+    #     numberBlinks=len(df_data),
+    #     numberGoodBlinks=number_good_blinks,
+    #     blinkAmpRatio=blink_amp_ratio,
+    #     cutoff=cutoff,
+    #     bestMedian=best_median,
+    #     bestRobustStd=best_robust_std,
+    #     goodRatio=good_ratio
+    # )
+    return compute_blink_statistics_core(df_all, z_thresholds, blink_amp_ratio)
 def get_blink_statistic(df, zThresholds, signal=None):
     # its sister function but for epochs is under the name get_blink_statistic_epoch_aggregated
     dfx = df.copy()
@@ -183,38 +225,38 @@ def get_blink_statistic(df, zThresholds, signal=None):
     outside_blink = (signal > 0) & ~blink_mask
     blink_amp_ratio = np.mean(signal[inside_blink]) / np.mean(signal[outside_blink])
 
-    correlation_threshold_bottom, correlation_threshold_top = zThresholds[0]
-    df_data = df[['leftR2', 'rightR2', 'maxValue']]
-
-    good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
-    good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
-
-    best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
-    worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
-    good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
-
-    best_median = np.nanmedian(best_values)
-    best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
-    worst_median = np.nanmedian(worst_values)
-    worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
-
-    cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
-
-    all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
-    good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
-
-    number_good_blinks = np.sum(good_mask_bottom)
-
-    return dict(
-        numberBlinks=len(df_data),
-        numberGoodBlinks=number_good_blinks,
-        blinkAmpRatio=blink_amp_ratio,
-        cutoff=cutoff,
-        bestMedian=best_median,
-        bestRobustStd=best_robust_std,
-        goodRatio=good_ratio
-    )
-
+    # correlation_threshold_bottom, correlation_threshold_top = zThresholds[0]
+    # df_data = df[['leftR2', 'rightR2', 'maxValue']]
+    #
+    # good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
+    # good_mask_bottom = (df_data['leftR2'] >= correlation_threshold_bottom) & (df_data['rightR2'] >= correlation_threshold_bottom)
+    #
+    # best_values = df_data.loc[good_mask_top, 'maxValue'].to_numpy()
+    # worst_values = df_data.loc[~good_mask_bottom, 'maxValue'].to_numpy()
+    # good_values = df_data.loc[good_mask_bottom, 'maxValue'].to_numpy()
+    #
+    # best_median = np.nanmedian(best_values)
+    # best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
+    # worst_median = np.nanmedian(worst_values)
+    # worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
+    #
+    # cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (best_robust_std + worst_robust_std)
+    #
+    # all_x = calculate_within_range(df_data['maxValue'].to_numpy(), best_median, best_robust_std)
+    # good_ratio = np.nan if all_x <= 0 else calculate_good_ratio(good_values, best_median, best_robust_std, all_x)
+    #
+    # number_good_blinks = np.sum(good_mask_bottom)
+    #
+    # return dict(
+    #     numberBlinks=len(df_data),
+    #     numberGoodBlinks=number_good_blinks,
+    #     blinkAmpRatio=blink_amp_ratio,
+    #     cutoff=cutoff,
+    #     bestMedian=best_median,
+    #     bestRobustStd=best_robust_std,
+    #     goodRatio=good_ratio
+    # )
+    return compute_blink_statistics_core(df, zThresholds, blink_amp_ratio)
 
 def get_good_blink_mask(blink_fits, specified_median, specified_std, z_thresholds):
     """Generates a boolean mask for 'good' blinks based on blink fit parameters and thresholds.
@@ -500,7 +542,8 @@ class BlinkProperties:
         data_slice = data[left:right+1]
 
         # Find the start index where the signal first reaches/exceeds the threshold.
-        cond = data_slice >= threshold
+        # cond = data_slice >= threshold
+        cond = np.atleast_1d(data_slice >= threshold)
         if not cond.any():
             return default_no_thresh
         start_idx = cond.argmax()
@@ -535,12 +578,14 @@ class BlinkProperties:
         amp_threshold = shut_amp_fraction * max_val
         data_slice = candidate_signal[left: right]
 
-        cond_start = (data_slice >= amp_threshold)
+        # cond_start = (data_slice >= amp_threshold)
+        cond_start = np.atleast_1d(data_slice >= amp_threshold)
         if not cond_start.any():
             return 0
 
         start_idx = np.argmax(cond_start)
         cond_end = (data_slice[start_idx : -1] < amp_threshold)
+
         end_shut = np.argmax(cond_end) if cond_end.any() else np.nan
         return end_shut / srate
 

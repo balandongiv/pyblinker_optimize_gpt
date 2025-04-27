@@ -163,7 +163,7 @@ class TestExtractBlinkProperties(unittest.TestCase):
 
         # STEP 2: Fit blinks
         fitblinks = FitBlinks(candidate_signal=self.blink_comp, df=blink_positions, params=self.params)
-        fitblinks.dprocess()
+        fitblinks.process_blink_candidate()
         df = fitblinks.frame_blinks
 
         # STEP 3: Extract blink statistics

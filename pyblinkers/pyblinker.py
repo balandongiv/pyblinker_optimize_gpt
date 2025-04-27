@@ -197,7 +197,7 @@ class BlinkDetector:
                 continue
             logger.info(f'Now to FitBlinks for epoch {orig_idx}')
             fitter = FitBlinks(sig, df, self.params)
-            fitter.dprocess()
+            fitter.process_blink_candidate()
             fit_df = fitter.frame_blinks
             if fit_df.empty:
                 continue
@@ -231,7 +231,7 @@ class BlinkDetector:
         if len(blink_dfs)>0:
             agg  = get_blink_statistic_epoch_aggregated(
                 df_list=blink_dfs,
-                zThresholds=self.params['z_thresholds'],
+                z_thresholds=self.params['z_thresholds'],
                 signal_list=signals
             )
             agg['ch'] = channel
@@ -284,7 +284,7 @@ class BlinkDetector:
             df=df,
             params=self.params
         )
-        fitblinks.dprocess()
+        fitblinks.process_blink_candidate()
         df = fitblinks.frame_blinks
 
         # STEP 3: Extract blink statistics

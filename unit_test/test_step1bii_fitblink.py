@@ -57,7 +57,7 @@ class TestFitBlinks(unittest.TestCase):
 
         # Process blink candidate_signal with `FitBlinks`
         fitblinks = FitBlinks(candidate_signal=blink_comp, df=df_blink_positions, params=params)
-        fitblinks.dprocess()
+        fitblinks.process_blink_candidate()
         df_output = fitblinks.frame_blinks
 
         # Adjust indices for MATLAB compatibility

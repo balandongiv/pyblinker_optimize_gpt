@@ -1,6 +1,20 @@
 import warnings
 import numpy as np
 import pandas as pd
+
+
+def _to_ints(*args):
+    """
+    Convert multiple values to native Python int.
+
+    This is used to ensure all indexing-related variables are type-safe.
+    When using `pandas.apply`, mixed dtypes (like float32 and int32) can result in float64 values
+    being passed to functions, which may cause issues with NumPy indexing.
+
+    Accepts any number of inputs and returns their `int()` equivalents in order.
+    """
+    return tuple(int(x) for x in args)
+
 def get_line_intersection_slope(x_intersect, y_intersect, left_x_intersect, right_x_intersect):
     """
     Original logic retained. Computes slopes at the intersection point.
@@ -97,9 +111,8 @@ def left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_en
     we deal with epoch format, as the signal windows might be small, therefore,we cannot extend the search window
     to extreme.
     """
-    start_idx = int(outer_starts)
-    m_frame = int(max_frame)
-    end_idx = int(outer_ends)
+
+    start_idx,end_idx,m_frame=_to_ints(outer_starts,outer_ends,max_frame)
 
     # Left side search
     left_range = np.arange(start_idx, m_frame)
@@ -147,10 +160,7 @@ def get_up_down_stroke(max_frame, left_zero, right_zero):
     up_stroke is the interval between left_zero and max_frame,
     down_stroke is the interval between max_frame and right_zero.
     """
-    m_frame = int(max_frame)
-    l_zero = int(left_zero)
-    r_zero = int(right_zero)
-
+    m_frame, l_zero, r_zero = _to_ints(max_frame, left_zero, right_zero)
     up_stroke = np.arange(l_zero, m_frame + 1)
     down_stroke = np.arange(m_frame, r_zero + 1)
     return up_stroke, down_stroke
@@ -162,10 +172,8 @@ def _max_pos_vel_frame(blink_velocity, max_frame, left_zero, right_zero):
     the `max_pos_vel_frame` and `max_neg_vel_frame` represent the indices where
     the *blink_velocity* reaches its maximum positive value and maximum negative value, respectively.
     """
-    m_frame = int(max_frame)
-    l_zero = int(left_zero)
-    r_zero = int(right_zero)
 
+    m_frame, l_zero, r_zero = _to_ints(max_frame, left_zero, right_zero)
     up_stroke, down_stroke = get_up_down_stroke(m_frame, l_zero, r_zero)
 
     # Maximum positive velocity in the up_stroke region
@@ -201,13 +209,12 @@ def _get_left_base(blink_velocity, left_outer, max_pos_vel_frame):
     Determine the left base index from left_outer to max_pos_vel_frame
     by searching for where blink_velocity crosses <= 0.
     """
-    l_outer = int(left_outer)
-    m_pos_vel = int(max_pos_vel_frame)
 
+    l_outer, m_pos_vel = _to_ints(left_outer, max_pos_vel_frame)
     left_range = np.arange(l_outer, m_pos_vel + 1)
     reversed_velocity = np.flip(blink_velocity[left_range])
 
-    left_base_index = np.argmax(reversed_velocity <= 0)
+    left_base_index = int(np.argmax(reversed_velocity <= 0))
     left_base = m_pos_vel - left_base_index - 1
     return left_base
 
@@ -217,8 +224,8 @@ def _get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_f
     Determine the right base index from max_neg_vel_frame to right_outer
     by searching for where blink_velocity crosses >= 0.
     """
-    r_outer = int(right_outer)
-    m_neg_vel = int(max_neg_vel_frame)
+
+    r_outer, m_neg_vel = _to_ints(right_outer, max_neg_vel_frame)
 
     # Ensure boundaries are valid
     if m_neg_vel > r_outer:
@@ -239,21 +246,11 @@ def _get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_f
             raise ValueError('Please strategies how to address this')
 
     right_base_velocity = blink_velocity[right_range]
-    right_base_index = np.argmax(right_base_velocity >= 0)
+    right_base_index = int(np.argmax(right_base_velocity >= 0))
     right_base = m_neg_vel + right_base_index + 1
     return right_base
 
-def _to_ints(*args):
-    """
-    Convert multiple values to native Python int.
 
-    This is used to ensure all indexing-related variables are type-safe.
-    When using `pandas.apply`, mixed dtypes (like float32 and int32) can result in float64 values
-    being passed to functions, which may cause issues with NumPy indexing.
-
-    Accepts any number of inputs and returns their `int()` equivalents in order.
-    """
-    return tuple(int(x) for x in args)
 
 def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_base, right_outer):
     """
@@ -276,7 +273,7 @@ def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_ba
     # Left side half-height from base
     left_range = np.arange(l_base, m_frame + 1)
     left_vals = candidate_signal[left_range]
-    left_index = np.argmax(left_vals >= half_height_val)
+    left_index = int(np.argmax(left_vals >= half_height_val))
     left_base_half_height = l_base + left_index + 1
 
     # Right side half-height from base
@@ -299,12 +296,12 @@ def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_ba
     # left_zero_half_height
     zero_half_val = 0.5 * max_val
     left_zero_range = np.arange(l_zero, m_frame + 1)
-    left_zero_index = np.argmax(candidate_signal[left_zero_range] >= zero_half_val)
+    left_zero_index = int(np.argmax(candidate_signal[left_zero_range] >= zero_half_val))
     left_zero_half_height = l_zero + left_zero_index + 1
 
     # right_zero_half_height
     right_zero_range = np.arange(m_frame, r_zero + 1)
-    right_zero_index = np.argmax(candidate_signal[right_zero_range] <= zero_half_val)
+    right_zero_index = int(np.argmax(candidate_signal[right_zero_range] <= zero_half_val))
     right_zero_half_height = min(r_outer, m_frame + right_zero_index)
 
     return left_zero_half_height, right_zero_half_height, left_base_half_height, right_base_half_height
