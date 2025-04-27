@@ -1,7 +1,42 @@
 import numpy as np
 import pandas as pd
 
+from pyblinkers.default_setting import SCALING_FACTOR
+from pyblinkers.matlab_forking import mad_matlab
 
+
+def compute_global_stats(good_data, ch_idx, params):
+    """
+    Compute global statistics for blink detection.
+
+    Parameters:
+        good_data (numpy.ndarray): Valid epoch data.
+        ch_idx (int): Index of the channel to process.
+        params (dict): Parameters for blink detection.
+
+    Returns:
+        tuple: (mu, robust_std, threshold, min_blink_frames)
+    """
+    if good_data.ndim == 1:
+        blink_component=good_data
+        min_blink_frames = params['minEventLen'] * params['sfreq'] # for continous, we use what has been used in the original implementation
+    else:
+
+        blink_component = good_data[:, ch_idx, :].reshape(-1) # This is a 1D array of all the epochs now being flattened into 1D
+        min_blink_frames=1 # For epoch, we need to set it to 1
+    mu = np.mean(blink_component, dtype=np.float64)
+    mad_val = mad_matlab(blink_component)
+    robust_std = SCALING_FACTOR * mad_val
+
+
+    threshold = mu + params['stdThreshold'] * robust_std
+    return dict(
+        mu=mu,
+        robust_std=robust_std,
+        threshold=threshold,
+        min_blink_frames=min_blink_frames,
+        mad_val=mad_val
+    )
 def get_blink_position(
         params: dict,
         blink_component: np.ndarray | None = None,

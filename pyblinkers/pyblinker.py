@@ -7,80 +7,18 @@ import pandas as pd
 from tqdm import tqdm
 
 from pyblinkers import default_setting
-from pyblinkers.default_setting import SCALING_FACTOR
 from pyblinkers.extractBlinkProperties import BlinkProperties, get_good_blink_mask
-from pyblinkers.extractBlinkProperties import get_blink_statistic,get_blink_statistic_epoch_aggregated
+from pyblinkers.extractBlinkProperties import get_blink_statistic, get_blink_statistic_epoch_aggregated
 from pyblinkers.fit_blink import FitBlinks
+from pyblinkers.getBlinkPositions import compute_global_stats
 from pyblinkers.getBlinkPositions import get_blink_position
 from pyblinkers.getRepresentativeChannel import channel_selection
-from pyblinkers.matlab_forking import mad_matlab
 from pyblinkers.misc import create_annotation
 from pyblinkers.utils._logging import logger
 from pyblinkers.viz_pd import viz_complete_blink_prop
 
-def compute_global_stats(good_data, ch_idx, params):
-    """
-    Compute global statistics for blink detection.
-
-    Parameters:
-        good_data (numpy.ndarray): Valid epoch data.
-        ch_idx (int): Index of the channel to process.
-        params (dict): Parameters for blink detection.
-
-    Returns:
-        tuple: (mu, robust_std, threshold, min_blink_frames)
-    """
-    if good_data.ndim == 1:
-        blink_component=good_data
-        min_blink_frames = params['minEventLen'] * params['sfreq'] # for continous, we use what has been used in the original implementation
-    else:
-
-        blink_component = good_data[:, ch_idx, :].reshape(-1) # This is a 1D array of all the epochs now being flattened into 1D
-        min_blink_frames=1 # For epoch, we need to set it to 1
-    mu = np.mean(blink_component, dtype=np.float64)
-    mad_val = mad_matlab(blink_component)
-    robust_std = SCALING_FACTOR * mad_val
 
 
-    threshold = mu + params['stdThreshold'] * robust_std
-    return dict(
-        mu=mu,
-        robust_std=robust_std,
-        threshold=threshold,
-        min_blink_frames=min_blink_frames,
-        mad_val=mad_val
-    )
-
-def plot_epoch_signal(epoch_data, global_idx, ch_idx, sampling_rate=None):
-    """
-    Plots the signal from a specific epoch and channel.
-
-    Parameters:
-    - epoch_data: 3D array of shape (n_epochs, n_channels, n_times)
-    - global_idx: int, index of the epoch to plot
-    - ch_idx: int, index of the channel to plot
-    - sampling_rate: float or int, optional. If provided, x-axis will be in seconds
-    """
-    epoch_signal = epoch_data[global_idx, ch_idx, :]
-    n_times = epoch_signal.shape[0]
-
-    if sampling_rate:
-        time = [i / sampling_rate for i in range(n_times)]
-        xlabel = 'Time (s)'
-    else:
-        time = range(n_times)
-        xlabel = 'Time (samples)'
-
-    plt.figure(figsize=(10, 4))
-    plt.plot(time, epoch_signal)
-    plt.title(f'Epoch Signal - Epoch: {global_idx}, Channel: {ch_idx}')
-    plt.xlabel(xlabel)
-    plt.ylabel('Amplitude')
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig('test.png')
-    # plt.show()
-    v=1
 class BlinkDetector:
     def __init__(self,
                  raw_data,
@@ -423,7 +361,6 @@ class BlinkDetector:
         ch_selected = self.select_representative_channel()
         # logger.info(f"Selected representative channel: {ch_selected.loc[0, 'ch']}")
         selected_rows = ch_selected[ch_selected['select'] == True]
-        # selected_rows.to_pickle("file_test_epoch_full_pipeline.pkl")
         if selected_rows.empty:
             logger.warning("No channel was selected (select column has no True value).")
         else:

@@ -3,7 +3,36 @@
 # import hickle as hkl
 import numpy as np
 import matplotlib.pyplot as plt
+def plot_epoch_signal(epoch_data, global_idx, ch_idx, sampling_rate=None):
+    """
+    Plots the signal from a specific epoch and channel.
 
+    Parameters:
+    - epoch_data: 3D array of shape (n_epochs, n_channels, n_times)
+    - global_idx: int, index of the epoch to plot
+    - ch_idx: int, index of the channel to plot
+    - sampling_rate: float or int, optional. If provided, x-axis will be in seconds
+    """
+    epoch_signal = epoch_data[global_idx, ch_idx, :]
+    n_times = epoch_signal.shape[0]
+
+    if sampling_rate:
+        time = [i / sampling_rate for i in range(n_times)]
+        xlabel = 'Time (s)'
+    else:
+        time = range(n_times)
+        xlabel = 'Time (samples)'
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(time, epoch_signal)
+    plt.title(f'Epoch Signal - Epoch: {global_idx}, Channel: {ch_idx}')
+    plt.xlabel(xlabel)
+    plt.ylabel('Amplitude')
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig('test.png')
+    # plt.show()
+    v=1
 def viz_line_intersection(candidateSignal,xRight,xLeft,leftXIntercept,rightXIntercept,
                           xIntersect,yIntersect):
     #### make_Plot
