@@ -1,6 +1,3 @@
-
-
-import matplotlib.pyplot as plt
 import mne
 import numpy as np
 import pandas as pd
@@ -16,7 +13,6 @@ from pyblinkers.getRepresentativeChannel import channel_selection
 from pyblinkers.misc import create_annotation
 from pyblinkers.utils._logging import logger
 from pyblinkers.viz_pd import viz_complete_blink_prop
-
 
 
 class BlinkDetector:

@@ -73,8 +73,6 @@ class FitBlinks:
             axis=1,
             result_type='expand'
         )
-        # Ensure the maxFrame is integer
-
 
 
         self.df = compute_outer_bounds(self.df, data_size)
@@ -91,7 +89,6 @@ class FitBlinks:
         )
 
         self.df.dropna(inplace=True)
-        # self.df['maxFrame'] = self.df['maxFrame'].astype(int)
 
         if self.df.empty:
 
