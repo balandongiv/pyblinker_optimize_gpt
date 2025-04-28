@@ -60,6 +60,13 @@ class BlinkDetector:
         # Default to picking only EEG if none is provided
         self.pick_types_options = pick_types_options if pick_types_options is not None else {'eeg': True}
 
+
+    def _apply_pavr(self, df, stats):
+        cond = (
+                (df["posAmpVelRatioZero"] < self.params["pAVRThreshold"])
+                & (df["maxValue"] < stats["bestMedian"] - stats["bestRobustStd"])
+        )
+        return df[~cond].reset_index(drop=True)
     def prepare_raw_signal(self):
         """
         Preprocess raw signal:
@@ -163,11 +170,12 @@ class BlinkDetector:
         combined = pd.concat(props_list, ignore_index=True)
 
         # STEP 6: Apply pAVR restriction
-        cond = (
-                (combined["posAmpVelRatioZero"] < self.params["pAVRThreshold"])
-                & (combined["maxValue"] < stats["bestMedian"] - stats["bestRobustStd"])
-        )
-        return combined[~cond].reset_index(drop=True)
+        # cond = (
+        #         (combined["posAmpVelRatioZero"] < self.params["pAVRThreshold"])
+        #         & (combined["maxValue"] < stats["bestMedian"] - stats["bestRobustStd"])
+        # )
+        # STEP 6: Apply pAVR restriction
+        return self._apply_pavr(combined, stats)
 
 
     def detect_and_fit_blinks(self, data, ch_idx, orig_idxs):
@@ -311,10 +319,7 @@ class BlinkDetector:
         ).df
 
         # STEP 6: Apply pAVR restriction
-        condition_1 = df['posAmpVelRatioZero'] < self.params['pAVRThreshold']
-        condition_2 = df['maxValue'] < (blink_stats['bestMedian'] - blink_stats['bestRobustStd'])
-        df = df[~(condition_1 & condition_2)]
-
+        df=self._apply_pavr(df, blink_stats)
         # Store results
         self.all_data_info.append(dict(df=df, ch=channel))
         self.all_data.append(blink_stats)
