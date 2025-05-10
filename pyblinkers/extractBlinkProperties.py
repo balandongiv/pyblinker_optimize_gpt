@@ -113,7 +113,7 @@ def plot_blink_masks(signal, dfx, positive_mask, inside_blink, outside_blink, ti
     ax.grid(True)
     plt.tight_layout()
 
-    return fig  # ✅ Return the figure only if debug is True
+    return fig  # Return the figure only if debug is True
 
 def get_blink_statistic_epoch_aggregated(df_list, z_thresholds, signal_list=None):
     """
@@ -131,10 +131,10 @@ def get_blink_statistic_epoch_aggregated(df_list, z_thresholds, signal_list=None
     if debug:
         import mne
         report = mne.Report(title='Blink Signal Quality Check')
-    # -- New: flatten df across epochs --
+
     df_all = pd.concat(df_list, ignore_index=True)
     # df_all.to_excel("df_all.xlsx", index=False)
-    # -- New: prepare to aggregate inside and outside blink signals --
+
     global_inside_blinks = []
     global_outside_blinks = []
 
