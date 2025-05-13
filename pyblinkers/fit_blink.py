@@ -99,7 +99,7 @@ class FitBlinks:
         # Cast all columns to int32 except 'maxValue' (which holds float precision signal peak)
         # since all positions are always positive and don't require full 64-bit precision
         self.df = self.df.astype({
-            col: 'int32' for col in self.df.columns if col != 'maxValue'
+            col: 'int32' for col in self.df.columns if col not in ['maxValue', 'blink_type']
         })
         self.fit()
 

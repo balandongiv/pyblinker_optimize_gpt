@@ -154,7 +154,7 @@ if __name__ == "__main__":
     params = debug_data["params"]
 
     # Process and extract properties
-    processed_df, stats = process_blinks( raw.get_data(picks=0)[0] , blink_df, params)
+    processed_df, stats = process_blinks( raw.get_data(picks=1)[0] , blink_df, params)
 
     print("\nProcessed Blink DataFrame:")
     print(processed_df.head())
