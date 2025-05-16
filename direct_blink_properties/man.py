@@ -245,12 +245,14 @@ def process_blinks(candidate_signal, df, params):
 
 
 
+import matplotlib.pyplot as plt
+
 def plot_with_annotation_lines(
         raw,
-        start_sec=10.0,
-        end_sec=13.0,
+        start_frame=0,
+        end_frame=10,
+        mid_frame=5,
         picks='avg_ear',
-        annotation_frames=None,
         video_sfreq=30.0,
         frame_offset: int = 0
 ):
@@ -260,28 +262,37 @@ def plot_with_annotation_lines(
     Parameters
     ----------
     raw : mne.io.Raw
-        MNE Raw object.
-    start_sec : float
-        Start of time window (seconds).
-    end_sec : float
-        End of time window (seconds).
+        MNE Raw object containing EEG/EOG/EAR signals.
+    start_frame : int
+        Start of the blink event (video frame index).
+    end_frame : int
+        End of the blink event (video frame index).
+    mid_frame : int
+        Minimum point of the blink event (video frame index).
     picks : str
         Channel to plot (e.g., 'avg_ear').
-    annotation_frames : list of str
-        List of frame labels like ['frame_000358'].
     video_sfreq : float
-        Frame rate of the annotated video (Hz).
+        Frame rate of the annotated video (e.g., 30 Hz).
     frame_offset : int
-        Subtracted from each frame index before conversion.
+        Number of frames to subtract globally from each annotation (e.g., calibration shift).
     """
     if picks not in raw.ch_names:
         print(f"Channel '{picks}' not found in raw data.")
         return
 
-    # Crop and extract data
-    raw_segment = raw.copy().crop(tmin=start_sec, tmax=end_sec)
+    # Convert frame indices to time
+    start_sec = start_frame / video_sfreq
+    end_sec = end_frame / video_sfreq
+    mid_sec = mid_frame / video_sfreq
+    buffer_time = 0.5  # seconds to pad before and after the segment
+
+    crop_start_sec = start_sec - buffer_time
+    crop_end_sec = end_sec + buffer_time
+
+    # Crop raw and extract timeseries
+    raw_segment = raw.copy().crop(tmin=crop_start_sec, tmax=crop_end_sec)
     data, times = raw_segment.get_data(picks=picks, return_times=True)
-    times += start_sec  # adjust to global time
+    times += crop_start_sec  # adjust to global time
 
     signal = data[0]
 
@@ -289,31 +300,29 @@ def plot_with_annotation_lines(
     plt.figure(figsize=(10, 4))
     plt.scatter(times, signal, s=10, color='black', label=picks)
 
-    # Overlay annotation lines
-    if annotation_frames:
-        for frame_str in annotation_frames:
-            frame_num = int(frame_str.replace("frame_", ""))
-            adjusted_frame = frame_num - frame_offset
-            frame_sec = adjusted_frame / video_sfreq
+    # Annotate blink frames
+    annotation_frames = [start_frame, mid_frame, end_frame]
+    for frame_num in annotation_frames:
+        adjusted_frame = frame_num - frame_offset
+        frame_sec = adjusted_frame / video_sfreq
+        plt.axvline(x=frame_sec, color='orange', linestyle='--')
+        plt.annotate(
+            f"Frame {frame_num}",
+            xy=(frame_sec, signal.min()),
+            xytext=(frame_sec, signal.max()),
+            arrowprops=dict(arrowstyle='->', color='orange'),
+            fontsize=8,
+            rotation=90
+        )
 
-            if start_sec <= frame_sec <= end_sec:
-                plt.axvline(x=frame_sec, color='orange', linestyle='--')
-                plt.annotate(
-                    f"{frame_str} -{frame_offset}",
-                    xy=(frame_sec, signal.min()),
-                    xytext=(frame_sec, signal.max()),
-                    arrowprops=dict(arrowstyle='->', color='orange'),
-                    fontsize=8,
-                    rotation=90
-                )
-
-    plt.title(f"{picks} scatter plot with annotation markers")
+    plt.title(f"{picks} scatter plot with blink annotations")
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude")
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
     plt.show()
+
 
 if __name__ == "__main__":
     fif_path = r"C:\Users\balan\IdeaProjects\pyblinker_optimize_gpt\data_new_pipeline\S01_20170519_043933.fif"
@@ -337,39 +346,41 @@ if __name__ == "__main__":
     blink_df = extract_blink_durations(annotation_df)
     annotation_frames = ['frame_000358', 'frame_000361', 'frame_000366']
     ['E8', 'E10', 'eog_vert_right', 'avg_ear']
-    plot_with_annotation_lines(
-        raw=raw,
-        start_sec=10,
-        end_sec=13,
-        picks='E8',
-        annotation_frames=annotation_frames,
-        video_sfreq=30.0,
-        frame_offset=6 # shifts 358 to 353, etc.
-    )
 
-    with open("fitblinks_debug.pkl", "rb") as f:
-            debug_data = pickle.load(f)
-    params = debug_data["params"]
-    # now generate reports
-    generate_blink_mne_reports_matplotlib(
-        raw=raw,
-        blink_df=blink_df,
-        sfreq=params['sfreq'],
-        channels=['avg_ear'],
-        video_sfreq=30.0,
-        t_pre_frames=10,
-        t_post_frames=10,
-        offset_frames=0,
-        max_events_per_report=200,
-        report_dir=r"C:\Users\balan\IdeaProjects\pyblinker_optimize_gpt\direct_blink_properties\blink_reports"
-    )
+    for _, row in blink_df.iterrows():
+        plot_with_annotation_lines(
+            raw=raw,
+            start_frame=row['startBlinks'],
+            end_frame=row['endBlinks'],
+            mid_frame=row['blink_min'],
+            picks='avg_ear',
+            video_sfreq=30.0,
+            frame_offset=5 # shifts 358 to 353, etc.
+        )
+
+    # with open("fitblinks_debug.pkl", "rb") as f:
+    #         debug_data = pickle.load(f)
+    # params = debug_data["params"]
+    # # now generate reports
+    # generate_blink_mne_reports_matplotlib(
+    #     raw=raw,
+    #     blink_df=blink_df,
+    #     sfreq=params['sfreq'],
+    #     channels=['avg_ear'],
+    #     video_sfreq=30.0,
+    #     t_pre_frames=10,
+    #     t_post_frames=10,
+    #     offset_frames=0,
+    #     max_events_per_report=200,
+    #     report_dir=r"C:\Users\balan\IdeaProjects\pyblinker_optimize_gpt\direct_blink_properties\blink_reports"
+    # )
+    # #
     #
-
-    # Process and extract properties
-    processed_df, stats = process_blinks( raw.get_data(picks=1)[0] , blink_df, params)
-
-    print("\nProcessed Blink DataFrame:")
-    # print(processed_df.head())
-
-    print("\nBlink Statistics:")
-    # print(stats)
+    # # Process and extract properties
+    # processed_df, stats = process_blinks( raw.get_data(picks=1)[0] , blink_df, params)
+    #
+    # print("\nProcessed Blink DataFrame:")
+    # # print(processed_df.head())
+    #
+    # print("\nBlink Statistics:")
+    # # print(stats)
