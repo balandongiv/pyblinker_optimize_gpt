@@ -1,10 +1,10 @@
 import os
-import os
 import pickle
 import zipfile
 
 import matplotlib.pyplot as plt
 import mne
+import numpy as np
 import pandas as pd
 from mne import Report
 
@@ -245,7 +245,59 @@ def process_blinks(candidate_signal, df, params):
 
 
 
-import matplotlib.pyplot as plt
+
+
+def plot_signal_with_blink_bounds(signal, start_sample, end_sample, sfreq=100.0, pad=10):
+    """
+    Plot a 1D signal slice with padding and annotated blink boundaries.
+
+    Parameters
+    ----------
+    signal : np.ndarray
+        1D array representing the signal (e.g., avg_ear).
+    start_sample : int
+        Index where the blink starts.
+    end_sample : int
+        Index where the blink ends.
+    sfreq : float
+        Sampling frequency in Hz (default is 100.0).
+    pad : int
+        Number of samples to include before and after the segment.
+    """
+    # Ensure indices are in bounds
+    total_len = len(signal)
+    plot_start = max(0, start_sample - pad)
+    plot_end = min(total_len - 1, end_sample + pad)
+
+    segment = signal[plot_start:plot_end + 1]
+    times = np.arange(plot_start, plot_end + 1) / sfreq
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(times, segment, label='Signal', color='black')
+
+    # Convert blink boundaries to time
+    start_time = start_sample / sfreq
+    end_time = end_sample / sfreq
+
+    # Markers
+    plt.axvline(start_time, color='red', linestyle='--', linewidth=1.5, label='Blink Start')
+    plt.axvline(end_time, color='red', linestyle='--', linewidth=1.5, label='Blink End')
+
+    # Annotations
+    y_min, y_max = segment.min(), segment.max()
+    plt.annotate("Start", xy=(start_time, y_min), xytext=(start_time, y_max),
+                 arrowprops=dict(arrowstyle='->', color='red'), fontsize=9, rotation=90)
+    plt.annotate("End", xy=(end_time, y_min), xytext=(end_time, y_max),
+                 arrowprops=dict(arrowstyle='->', color='red'), fontsize=9, rotation=90)
+
+    plt.title("Blink Segment with Start and End Markers")
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 
 def plot_with_annotation_lines(
         raw,
@@ -283,7 +335,6 @@ def plot_with_annotation_lines(
     # Convert frame indices to time
     start_sec = start_frame / video_sfreq
     end_sec = end_frame / video_sfreq
-    mid_sec = mid_frame / video_sfreq
     buffer_time = 0.5  # seconds to pad before and after the segment
 
     crop_start_sec = start_sec - buffer_time
@@ -335,6 +386,11 @@ if __name__ == "__main__":
     raw, annotation_df = load_fif_and_annotations(fif_path, zip_path)
 
 
+    # signal = raw.get_data(picks='avg_ear')[0]
+    signal = raw.get_data(picks='avg_ear')[0]
+    start_sample = int(358 * (100 / 30))  # e.g. from CVAT frame converted to 100Hz
+    end_sample = int(366 * (100 / 30))
+
 
     # raw.plot(
     #     picks='avg_ear',
@@ -344,19 +400,21 @@ if __name__ == "__main__":
     # )
     # Extract blink intervals
     blink_df = extract_blink_durations(annotation_df)
-    annotation_frames = ['frame_000358', 'frame_000361', 'frame_000366']
-    ['E8', 'E10', 'eog_vert_right', 'avg_ear']
-
-    for _, row in blink_df.iterrows():
-        plot_with_annotation_lines(
-            raw=raw,
-            start_frame=row['startBlinks'],
-            end_frame=row['endBlinks'],
-            mid_frame=row['blink_min'],
-            picks='avg_ear',
-            video_sfreq=30.0,
-            frame_offset=5 # shifts 358 to 353, etc.
-        )
+    plot_signal_with_blink_bounds(signal, start_sample, end_sample, sfreq=100.0, pad=500)
+    h=1
+    # annotation_frames = ['frame_000358', 'frame_000361', 'frame_000366']
+    # ['E8', 'E10', 'eog_vert_right', 'avg_ear']
+    #
+    # for _, row in blink_df.iterrows():
+    #     plot_with_annotation_lines(
+    #         raw=raw,
+    #         start_frame=row['startBlinks'],
+    #         end_frame=row['endBlinks'],
+    #         mid_frame=row['blink_min'],
+    #         picks='avg_ear',
+    #         video_sfreq=30.0,
+    #         frame_offset=5 # shifts 358 to 353, etc.
+    #     )
 
     # with open("fitblinks_debug.pkl", "rb") as f:
     #         debug_data = pickle.load(f)
