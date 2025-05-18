@@ -6,114 +6,73 @@ import matplotlib.pyplot as plt
 import mne
 import numpy as np
 import pandas as pd
-from mne import Report
 
 from pyblinkers.extractBlinkProperties import BlinkProperties, get_blink_statistic
 from pyblinkers.fit_blink import FitBlinks
 
 
-def generate_blink_mne_reports_matplotlib(
+def generate_blink_reports(
         raw,
         blink_df,
-        sfreq,
-        channels,
-        video_sfreq: float = 30.0,
-        t_pre_frames: int = 10,
-        t_post_frames: int = 10,
-        offset_frames: int = 0,
-        max_events_per_report: int = 200,
-        report_dir: str = "./reports"
+        picks='avg_ear',
+        video_sfreq=30.0,
+        output_dir='reports',
+        base_filename='blink_report',
+        max_events_per_report=20
 ):
     """
-    Generate MNE HTML reports using custom matplotlib plots of blink events.
+    Generate one or more MNE reports with annotated blink plots, capped by max_events_per_report.
 
     Parameters
     ----------
     raw : mne.io.Raw
-        Loaded EEG/EOG/EAR signal.
+        MNE Raw object containing the data.
     blink_df : pd.DataFrame
-        DataFrame with ['startBlinks','endBlinks','blink_type'].
-    sfreq : float
-        Sampling frequency of raw signal.
-    channels : list of str
-        List of channels to plot (e.g., ['avg_ear']).
+        DataFrame containing 'startBlinks', 'endBlinks', 'blink_min'.
+    picks : str
+        Channel to plot.
     video_sfreq : float
-        Frame rate of annotated video (default 30.0).
-    t_pre_frames : int
-        Frames before startBlinks.
-    t_post_frames : int
-        Frames after endBlinks.
-    offset_frames : int
-        Optional correction to shift blink frame indices.
+        Sampling frequency of the video in Hz.
+    output_dir : str
+        Directory where report files will be saved.
+    base_filename : str
+        Base name for the report files.
     max_events_per_report : int
-        Max number of blinks per HTML file.
-    report_dir : str
-        Where to save the report HTMLs and temporary images.
+        Maximum number of figures per report.
     """
-    os.makedirs(report_dir, exist_ok=True)
-    image_dir = os.path.join(report_dir, "_img")
-    os.makedirs(image_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
+    figures = []
 
-    picks = mne.pick_channels(raw.info["ch_names"], include=channels)
-    ch_name = channels[0]  # only one channel assumed per plot
-
-    fig_paths = []
-
+    # Generate all figures first
     for idx, row in blink_df.iterrows():
-        # Convert video frame to signal time
-        start_f = (row["startBlinks"] + offset_frames)
-        end_f = (row["endBlinks"] + offset_frames)
+        fig = plot_with_annotation_lines(
+            raw=raw,
+            start_frame=row['startBlinks'],
+            end_frame=row['endBlinks'],
+            mid_frame=row['blink_min'],
+            picks=picks,
+            video_sfreq=video_sfreq,
+            show=False
+        )
+        if fig:
+            caption = f"Blink {idx}: frames {row['startBlinks']}–{row['endBlinks']}, min at {row['blink_min']}"
+            figures.append((fig, f"Blink {idx}", caption))
 
-        # Convert to seconds
-        start_s = start_f / video_sfreq
-        end_s = end_f / video_sfreq
-        t_pre = t_pre_frames / video_sfreq
-        t_post = t_post_frames / video_sfreq
+    # Group figures into batches
+    for i in range(0, len(figures), max_events_per_report):
+        batch = figures[i:i + max_events_per_report]
+        report_index = i // max_events_per_report + 1
+        report = mne.Report(title=f"Blink Report {report_index}")
 
-        tmin = max(0.0, start_s - t_pre)
-        tmax = min(raw.times[-1], end_s + t_post)
+        for fig, title, caption in batch:
+            report.add_figure(fig=fig, title=title, caption=caption, section='Blinks')
+            plt.close(fig)  # release memory
 
-        data, times = raw.copy().pick(picks).crop(tmin=tmin, tmax=tmax).get_data(return_times=True)
-        signal = data[0]
+        report_path = os.path.join(output_dir, f"{base_filename}_{report_index}.html")
+        report.save(report_path, overwrite=True)
+        print(f"✅ Saved MNE report: {report_path}")
 
-        # Create matplotlib figure
-        fig, ax = plt.subplots(figsize=(8, 3))
-        ax.plot(times, signal, label=ch_name, color='black')
 
-        # Blink markers
-        blink_start_time = start_s
-        blink_end_time = end_s
-        y_min, y_max = signal.min(), signal.max()
-
-        ax.axvline(blink_start_time, color='r', linestyle='--', label='blink_start')
-        ax.axvline(blink_end_time, color='g', linestyle='--', label='blink_end')
-
-        ax.annotate('start', xy=(blink_start_time, y_min), xytext=(blink_start_time, y_max),
-                    arrowprops=dict(arrowstyle='->', color='r'), fontsize=8)
-        ax.annotate('end', xy=(blink_end_time, y_min), xytext=(blink_end_time, y_max),
-                    arrowprops=dict(arrowstyle='->', color='g'), fontsize=8)
-
-        ax.set_title(f"Blink: {row['blink_type']} [{row['startBlinks']}→{row['endBlinks']}]")
-        ax.set_xlabel("Time (s)")
-        ax.set_ylabel("Amplitude")
-        ax.grid(True)
-        ax.legend()
-        fig.tight_layout()
-
-        fname = os.path.join(image_dir, f"blink_{idx}_{ch_name}.png")
-        fig.savefig(fname, dpi=150)
-        fig_paths.append(fname)
-        plt.close(fig)
-
-    # Group images into MNE reports
-    for i in range(0, len(fig_paths), max_events_per_report):
-        batch = fig_paths[i:i + max_events_per_report]
-        report = Report(title=f"Blink Report {i//max_events_per_report + 1}")
-        for fig_path in batch:
-            report.add_image(fig_path, title=os.path.basename(fig_path))
-        html_path = os.path.join(report_dir, f"report_{i//max_events_per_report + 1}.html")
-        report.save(html_path, overwrite=True)
-        print(f"✅ Saved MNE report: {html_path}")
 
 def load_fif_and_annotations(
         fif_path: str,
@@ -176,7 +135,7 @@ def load_fif_and_annotations(
     return raw, annotation_df
 
 
-def extract_blink_durations(annotation_df):
+def extract_blink_durations(annotation_df,frame_offset):
     """
     Extract blink durations based on triplets in the annotation DataFrame.
 
@@ -202,13 +161,16 @@ def extract_blink_durations(annotation_df):
             blink_min = int(annotation_df.iloc[i+1]['ImageID'].replace('frame_', ''))
             blink_end = int(annotation_df.iloc[i+2]['ImageID'].replace('frame_', ''))
             blink_data.append({
-                'startBlinks': blink_start,
-                'endBlinks': blink_end,
-                'blink_min': blink_min,
+                'startFrame': blink_start,
+                'endFrame': blink_end,
+                'minFrame': blink_min,
                 'blink_type': blink_type
             })
+    df=pd.DataFrame(blink_data)
 
-    return pd.DataFrame(blink_data)
+    df[['startBlinks', 'endBlinks', 'blink_min']] = df[['startFrame', 'endFrame', 'minFrame']] - frame_offset
+
+    return df
 
 
 def process_blinks(candidate_signal, df, params):
@@ -241,62 +203,10 @@ def process_blinks(candidate_signal, df, params):
     # good_blink_mask, df = get_good_blink_mask(df, blink_stats['bestMedian'], blink_stats['bestRobustStd'], params['z_thresholds'])
 
     df = BlinkProperties(candidate_signal, df, params['sfreq'], params).df
+
+
     return df, blink_stats
 
-
-
-
-
-def plot_signal_with_blink_bounds(signal, start_sample, end_sample, sfreq=100.0, pad=10):
-    """
-    Plot a 1D signal slice with padding and annotated blink boundaries.
-
-    Parameters
-    ----------
-    signal : np.ndarray
-        1D array representing the signal (e.g., avg_ear).
-    start_sample : int
-        Index where the blink starts.
-    end_sample : int
-        Index where the blink ends.
-    sfreq : float
-        Sampling frequency in Hz (default is 100.0).
-    pad : int
-        Number of samples to include before and after the segment.
-    """
-    # Ensure indices are in bounds
-    total_len = len(signal)
-    plot_start = max(0, start_sample - pad)
-    plot_end = min(total_len - 1, end_sample + pad)
-
-    segment = signal[plot_start:plot_end + 1]
-    times = np.arange(plot_start, plot_end + 1) / sfreq
-
-    plt.figure(figsize=(10, 4))
-    plt.plot(times, segment, label='Signal', color='black')
-
-    # Convert blink boundaries to time
-    start_time = start_sample / sfreq
-    end_time = end_sample / sfreq
-
-    # Markers
-    plt.axvline(start_time, color='red', linestyle='--', linewidth=1.5, label='Blink Start')
-    plt.axvline(end_time, color='red', linestyle='--', linewidth=1.5, label='Blink End')
-
-    # Annotations
-    y_min, y_max = segment.min(), segment.max()
-    plt.annotate("Start", xy=(start_time, y_min), xytext=(start_time, y_max),
-                 arrowprops=dict(arrowstyle='->', color='red'), fontsize=9, rotation=90)
-    plt.annotate("End", xy=(end_time, y_min), xytext=(end_time, y_max),
-                 arrowprops=dict(arrowstyle='->', color='red'), fontsize=9, rotation=90)
-
-    plt.title("Blink Segment with Start and End Markers")
-    plt.xlabel("Time (s)")
-    plt.ylabel("Amplitude")
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
 
 
 def plot_with_annotation_lines(
@@ -306,59 +216,34 @@ def plot_with_annotation_lines(
         mid_frame=5,
         picks='avg_ear',
         video_sfreq=30.0,
-        frame_offset: int = 0
+        show=True
 ):
-    """
-    Plot a segment of signal from raw using scatter plot and overlay annotation frame markers.
-
-    Parameters
-    ----------
-    raw : mne.io.Raw
-        MNE Raw object containing EEG/EOG/EAR signals.
-    start_frame : int
-        Start of the blink event (video frame index).
-    end_frame : int
-        End of the blink event (video frame index).
-    mid_frame : int
-        Minimum point of the blink event (video frame index).
-    picks : str
-        Channel to plot (e.g., 'avg_ear').
-    video_sfreq : float
-        Frame rate of the annotated video (e.g., 30 Hz).
-    frame_offset : int
-        Number of frames to subtract globally from each annotation (e.g., calibration shift).
-    """
     if picks not in raw.ch_names:
         print(f"Channel '{picks}' not found in raw data.")
-        return
+        return None
 
-    # Convert frame indices to time
     start_sec = start_frame / video_sfreq
     end_sec = end_frame / video_sfreq
-    buffer_time = 0.5  # seconds to pad before and after the segment
+    buffer_time = 0.5
 
     crop_start_sec = start_sec - buffer_time
     crop_end_sec = end_sec + buffer_time
 
-    # Crop raw and extract timeseries
     raw_segment = raw.copy().crop(tmin=crop_start_sec, tmax=crop_end_sec)
     data, times = raw_segment.get_data(picks=picks, return_times=True)
-    times += crop_start_sec  # adjust to global time
+    times += crop_start_sec
 
-    signal = data[0]
+    signal_orig = -data[0]
+    signal = signal_orig - np.mean(signal_orig)
 
-    # Create scatter plot
-    plt.figure(figsize=(10, 4))
-    plt.scatter(times, signal, s=10, color='black', label=picks)
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.scatter(times, signal, s=10, color='black', label=picks)
 
-    # Annotate blink frames
-    annotation_frames = [start_frame, mid_frame, end_frame]
-    for frame_num in annotation_frames:
-        adjusted_frame = frame_num - frame_offset
+    for adjusted_frame in [start_frame, mid_frame, end_frame]:
         frame_sec = adjusted_frame / video_sfreq
-        plt.axvline(x=frame_sec, color='orange', linestyle='--')
-        plt.annotate(
-            f"Frame {frame_num}",
+        ax.axvline(x=frame_sec, color='orange', linestyle='--')
+        ax.annotate(
+            f"Frame {adjusted_frame}",
             xy=(frame_sec, signal.min()),
             xytext=(frame_sec, signal.max()),
             arrowprops=dict(arrowstyle='->', color='orange'),
@@ -366,13 +251,17 @@ def plot_with_annotation_lines(
             rotation=90
         )
 
-    plt.title(f"{picks} scatter plot with blink annotations")
-    plt.xlabel("Time (s)")
-    plt.ylabel("Amplitude")
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
+    ax.set_title(f"{picks} scatter plot with blink annotations")
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Amplitude")
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
+
+    if show:
+        plt.show()
+
+    return fig
 
 
 if __name__ == "__main__":
@@ -386,52 +275,41 @@ if __name__ == "__main__":
     raw, annotation_df = load_fif_and_annotations(fif_path, zip_path)
 
 
-    # signal = raw.get_data(picks='avg_ear')[0]
-    signal = raw.get_data(picks='avg_ear')[0]
-    start_sample = int(358 * (100 / 30))  # e.g. from CVAT frame converted to 100Hz
-    end_sample = int(366 * (100 / 30))
-
 
     # raw.plot(
-    #     picks='avg_ear',
+    #     picks=['avg_ear','E8'],
     #     block=True,
     #     show_scrollbars=False,
     #     title='avg_ear Blink Signal'
     # )
     # Extract blink intervals
-    blink_df = extract_blink_durations(annotation_df)
-    plot_signal_with_blink_bounds(signal, start_sample, end_sample, sfreq=100.0, pad=500)
-    h=1
-    # annotation_frames = ['frame_000358', 'frame_000361', 'frame_000366']
-    # ['E8', 'E10', 'eog_vert_right', 'avg_ear']
-    #
-    # for _, row in blink_df.iterrows():
-    #     plot_with_annotation_lines(
-    #         raw=raw,
-    #         start_frame=row['startBlinks'],
-    #         end_frame=row['endBlinks'],
-    #         mid_frame=row['blink_min'],
-    #         picks='avg_ear',
-    #         video_sfreq=30.0,
-    #         frame_offset=5 # shifts 358 to 353, etc.
-    #     )
+    frame_offset=5
+    blink_df = extract_blink_durations(annotation_df,frame_offset)
+    generate_blink_reports(
+        raw=raw,
+        blink_df=blink_df,
+        picks='avg_ear',
+        video_sfreq=30.0,
+        output_dir='blink_reports',
+        base_filename='blink_report',
+        max_events_per_report=40
+    )
+
+    for _, row in blink_df.iterrows():
+        plot_with_annotation_lines(
+            raw=raw,
+            start_frame=row['startBlinks'],
+            end_frame=row['endBlinks'],
+            mid_frame=row['blink_min'],
+            picks='avg_ear',
+            video_sfreq=30.0,
+        )
+
 
     # with open("fitblinks_debug.pkl", "rb") as f:
     #         debug_data = pickle.load(f)
     # params = debug_data["params"]
-    # # now generate reports
-    # generate_blink_mne_reports_matplotlib(
-    #     raw=raw,
-    #     blink_df=blink_df,
-    #     sfreq=params['sfreq'],
-    #     channels=['avg_ear'],
-    #     video_sfreq=30.0,
-    #     t_pre_frames=10,
-    #     t_post_frames=10,
-    #     offset_frames=0,
-    #     max_events_per_report=200,
-    #     report_dir=r"C:\Users\balan\IdeaProjects\pyblinker_optimize_gpt\direct_blink_properties\blink_reports"
-    # )
+
     # #
     #
     # # Process and extract properties
