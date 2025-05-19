@@ -89,7 +89,7 @@ class FitBlinks:
         )
 
         self.df.dropna(inplace=True)
-
+        self.df = self.df[abs(self.df['leftZero'] - self.df['rightZero']) > 3]
         if self.df.empty:
 
             print("DataFrame is empty after dropping NaNs. Setting frame_blinks to empty and exiting.")

@@ -84,7 +84,27 @@ def compute_outer_bounds(df: pd.DataFrame, data_size: int) -> pd.DataFrame:
     df['outerEnds'] = df['maxFrame'].shift(-1, fill_value=data_size)
     return df
 
+    def plot_left_values(left_values):
+        """
+        TO REMOVE
+        Plot the left_values array.
 
+        Parameters:
+        - left_values (np.ndarray): The array of values to plot.
+        """
+        import matplotlib.pyplot as plt
+        import numpy as np
+        plt.figure(figsize=(10, 4))
+        plt.plot(left_values, label='Left Values')
+        plt.axhline(0, color='gray', linestyle='--', linewidth=1)
+        plt.title('Left Values Plot')
+        plt.xlabel('Frame Index')
+        plt.ylabel('Signal Value')
+        plt.legend()
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
+        h=1
 
 def left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_ends):
     """
@@ -112,13 +132,16 @@ def left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_en
     to extreme.
     """
 
+
+
+
     start_idx,end_idx,m_frame=_to_ints(outer_starts,outer_ends,max_frame)
 
     # Left side search
     left_range = np.arange(start_idx, m_frame)
     left_values = candidate_signal[left_range]
     s_ind_left_zero = np.flatnonzero(left_values < 0)
-
+    # plot_left_values(left_values)
     if s_ind_left_zero.size > 0:
         left_zero = left_range[s_ind_left_zero[-1]]
     else:
