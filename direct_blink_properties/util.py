@@ -136,7 +136,7 @@ def extract_blink_durations(annotation_df, frame_offset, sfreq, video_fps):
     df=pd.DataFrame(blink_data)
 
     df[['startBlinks_cvat', 'endBlinks_cvat', 'blink_min_cvat']] = df[['startFrame', 'endFrame', 'minFrame']] - frame_offset
-    df[['startBlinks', 'endBlinks', 'blink_min']] = (df[['startBlinks_cvat', 'endBlinks_cvat', 'blink_min_cvat']] * (sfreq / video_fps)).round().astype(int)
+    df[['startBlinks', 'endBlinks', 'blinkmin']] = (df[['startBlinks_cvat', 'endBlinks_cvat', 'blink_min_cvat']] * (sfreq / video_fps)).round().astype(int)
 
 
     return df
