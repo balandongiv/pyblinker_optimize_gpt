@@ -1,14 +1,9 @@
 import os
-import pickle
-import zipfile
 
 import matplotlib.pyplot as plt
 import mne
 import numpy as np
 import pandas as pd
-
-from pyblinkers.extractBlinkProperties import BlinkProperties, get_blink_statistic
-from pyblinkers.fit_blink import FitBlinks
 
 
 def generate_blink_reports(
@@ -49,13 +44,13 @@ def generate_blink_reports(
             raw=raw,
             start_frame=row['startBlinks'],
             end_frame=row['endBlinks'],
-            mid_frame=row['blink_min'],
+            mid_frame=row['blinkmin'],
             picks=picks,
             sfreq=sfreq,
             show=False
         )
         if fig:
-            caption = f"Blink {idx}: frames {row['startBlinks']}–{row['endBlinks']}, min at {row['blink_min']}"
+            caption = f"Blink {idx}: frames {row['startBlinks']}–{row['endBlinks']}, min at {row['blinkmin']}"
             figures.append((fig, f"Blink {idx}", caption))
 
     # Group figures into batches
@@ -108,7 +103,9 @@ def plot_with_annotation_lines(
     signal = signal_orig - np.mean(signal_orig)
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    ax.scatter(times, signal, s=10, color='black', label=picks)
+    # ax.scatter(times, signal, s=10, color='black', label=picks)
+    ax.scatter(times, signal, s=40, color='black', label=picks)   # Larger scatter
+    ax.plot(times, signal, linewidth=2, alpha=0.7, label=f"{picks} (line)")   # Add line plo
 
     for adjusted_frame in [start_frame, mid_frame, end_frame]:
         frame_sec = adjusted_frame / sfreq
