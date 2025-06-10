@@ -49,11 +49,15 @@ class TestFitBlinks(unittest.TestCase):
         Process blink candidate_signal using `FitBlinks` and return the output DataFrame.
         """
         # Calculate blink positions
-        df_blink_positions = get_blink_position(params, blink_component=blink_comp, ch=channel)
+        min_blink_frames=5.0
+        threshold=12.241726391783821
+        df_blink_positions = get_blink_position(params, blink_component=blink_comp, ch=channel,
+                                                threshold=threshold,
+                                                min_blink_frames=min_blink_frames)
 
         # Process blink candidate_signal with `FitBlinks`
         fitblinks = FitBlinks(candidate_signal=blink_comp, df=df_blink_positions, params=params)
-        fitblinks.dprocess()
+        fitblinks.process_blink_candidate()
         df_output = fitblinks.frame_blinks
 
         # Adjust indices for MATLAB compatibility
@@ -90,19 +94,25 @@ class TestFitBlinks(unittest.TestCase):
         df_output = df_output[column_order]
 
         # Rename columns to match ground truth
+        df_output = df_output.copy()
         df_output.rename(columns={
             'outerStarts': 'leftOuter',
             'outerEnds': 'rightOuter',
         }, inplace=True)
 
-        return df_output
+        # df_output.rename(columns={
+        #     'outerStarts': 'leftOuter',
+        #     'outerEnds': 'rightOuter',
+        # }, inplace=True)
 
+        return df_output
     @staticmethod
     def compare_dataframes(df_ground_truth, df_output, decimal_places=4):
         """
         Compare two DataFrames and return a comparison report, including missing columns.
         """
-        report = df_ground_truth.copy()
+        # Create empty DataFrame with same shape but object dtype
+        report = pd.DataFrame('', index=df_ground_truth.index, columns=df_ground_truth.columns)
 
         # Identify missing columns
         ground_truth_columns = set(df_ground_truth.columns)
@@ -139,6 +149,49 @@ class TestFitBlinks(unittest.TestCase):
                     report.at[idx, column] = f'not consistent (GT: {gt_value}, Output: {output_value})'
 
         return report, missing_columns_report
+
+    # @staticmethod
+    # def compare_dataframes(df_ground_truth, df_output, decimal_places=4):
+    #     """
+    #     Compare two DataFrames and return a comparison report, including missing columns.
+    #     """
+    #     report = df_ground_truth.copy()
+    #
+    #     # Identify missing columns
+    #     ground_truth_columns = set(df_ground_truth.columns)
+    #     output_columns = set(df_output.columns)
+    #     missing_in_ground_truth = output_columns - ground_truth_columns
+    #     missing_in_output = ground_truth_columns - output_columns
+    #
+    #     missing_columns_report = {
+    #         "missing_in_ground_truth": list(missing_in_ground_truth),
+    #         "missing_in_output": list(missing_in_output),
+    #     }
+    #
+    #     # Find common columns
+    #     common_columns = ground_truth_columns.intersection(output_columns)
+    #
+    #     # Round values to specified decimal places
+    #     for column in common_columns:
+    #         df_ground_truth[column] = df_ground_truth[column].apply(
+    #             lambda x: np.round(x, decimal_places) if isinstance(x, (int, float)) else x
+    #         )
+    #         df_output[column] = df_output[column].apply(
+    #             lambda x: np.round(x, decimal_places) if isinstance(x, (int, float)) else x
+    #         )
+    #
+    #     # Compare values and update report
+    #     for column in common_columns:
+    #         for idx in range(len(df_ground_truth)):
+    #             gt_value = df_ground_truth.at[idx, column]
+    #             output_value = df_output.at[idx, column]
+    #
+    #             if np.array_equal(gt_value, output_value):
+    #                 report.at[idx, column] = 'consistent'
+    #             else:
+    #                 report.at[idx, column] = f'not consistent (GT: {gt_value}, Output: {output_value})'
+    #
+    #     return report, missing_columns_report
 
     def test_fit_blinks_output(self):
         """
@@ -186,8 +239,8 @@ class TestFitBlinks(unittest.TestCase):
                          f"Missing columns in output: {missing_columns_report['missing_in_output']}")
 
         # Assert all remaining values in the report are consistent
-        inconsistent = comparison_report_filtered.applymap(
-            lambda x: isinstance(x, str) and 'not consistent' in x
+        inconsistent = comparison_report_filtered.apply(
+            lambda col: col.map(lambda x: isinstance(x, str) and 'not consistent' in x)
         ).any(axis=None)
         self.assertFalse(inconsistent, f"Inconsistencies found in report: {comparison_report_filtered}")
 
