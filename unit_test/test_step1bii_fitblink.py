@@ -51,13 +51,11 @@ class TestFitBlinks(unittest.TestCase):
         # Calculate blink positions
         min_blink_frames=5.0
         threshold=12.241726391783821
-        df_blink_positions = get_blink_position(params, blink_component=blink_comp, ch=channel,
-                                                threshold=threshold,
-                                                min_blink_frames=min_blink_frames)
+        df_blink_positions = get_blink_position(params, blink_component=blink_comp, ch=channel)
 
         # Process blink candidate_signal with `FitBlinks`
         fitblinks = FitBlinks(candidate_signal=blink_comp, df=df_blink_positions, params=params)
-        fitblinks.process_blink_candidate()
+        fitblinks.dprocess()
         df_output = fitblinks.frame_blinks
 
         # Adjust indices for MATLAB compatibility
