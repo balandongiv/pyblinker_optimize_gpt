@@ -261,7 +261,7 @@ class BlinkProperties:
             aggregator='min'
         )
 
-    def compute_pos_amp_vel_ratio_zero(self, multiplication_constant=100):
+    def compute_pos_amp_vel_ratio_zero(self):
         """
         Computes and sets positive amplitude-velocity ratio from leftZero to maxFrame in DataFrame.
         """
