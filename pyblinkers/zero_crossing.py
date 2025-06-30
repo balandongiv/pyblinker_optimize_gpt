@@ -1,5 +1,27 @@
 import warnings
 import numpy as np
+import pandas as pd
+
+
+def compute_outer_bounds(df: pd.DataFrame, data_size: int) -> pd.DataFrame:
+    """Compute outer start and end indices surrounding each blink peak.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Must contain a ``maxFrame`` column with peak indices.
+    data_size : int
+        Total length of the candidate signal.
+
+    Returns
+    -------
+    DataFrame
+        The input DataFrame with ``outerStarts`` and ``outerEnds`` columns.
+    """
+    df = df.copy()
+    df["outerStarts"] = df["maxFrame"].shift(1, fill_value=0).astype(int)
+    df["outerEnds"] = df["maxFrame"].shift(-1, fill_value=data_size).astype(int)
+    return df
 
 def get_line_intersection_slope(x_intersect, y_intersect, left_x_intersect, right_x_intersect):
     """
