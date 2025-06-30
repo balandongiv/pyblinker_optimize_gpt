@@ -1,5 +1,8 @@
 import warnings
+from typing import Tuple
+
 import numpy as np
+
 
 def get_line_intersection_slope(x_intersect, y_intersect, left_x_intersect, right_x_intersect):
     """
@@ -21,11 +24,10 @@ def get_average_velocity(p_left, p_right, x_left, x_right):
     return aver_left_velocity, aver_right_velocity
 
 
-from typing import Tuple
-import numpy as np
+
 
 def left_right_zero_crossing(candidate_signal: np.ndarray, max_frame: float,
-                             outer_starts: float, outer_ends: float) -> Tuple[int, int]:
+                             outer_starts: float, outer_ends: float) -> Tuple[int, Optional[int]]:
     """
     Find the nearest zero-crossing indices to the left and right of a given peak in the signal.
 
@@ -40,13 +42,13 @@ def left_right_zero_crossing(candidate_signal: np.ndarray, max_frame: float,
         outer_ends (float): The upper bound index of the right-side search region.
 
     Returns:
-        Tuple[int, int]: A tuple containing two integers:
-                         - left zero-crossing index (closest to max_frame on the left)
-                         - right zero-crossing index (closest to max_frame on the right)
+        Tuple[int, Optional[int]]: A tuple containing two values:
+            - Left zero-crossing index (int): nearest zero crossing to the left of max_frame.
+            - Right zero-crossing index (Optional[int]): nearest zero crossing to the right of max_frame,
+              or None if not found even after fallback search.
 
     Raises:
-        ValueError: If the input indices are out of signal bounds or if no zero-crossing is found
-                    in the specified regions.
+        ValueError: If input index boundaries are invalid or logic assumptions break.
     """
     start_idx = int(outer_starts)
     m_frame = int(max_frame)
