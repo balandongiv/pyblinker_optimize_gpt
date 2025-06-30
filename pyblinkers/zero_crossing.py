@@ -21,10 +21,32 @@ def get_average_velocity(p_left, p_right, x_left, x_right):
     return aver_left_velocity, aver_right_velocity
 
 
-def left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_ends):
+from typing import Tuple
+import numpy as np
+
+def left_right_zero_crossing(candidate_signal: np.ndarray, max_frame: float,
+                             outer_starts: float, outer_ends: float) -> Tuple[int, int]:
     """
-    Identify the left zero crossing and right zero crossing of the signal
-    between outer_starts->max_frame and max_frame->outer_ends.
+    Find the nearest zero-crossing indices to the left and right of a given peak in the signal.
+
+    This function searches for the nearest zero-crossings in a 1D signal array around a specified
+    `max_frame`. It looks to the left in the range [outer_starts, max_frame) and to the right in the
+    range (max_frame, outer_ends].
+
+    Parameters:
+        candidate_signal (np.ndarray): 1D array representing the signal data.
+        max_frame (float): The frame index of the peak (or maximum) to evaluate crossings around.
+        outer_starts (float): The lower bound index of the left-side search region.
+        outer_ends (float): The upper bound index of the right-side search region.
+
+    Returns:
+        Tuple[int, int]: A tuple containing two integers:
+                         - left zero-crossing index (closest to max_frame on the left)
+                         - right zero-crossing index (closest to max_frame on the right)
+
+    Raises:
+        ValueError: If the input indices are out of signal bounds or if no zero-crossing is found
+                    in the specified regions.
     """
     start_idx = int(outer_starts)
     m_frame = int(max_frame)
