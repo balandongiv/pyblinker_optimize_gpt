@@ -80,8 +80,16 @@ class BlinkDetector:
         logger.info(f"Processing channel: {channel}")
 
         # STEP 1: Get blink positions
+        data = self.raw_data.get_data(picks=channel)
+        if data.ndim == 2:  # Raw -> (1, n_times)
+            channel_signal = data[0]
+        elif data.ndim == 3:  # Epochs -> (n_epochs, 1, n_times)
+            channel_signal = data.reshape(-1)
+        else:
+            raise ValueError(f"Unexpected data dimensions: {data.shape}")
+
         df = get_blink_position(self.params,
-                                blink_component=self.raw_data.get_data(picks=channel)[0],
+                                blink_component=channel_signal,
                                 ch=channel)
 
         if df.empty and verbose:
@@ -89,7 +97,7 @@ class BlinkDetector:
 
         # STEP 2: Fit blinks
         fitblinks = FitBlinks(
-            candidate_signal=self.raw_data.get_data(picks=channel)[0],
+            candidate_signal=channel_signal,
             df=df,
             params=self.params
         )
@@ -99,7 +107,7 @@ class BlinkDetector:
         # STEP 3: Extract blink statistics
         blink_stats = get_blink_statistic(
             df, self.params['z_thresholds'],
-            signal=self.raw_data.get_data(picks=channel)[0]
+            signal=channel_signal
         )
         blink_stats['ch'] = channel
 
@@ -113,7 +121,7 @@ class BlinkDetector:
 
         # STEP 5: Compute blink properties
         df = BlinkProperties(
-            self.raw_data.get_data(picks=channel)[0],
+            channel_signal,
             df,
             self.params['sfreq'],
             self.params
