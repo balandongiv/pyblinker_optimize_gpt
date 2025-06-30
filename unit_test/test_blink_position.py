@@ -19,18 +19,13 @@ class TestGetBlinkPosition(unittest.TestCase):
         params = self.debug_data['params']
         blink_component = self.debug_data['blink_component']
         ch = self.debug_data['ch']
-        threshold = self.debug_data['threshold']
-        min_blink_frames = self.debug_data['min_blink_frames']
         expected_output = self.debug_data['output']
 
         # Run the function
         result = get_blink_position(
             params=params,
             blink_component=blink_component,
-            ch=ch,
-            threshold=threshold,
-            min_blink_frames=min_blink_frames
-        )
+            ch=ch)
 
         # Check that the result is a DataFrame
         self.assertIsInstance(result, pd.DataFrame)
