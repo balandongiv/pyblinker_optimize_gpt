@@ -4,8 +4,8 @@ import logging
 import numpy as np
 import pandas as pd
 
-# from pyblinkers.misc import mad_matlab
 from pyblinkers.matlab_forking import mad_matlab
+
 logging.getLogger().setLevel(logging.INFO)
 
 from pyblinkers.default_setting import SCALING_FACTOR
@@ -140,12 +140,12 @@ class BlinkProperties:
     '''
     Return a structure with blink shapes and properties for individual blinks
     % Return a structure with blink shapes and properties for individual blinks
-%
-% Parameters:
-%     signalData    signalData structure
-%     params        params structure with parameters
-%     blinkProps    (output) structure with the blink properties
-%     blinkFits     (output) structure with the blink landmarks
+    %
+    % Parameters:
+    %     signalData    signalData structure
+    %     params        params structure with parameters
+    %     blinkProps    (output) structure with the blink properties
+    %     blinkFits     (output) structure with the blink landmarks
     '''
     def __init__(self, candidate_signal, df, srate, params):
         """Initializes BlinkProperties object to calculate blink features.
