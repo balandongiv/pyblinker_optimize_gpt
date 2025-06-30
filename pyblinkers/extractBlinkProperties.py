@@ -178,7 +178,7 @@ class BlinkProperties:
         self.df = df
         self.srate = srate
         self.shutAmpFraction = params['shutAmpFraction']
-        self.pAVRThreshold = params['shutAmpFraction']
+        self.pAVRThreshold = params['pAVRThreshold']
         self.zThresholds = params['z_thresholds']
 
         self.df_res = []
