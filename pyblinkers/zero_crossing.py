@@ -1,6 +1,6 @@
 import warnings
-from typing import Tuple
 
+from typing import Tuple, Optional
 import numpy as np
 
 

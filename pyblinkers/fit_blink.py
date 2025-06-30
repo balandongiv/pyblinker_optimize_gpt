@@ -15,6 +15,11 @@ class FitBlinks:
 
     def __init__(self, candidate_signal=None, df=None, params=None):
         # candidateSignal    IC or channel time course of blinks to be fitted
+
+        # saved as numpy array the candidate_signal
+
+
+        # np.save('S1_candidate_signal.npy', candidate_signal)
         self.candidate_signal = candidate_signal
         self.df = df
         self.frame_blinks = []
