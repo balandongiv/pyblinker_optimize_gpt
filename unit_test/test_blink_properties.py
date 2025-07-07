@@ -1,6 +1,6 @@
 """
 test_blink_properties.py
-This module tests the `BlinkProperties` class from `pyblinkers.extract_blink_properties`.
+This module tests the `BlinkProperties` class from `pyear.pyblinkers.extract_blink_properties`.
 
 Overview:
   The `BlinkProperties` class extracts rich, physiologically meaningful blink
@@ -67,7 +67,7 @@ Dependencies:
   - numpy
   - pandas
   - pytest
-  - pyblinkers.extract_blink_properties.BlinkProperties
+  - pyear.pyblinkers.extract_blink_properties.BlinkProperties
 """
 
 import numpy as np
@@ -75,7 +75,7 @@ import pandas as pd
 import pytest
 from pathlib import Path
 
-from pyblinkers.extract_blink_properties import BlinkProperties
+from pyear.pyblinkers.extract_blink_properties import BlinkProperties
 from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 
