@@ -4,12 +4,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-
-def mad_matlab(arr, axis=None, keepdims=True):
-    """Compute median absolute deviation similar to MATLAB."""
-    median = np.median(arr, axis=axis, keepdims=True)
-    mad = np.median(np.abs(arr - median), axis=axis, keepdims=keepdims)[0]
-    return mad
+from pyblinkers.utils.matlab import mad_matlab
 
 logging.getLogger().setLevel(logging.INFO)
 

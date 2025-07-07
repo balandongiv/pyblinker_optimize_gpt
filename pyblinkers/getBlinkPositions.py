@@ -5,14 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from pyblinkers.default_setting import SCALING_FACTOR
-
-
-
-def mad_matlab(arr, axis=None, keepdims=True):
-    """Compute median absolute deviation similar to MATLAB."""
-    median = np.median(arr, axis=axis, keepdims=True)
-    mad = np.median(np.abs(arr - median), axis=axis, keepdims=keepdims)[0]
-    return mad
+from pyblinkers.utils.matlab import mad_matlab
 
 
 def get_blink_position(params, blink_component=None, ch=None):

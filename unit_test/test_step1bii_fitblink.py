@@ -37,7 +37,7 @@ class TestFitBlinks(unittest.TestCase):
             cls.df_ground_truth.drop(columns=['number'], inplace=True)
 
         # Parameters
-        cls.params = default_setting.params
+        cls.params = default_setting.DEFAULT_PARAMS.copy()
         cls.params['sfreq'] = 100
         cls.channel = 'No_channel'
 

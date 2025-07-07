@@ -47,7 +47,7 @@ class BlinkDetector:
         self.viz_data = visualize
         self.annot_label = annot_label
         self.sfreq = self.raw_data.info['sfreq']
-        self.params = default_setting.params
+        self.params = default_setting.DEFAULT_PARAMS.copy()
         self.channel_list = self.raw_data.ch_names
         self.all_data_info = []  # To store processed blink data per channel
         self.filter_low = filter_low
