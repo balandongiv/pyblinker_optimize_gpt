@@ -5,4 +5,4 @@ pandas
 tqdm
 seaborn
 matplotlib
-
+-e git+https://github.com/balandongiv/pyear.git@main#egg=pyear
