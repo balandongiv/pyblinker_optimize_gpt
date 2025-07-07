@@ -2,7 +2,7 @@ def filter_blink_amplitude_ratios(df, params):
     """
     Reduce the number of candidate signals based on the blink amplitude ratios.
     Filter rows based on blink amplitude range.
-    If no rows remain, set status and select the row with the max numberGoodBlinks.
+    If no rows remain, set status and select the row with the max number_good_blinks.
     """
     # Filter DataFrame based on the blink amplitude ratio range
     filtered_df = df[
@@ -30,7 +30,7 @@ def filter_good_blinks(df, params):
     """
     Find the ones that meet the minimum good blink threshold.
     Filter rows based on number of good blinks.
-    If no rows remain, set status and select the row with max numberGoodBlinks.
+    If no rows remain, set status and select the row with max number_good_blinks.
     """
     # Filter DataFrame based on minimum good blinks
     filtered_df = df[df['number_good_blinks'] > params['minGoodBlinks']]
@@ -82,7 +82,7 @@ def filter_good_ratio(df, params):
 
 def select_max_good_blinks(df):
     """
-    Ensure that the row with the maximum numberGoodBlinks is selected if no row is already selected.
+    Ensure that the row with the maximum number_good_blinks is selected if no row is already selected.
     """
     # Check if the 'select' column exists and if any value is True
     if 'select' in df.columns and df['select'].any():

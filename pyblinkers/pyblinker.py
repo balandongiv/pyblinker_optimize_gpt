@@ -106,8 +106,8 @@ class BlinkDetector:
         # STEP 4: Get good blink mask
         good_blink_mask, df = get_good_blink_mask(
             df,
-            blink_stats['bestMedian'],
-            blink_stats['bestRobustStd'],
+            blink_stats['best_median'],
+            blink_stats['best_robust_std'],
             self.params['z_thresholds']
         )
 
@@ -121,7 +121,9 @@ class BlinkDetector:
 
         # STEP 6: Apply pAVR restriction
         condition_1 = df['pos_amp_vel_ratio_zero'] < self.params['p_avr_threshold']
-        condition_2 = df['max_value'] < (blink_stats['bestMedian'] - blink_stats['bestRobustStd'])
+        condition_2 = df['max_value'] < (
+            blink_stats['best_median'] - blink_stats['best_robust_std']
+        )
         df = df[~(condition_1 & condition_2)]
 
         # Store results
@@ -196,7 +198,7 @@ class BlinkDetector:
         annot = self.create_annotations(df)
 
         fig_data = self.generate_viz(data, df) if self.viz_data else []
-        n_good_blinks = ch_selected.loc[0, 'numberGoodBlinks']
+        n_good_blinks = ch_selected.loc[0, 'number_good_blinks']
 
         logger.info(f"Blink detection completed. {n_good_blinks} good blinks detected.")
 
