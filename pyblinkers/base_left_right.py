@@ -17,24 +17,24 @@ def create_left_right_base(candidate_signal, df):
 
     df : pandas.DataFrame
         A DataFrame containing the following required columns:
-        - 'maxFrame' (int): The maximum frame index for the blink event.
-        - 'leftZero' (int): The index of the left zero crossing.
-        - 'rightZero' (int): The index of the right zero crossing.
-        - 'outerStarts' (int): The starting index of the outer blink event.
-        - 'outerEnds' (int): The ending index of the outer blink event.
+        - 'max_blink' (int): The maximum frame index for the blink event.
+        - 'left_zero' (int): The index of the left zero crossing.
+        - 'right_zero' (int): The index of the right zero crossing.
+        - 'outer_start' (int): The starting index of the outer blink event.
+        - 'outer_end' (int): The ending index of the outer blink event.
         Additional columns may be present but are not utilized in this function.
 
     Returns
     -------
     pandas.DataFrame
         The updated DataFrame with the following additional columns:
-        - 'maxPosVelFrame' (int): The frame index of the maximum positive velocity
+        - 'max_pos_vel_frame' (int): The frame index of the maximum positive velocity
           calculated from the blink velocity.
-        - 'maxNegVelFrame' (int): The frame index of the maximum negative velocity
+        - 'max_neg_vel_frame' (int): The frame index of the maximum negative velocity
           calculated from the blink velocity.
-        - 'leftBase' (float): The calculated left base value for the blink event,
+        - 'left_base' (float): The calculated left base value for the blink event,
           derived from the blink velocity and the specified outer start index.
-        - 'rightBase' (float): The calculated right base value for the blink event,
+        - 'right_base' (float): The calculated right base value for the blink event,
           derived from the blink velocity and the specified outer end index.
         Rows with NaN values in any of these new columns are dropped from the DataFrame.
     """
@@ -43,32 +43,32 @@ def create_left_right_base(candidate_signal, df):
     df = df.copy()
 
     # Compute blink velocity by differencing the candidate_signal
-    blinkVelocity = np.diff(candidate_signal, axis=0)
+    blink_velocity = np.diff(candidate_signal, axis=0)
 
     # Remove rows with NaNs so we don't pass invalid candidate_signal to our calculations
     df.dropna(inplace=True)
 
-    # Calculate maxPosVelFrame and maxNegVelFrame safely
-    df[['maxPosVelFrame', 'maxNegVelFrame']] = df.apply(
+    # Calculate max_pos_vel_frame and max_neg_vel_frame safely
+    df[['max_pos_vel_frame', 'max_neg_vel_frame']] = df.apply(
         lambda row: _max_pos_vel_frame(
-            blink_velocity=blinkVelocity,
-            max_frame=row['maxFrame'],
-            left_zero=row['leftZero'],
-            right_zero=row['rightZero']
+            blink_velocity=blink_velocity,
+            max_blink=row['max_blink'],
+            left_zero=row['left_zero'],
+            right_zero=row['right_zero']
         ),
         axis=1,
         result_type='expand'
     )
 
     # Ensure df is a new variable after filtering
-    df = df[df['outerStarts'] < df['maxPosVelFrame']].copy()
+    df = df[df['outer_start'] < df['max_pos_vel_frame']].copy()
 
-    # Compute leftBase safely using .assign()
-    df = df.assign(leftBase=df.apply(
+    # Compute left_base safely using .assign()
+    df = df.assign(left_base=df.apply(
         lambda row: _get_left_base(
-            blink_velocity=blinkVelocity,
-            left_outer=row['outerStarts'],
-            max_pos_vel_frame=row['maxPosVelFrame']
+            blink_velocity=blink_velocity,
+            left_outer=row['outer_start'],
+            max_pos_vel_frame=row['max_pos_vel_frame']
         ),
         axis=1
     ))
@@ -76,13 +76,13 @@ def create_left_right_base(candidate_signal, df):
     # Drop rows with NaNs again if any were introduced
     df.dropna(inplace=True)
 
-    # Compute rightBase safely using .assign()
-    df = df.assign(rightBase=df.apply(
+    # Compute right_base safely using .assign()
+    df = df.assign(right_base=df.apply(
         lambda row: _get_right_base(
             candidate_signal=candidate_signal,
-            blink_velocity=blinkVelocity,
-            right_outer=row['outerEnds'],
-            max_neg_vel_frame=row['maxNegVelFrame']
+            blink_velocity=blink_velocity,
+            right_outer=row['outer_end'],
+            max_neg_vel_frame=row['max_neg_vel_frame']
         ),
         axis=1
     ))

@@ -1,6 +1,6 @@
 """
 test_blink_properties.py
-This module tests the `BlinkProperties` class from `pyblinkers.extractBlinkProperties`.
+This module tests the `BlinkProperties` class from `pyblinkers.extract_blink_properties`.
 
 Overview:
   The `BlinkProperties` class extracts rich, physiologically meaningful blink
@@ -42,39 +42,41 @@ The `BlinkProperties` class calculates a wide range of blink-related features:
      - Time between positive velocity peaks (base, zero)
 
 The output DataFrame contains new columns including:
-  - `durationBase`, `durationZero`, `durationTent`, `durationHalfBase`, `durationHalfZero`
-  - `posAmpVelRatioZero`, `negAmpVelRatioZero`, `posAmpVelRatioBase`, `negAmpVelRatioBase`
-  - `posAmpVelRatioTent`, `negAmpVelRatioTent`
-  - `timeShutBase`, `timeShutZero`, `timeShutTent`
-  - `closingTimeZero`, `reopeningTimeZero`, `closingTimeTent`, `reopeningTimeTent`
-  - `peakMaxBlink`, `peakMaxTent`, `peakTimeBlink`, `peakTimeTent`
-  - `interBlinkMaxAmp`, `interBlinkMaxVelBase`, `interBlinkMaxVelZero`
+  - `duration_base`, `duration_zero`, `duration_tent`, `duration_half_base`, `duration_half_zero`
+  - `pos_amp_vel_ratio_zero`, `neg_amp_vel_ratio_zero`, `pos_amp_vel_ratio_base`, `neg_amp_vel_ratio_base`
+  - `pos_amp_vel_ratio_tent`, `neg_amp_vel_ratio_tent`
+  - `time_shut_base`, `time_shut_zero`, `time_shut_tent`
+  - `closing_time_zero`, `reopening_time_zero`, `closing_time_tent`, `reopening_time_tent`
+  - `peak_max_blink`, `peak_max_tent`, `peak_time_blink`, `peak_time_tent`
+  - `inter_blink_max_amp`, `inter_blink_max_vel_base`, `inter_blink_max_vel_zero`
 Output Fields:
-  - 'durationBase', 'durationZero', 'durationTent', 'durationHalfBase', 'durationHalfZero'
-  - 'posAmpVelRatioZero', 'negAmpVelRatioZero', 'posAmpVelRatioBase', 'negAmpVelRatioBase'
-  - 'posAmpVelRatioTent', 'negAmpVelRatioTent'
-  - 'timeShutBase', 'timeShutZero', 'timeShutTent'
-  - 'closingTimeZero', 'reopeningTimeZero', 'closingTimeTent', 'reopeningTimeTent'
-  - 'peakMaxBlink', 'peakMaxTent', 'peakTimeBlink', 'peakTimeTent'
-  - 'interBlinkMaxAmp', 'interBlinkMaxVelBase', 'interBlinkMaxVelZero'
+  - 'duration_base', 'duration_zero', 'duration_tent', 'duration_half_base', 'duration_half_zero'
+  - 'pos_amp_vel_ratio_zero', 'neg_amp_vel_ratio_zero', 'pos_amp_vel_ratio_base', 'neg_amp_vel_ratio_base'
+  - 'pos_amp_vel_ratio_tent', 'neg_amp_vel_ratio_tent'
+  - 'time_shut_base', 'time_shut_zero', 'time_shut_tent'
+  - 'closing_time_zero', 'reopening_time_zero', 'closing_time_tent', 'reopening_time_tent'
+  - 'peak_max_blink', 'peak_max_tent', 'peak_time_blink', 'peak_time_tent'
+  - 'inter_blink_max_amp', 'inter_blink_max_vel_base', 'inter_blink_max_vel_zero'
 
 Test Inputs:
   - EEG signal from: S1_candidate_signal.npy
   - Blink metadata from: blink_properties_fits.pkl (output of blink_features.py)
-  - Parameters: shutAmpFraction, pAVRThreshold, z_thresholds
+  - Parameters: shut_amp_fraction, p_avr_threshold, z_thresholds
 
 Dependencies:
   - numpy
   - pandas
   - pytest
-  - pyblinkers.extractBlinkProperties.BlinkProperties
+  - pyblinkers.extract_blink_properties.BlinkProperties
 """
 
 import numpy as np
 import pandas as pd
 import pytest
+from pathlib import Path
 
-from pyblinkers.extractBlinkProperties import BlinkProperties
+from pyblinkers.extract_blink_properties import BlinkProperties
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 
 @pytest.fixture(scope="module")
@@ -85,7 +87,8 @@ def candidate_signal() -> np.ndarray:
     Returns:
         np.ndarray: 1D EEG signal array.
     """
-    return np.load("S1_candidate_signal.npy")
+    base_path = Path(__file__).resolve().parent
+    return np.load(base_path / "S1_candidate_signal.npy")
 
 
 @pytest.fixture(scope="module")
@@ -96,7 +99,9 @@ def blink_df() -> pd.DataFrame:
     Returns:
         pd.DataFrame: Metadata for blink candidates, incl. fitted features.
     """
-    df = pd.read_pickle("blink_properties_fits.pkl")
+    base_path = Path(__file__).resolve().parent
+    df = pd.read_pickle(base_path / "blink_properties_fits.pkl")
+    df.rename(columns=RENAME_MAP, inplace=True)
     assert not df.empty and isinstance(df, pd.DataFrame)
     return df
 
@@ -110,8 +115,8 @@ def blink_params() -> dict:
         dict: Parameters such as thresholds and shut amplitude fraction.
     """
     return {
-        'shutAmpFraction': 0.9,
-        'pAVRThreshold': 3,
+        'shut_amp_fraction': 0.9,
+        'p_avr_threshold': 3,
         'z_thresholds': np.array([[0.9, 0.98],
                                   [2.0, 5.0]])
     }

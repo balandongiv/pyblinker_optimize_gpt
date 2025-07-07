@@ -1,6 +1,7 @@
 import unittest
 
 import pandas as pd
+from pathlib import Path
 
 from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
@@ -13,8 +14,9 @@ class TestBlinkPosition(unittest.TestCase):
         Set up the class-level variables for testing.
         Load MATLAB candidate_signal and define parameters for the blink position calculation.
         """
-        cls.mat_file_path_input = r'..\migration_files\step1bi_data_input_getBlinkPositions.mat'
-        cls.mat_file_path_output = r'..\migration_files\step1bi_data_output_getBlinkPositions.mat'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        cls.mat_file_path_input = str(base_path / 'step1bi_data_input_getBlinkPositions.mat')
+        cls.mat_file_path_output = str(base_path / 'step1bi_data_output_getBlinkPositions.mat')
 
         # Parameters for `get_blink_position`
         cls.params = dict(minEventLen=0.05, stdThreshold=1.5, sfreq=100)
@@ -39,8 +41,8 @@ class TestBlinkPosition(unittest.TestCase):
         """
         Adjust indices for MATLAB's 1-based indexing.
         """
-        blink_positions[['startBlinks', 'endBlinks']] = (
-                blink_positions[['startBlinks', 'endBlinks']] + shift_index
+        blink_positions[['start_blink', 'end_blink']] = (
+                blink_positions[['start_blink', 'end_blink']] + shift_index
         )
         return blink_positions
 
@@ -90,8 +92,8 @@ class TestBlinkPosition(unittest.TestCase):
 
         # Prepare MATLAB ground truth candidate_signal as a DataFrame
         blinkposition_mat = pd.DataFrame({
-            'startBlinks': self.blinkposition_groundtruth[0],
-            'endBlinks': self.blinkposition_groundtruth[1]
+            'start_blink': self.blinkposition_groundtruth[0],
+            'end_blink': self.blinkposition_groundtruth[1]
         })
 
         # Compare DataFrames

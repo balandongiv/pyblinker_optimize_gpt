@@ -1,11 +1,13 @@
 import unittest
 import numpy as np
 import pandas as pd
-from pyblinkers.extractBlinkProperties import BlinkProperties
+from pyblinkers.extract_blink_properties import BlinkProperties
 from unit_test.debugging_tools import load_matlab_data
 from pyblinkers import default_setting
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 import logging
+from pathlib import Path
 
 # Configure the logger
 logging.basicConfig(level=logging.INFO)
@@ -17,17 +19,18 @@ class TestBlinkProperties(unittest.TestCase):
         Set up class-level variables and configurations for testing.
         Load MATLAB candidate_signal and define parameters for the blink properties calculation.
         """
-        cls.mat_file_path_input = r'..\migration_files\step2c_data_input_computeBlinkProperties.mat'
-        cls.mat_file_path_output = r'..\migration_files\step2c_data_output_computeBlinkProperties.mat'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        cls.mat_file_path_input = base_path / 'step2c_data_input_computeBlinkProperties.mat'
+        cls.mat_file_path_output = base_path / 'step2c_data_output_computeBlinkProperties.mat'
 
         cls.params = default_setting.params
         cls.params['sfreq'] = 100
         cls.channel = 'No_channel'
 
         cls.columns_to_decrease = [
-            'maxFrame', 'leftOuter', 'rightOuter', 'leftZero', 'rightZero',
-            'leftBase', 'rightBase', 'leftZeroHalfHeight', 'rightZeroHalfHeight',
-            'leftBaseHalfHeight', 'rightBaseHalfHeight'
+            'max_blink', 'outer_start', 'outer_end', 'left_zero', 'right_zero',
+            'left_base', 'right_base', 'left_zero_half_height', 'right_zero_half_height',
+            'left_base_half_height', 'right_base_half_height'
         ]
 
         # Load and preprocess candidate_signal
@@ -44,8 +47,12 @@ class TestBlinkProperties(unittest.TestCase):
 
         data = input_data['signalData']['signal']
         df_input = pd.DataFrame.from_records(input_data['blinkFits'])
+        df_input.rename(columns=RENAME_MAP, inplace=True)
+
         df_ground_truth_blinkFits = pd.DataFrame.from_records(output_data['blinkFits'])
         df_ground_truth_blinkProps = pd.DataFrame.from_records(output_data['blinkProps'])
+        df_ground_truth_blinkFits.rename(columns=RENAME_MAP, inplace=True)
+        df_ground_truth_blinkProps.rename(columns=RENAME_MAP, inplace=True)
 
         df_ground_truth = pd.concat([df_ground_truth_blinkFits, df_ground_truth_blinkProps], axis=1)
 
@@ -55,14 +62,14 @@ class TestBlinkProperties(unittest.TestCase):
         df_output = BlinkProperties(data, df_input, input_data['srate'], default_setting.params).df
 
         # Drop the specified columns from the output DataFrame
-        columns_to_drop = ['peaksPosVelBase', 'peaksPosVelZero']
+        columns_to_drop = ['peaks_pos_vel_base', 'peaks_pos_vel_zero']
         df_output = df_output.drop(columns=columns_to_drop, errors='ignore')
 
         # Revert index adjustment for comparison
         df_output[columns_to_decrease] = df_output[columns_to_decrease] + 1
 
         # Set NaN for last row of specific columns
-        columns_to_update = ['interBlinkMaxAmp', 'interBlinkMaxVelBase', 'interBlinkMaxVelZero']
+        columns_to_update = ['inter_blink_max_amp', 'inter_blink_max_vel_base', 'inter_blink_max_vel_zero']
         df_output.loc[df_output.index[-1], columns_to_update] = np.nan
 
         return df_input, df_ground_truth, df_output
@@ -124,9 +131,9 @@ class TestBlinkProperties(unittest.TestCase):
     @staticmethod
     def get_common_columns(df_ground_truth, df_output):
         """
-        Get common columns between two DataFrames, excluding 'maxFrame'.
+        Get common columns between two DataFrames, excluding 'max_blink'.
         """
-        return set(df_ground_truth.columns).intersection(set(df_output.columns)) - {'maxFrame'}
+        return set(df_ground_truth.columns).intersection(set(df_output.columns)) - {'max_blink'}
 
     def compare_dataframes(self, df_ground_truth, df_output, decimal_places=4):
         """
@@ -140,9 +147,9 @@ class TestBlinkProperties(unittest.TestCase):
         Returns:
         - list: List of inconsistencies found.
         """
-        # Ensure both DataFrames have 'maxFrame' column
-        if 'maxFrame' not in df_ground_truth or 'maxFrame' not in df_output:
-            raise ValueError("Both dataframes must have the 'maxFrame' column.")
+        # Ensure both DataFrames have 'max_blink' column
+        if 'max_blink' not in df_ground_truth or 'max_blink' not in df_output:
+            raise ValueError("Both dataframes must have the 'max_blink' column.")
 
         # Get common columns
         common_columns = self.get_common_columns(df_ground_truth, df_output)
@@ -167,9 +174,9 @@ class TestBlinkProperties(unittest.TestCase):
 
         # Define the cases to ignore
         cases_to_ignore = [
-            {'row': 10, 'column': 'peakTimeBlink', 'ground_truth_value': 59.2, 'output_value': 59.1},
-            {'row': 33, 'column': 'peakTimeBlink', 'ground_truth_value': 147.4, 'output_value': 147.3},
-            {'row': 34, 'column': 'peakTimeBlink', 'ground_truth_value': 154.5, 'output_value': 154.4},
+            {'row': 10, 'column': 'peak_time_blink', 'ground_truth_value': 59.2, 'output_value': 59.1},
+            {'row': 33, 'column': 'peak_time_blink', 'ground_truth_value': 147.4, 'output_value': 147.3},
+            {'row': 34, 'column': 'peak_time_blink', 'ground_truth_value': 154.5, 'output_value': 154.4},
         ]
 
         # Log a warning if ignoring specific cases
@@ -177,9 +184,9 @@ class TestBlinkProperties(unittest.TestCase):
             logger.warning(
                 "The test is being conducted with `to_ignore_three_case` set to True.\n "
                 "The following specific inconsistencies will be ignored: \n" 
-                "[{'row': 10, 'column': 'peakTimeBlink', 'ground_truth_value': 59.2, 'output_value': 59.1}, \n"
-                "{'row': 33, 'column': 'peakTimeBlink', 'ground_truth_value': 147.4, 'output_value': 147.3}, \n"
-                "{'row': 34, 'column': 'peakTimeBlink', 'ground_truth_value': 154.5, 'output_value': 154.4}].\n"
+                "[{'row': 10, 'column': 'peak_time_blink', 'ground_truth_value': 59.2, 'output_value': 59.1}, \n"
+                "{'row': 33, 'column': 'peak_time_blink', 'ground_truth_value': 147.4, 'output_value': 147.3}, \n"
+                "{'row': 34, 'column': 'peak_time_blink', 'ground_truth_value': 154.5, 'output_value': 154.4}].\n"
             )
 
         # Filter out the cases to ignore if `to_ignore_three_case` is True

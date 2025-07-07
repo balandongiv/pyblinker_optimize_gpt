@@ -3,6 +3,7 @@ import unittest
 
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 # from unit_test.develop_blink_position import get_blink_position
 from pyblinkers.getBlinkPositions import get_blink_position
@@ -12,7 +13,8 @@ class TestGetBlinkPosition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Load debug data once for all tests
-        with open('file_test_blink_position.pkl', 'rb') as f:
+        base_path = Path(__file__).resolve().parent
+        with (base_path / 'file_test_blink_position.pkl').open('rb') as f:
             cls.debug_data = pickle.load(f)
 
     def test_blink_detection(self):
@@ -20,6 +22,8 @@ class TestGetBlinkPosition(unittest.TestCase):
         blink_component = self.debug_data['blink_component']
         ch = self.debug_data['ch']
         expected_output = self.debug_data['output']
+        expected_output = expected_output.rename(columns={'startBlinks': 'start_blink',
+                                                          'endBlinks': 'end_blink'})
 
         # Run the function
         result = get_blink_position(
@@ -31,11 +35,11 @@ class TestGetBlinkPosition(unittest.TestCase):
         self.assertIsInstance(result, pd.DataFrame)
 
         # Check that the result has the same columns
-        self.assertListEqual(list(result.columns), ['startBlinks', 'endBlinks'])
+        self.assertListEqual(list(result.columns), ['start_blink', 'end_blink'])
 
         # Check that the values are the same (both start and end)
-        np.testing.assert_array_equal(result['startBlinks'].values, expected_output['startBlinks'].values)
-        np.testing.assert_array_equal(result['endBlinks'].values, expected_output['endBlinks'].values)
+        np.testing.assert_array_equal(result['start_blink'].values, expected_output['start_blink'].values)
+        np.testing.assert_array_equal(result['end_blink'].values, expected_output['end_blink'].values)
 
 if __name__ == '__main__':
     unittest.main()

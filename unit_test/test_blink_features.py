@@ -20,8 +20,8 @@ Each function under test is implemented with the following logic:
 
 1. left_right_zero_crossing:
    - Searches for the nearest negative-going zero crossing in candidate_signal
-     to the left of max_frame (in [outer_starts, max_frame)) and
-     to the right of max_frame (in (max_frame, outer_ends]).
+     to the left of max_blink (in [outer_start, max_blink)) and
+     to the right of max_blink (in (max_blink, outer_end]).
    - Falls back to searching the entire left or extending the right if none found.
    - Returns (left_zero:int, right_zero:int|None).
 
@@ -35,7 +35,7 @@ Each function under test is implemented with the following logic:
 
 3. compute_fit_range:
    - Defines blink_top and blink_bottom thresholds based on base_fraction
-     applied to blink height = signal[max_frame] - signal[left_zero].
+     applied to blink height = signal[max_blink] - signal[left_zero].
    - Calls get_left_range and get_right_range to locate two-point ranges
      for fitting top/bottom blink features.
    - Constructs x_left and x_right arrays for linear fits.
@@ -44,31 +44,32 @@ Each function under test is implemented with the following logic:
      blinkBottom_r_X, blinkBottom_r_Y, blinkTop_r_X, blinkTop_r_Y).
 
 4. lines_intersection_matlabx:
-   - Fits first-order polynomials to (x_left, y_left) and (x_right, y_right) via polyfitMatlab.
-   - Uses polyvalMatlab and corrMatlab to compute R² for each fit.
+   - Fits first-order polynomials to (x_left, y_left) and (x_right, y_right) via polyfit_matlab.
+   - Uses polyval_matlab and corr_matlab to compute R² for each fit.
    - Computes line intersection via get_intersection.
    - Computes intersection slopes via get_line_intersection_slope.
    - Computes average velocities as p.coef[1] / std(x).
    - Returns 14 floats:
      (leftSlope, rightSlope,
-      averLeftVelocity, averRightVelocity,
+      aver_left_velocity, aver_right_velocity,
       rightR2, leftR2,
-      xIntersect, yIntersect,
-      leftXIntercept, rightXIntercept,
+      x_intersect, y_intersect,
+      left_x_intercept, right_x_intercept,
       xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r).
 
     In general, in the step, we will get
         - rightOuter, leftOuter
-        - leftZero, rightZero
-        - leftBase, rightBase
-        - rightXIntercept, leftXIntercept
-        - rightBaseHalfHeight, leftBaseHalfHeight
-        - rightZeroHalfHeight. leftZeroHalfHeight
-    upon which, all will be used in extractBlinkProperties() to extract blink properties.
+        - left_zero, right_zero
+        - left_base, right_base
+        - right_x_intercept, left_x_intercept
+        - right_base_half_height, left_base_half_height
+        - right_zero_half_height. left_zero_half_height
+    upon which, all will be used in extract_blink_properties() to extract blink properties.
 """
 import numpy as np
 import pandas as pd
 import pytest
+from pathlib import Path
 
 from pyblinkers.zero_crossing import (
     left_right_zero_crossing,
@@ -76,7 +77,7 @@ from pyblinkers.zero_crossing import (
     compute_fit_range
 )
 from pyblinkers.base_left_right import create_left_right_base
-from pyblinkers.line_intersection_matlab import lines_intersection_matlabx
+from pyblinkers.utils.matlab.line_intersection_matlab import lines_intersection_matlabx
 
 
 @pytest.fixture(scope="module")
@@ -87,30 +88,31 @@ def candidate_signal() -> np.ndarray:
     Expected:
         numpy.ndarray of shape (T,), where T is the number of time samples.
     """
-    return np.load("S1_candidate_signal.npy")
+    base_path = Path(__file__).resolve().parent
+    return np.load(base_path / "S1_candidate_signal.npy")
 
 
 @pytest.fixture(scope="module")
 def test_df() -> pd.DataFrame:
     """
     Build a DataFrame of 5 blink segments with the following columns:
-      - startBlinks, endBlinks: original temporal bounds
-      - maxValue, maxFrame: blink peak value & index
-      - outerStarts, outerEnds: previous/next peak indices for context
-      - leftZero, rightZero: zero crossings around the peak
+      - start_blink, end_blink: original temporal bounds
+      - max_value, max_blink: blink peak value & index
+      - outer_start, outer_end: previous/next peak indices for context
+      - left_zero, right_zero: zero crossings around the peak
 
     Expected:
         pandas.DataFrame of shape (5, 8).
     """
     data = {
-        "startBlinks":  [  42,  225,  362, 1439, 2151],
-        "endBlinks":    [  65,  242,  375, 1458, 2157],
-        "maxValue":     [94.26998, 102.02947, 124.55329, 227.67508, 21.815195],
-        "maxFrame":     [  49,  230,  366, 1446, 2153],
-        "outerStarts":  [   0,   49,  230,  366, 1446],
-        "outerEnds":    [ 230,  366, 1446, 2153, 3052],
-        "leftZero":     [  40,  223,  360, 1437, 2148],
-        "rightZero":    [  67,  245,  377, 1459, 2166],
+        "start_blink":  [  42,  225,  362, 1439, 2151],
+        "end_blink":    [  65,  242,  375, 1458, 2157],
+        "max_value":     [94.26998, 102.02947, 124.55329, 227.67508, 21.815195],
+        "max_blink":     [  49,  230,  366, 1446, 2153],
+        "outer_start":  [   0,   49,  230,  366, 1446],
+        "outer_end":    [ 230,  366, 1446, 2153, 3052],
+        "left_zero":     [  40,  223,  360, 1437, 2148],
+        "right_zero":    [  67,  245,  377, 1459, 2166],
     }
     df = pd.DataFrame(data)
     assert df.shape == (5, 8)
@@ -128,25 +130,25 @@ def test_left_right_zero_crossing(candidate_signal: np.ndarray, test_df: pd.Data
 
     Expected Return Shape and Types:
       Tuple[int, int]
-        left_zero:  index in [outerStarts, maxFrame)
-        right_zero: index in (maxFrame, outerEnds] or int fallback
+        left_zero:  index in [outer_start, max_blink)
+        right_zero: index in (max_blink, outer_end] or int fallback
 
     Assertions:
       • Types are int
-      • outerStarts <= left_zero < maxFrame
-      • maxFrame < right_zero <= outerEnds
+      • outer_start <= left_zero < max_blink
+      • max_blink < right_zero <= outer_end
     """
     row = test_df.iloc[0]
     left_z, right_z = left_right_zero_crossing(
         candidate_signal,
-        max_frame=row["maxFrame"],
-        outer_starts=row["outerStarts"],
-        outer_ends=row["outerEnds"]
+        max_blink=row["max_blink"],
+        outer_start=row["outer_start"],
+        outer_end=row["outer_end"]
     )
     # assert isinstance(left_z, (int, np.integer))
     # assert isinstance(right_z, (int, np.integer))
-    # assert row["outerStarts"] <= left_z < row["maxFrame"]
-    # assert row["maxFrame"] < right_z <= row["outerEnds"]
+    # assert row["outer_start"] <= left_z < row["max_blink"]
+    # assert row["max_blink"] < right_z <= row["outer_end"]
 
 
 def test_get_half_height_all(candidate_signal: np.ndarray, test_df: pd.DataFrame):
@@ -162,30 +164,30 @@ def test_get_half_height_all(candidate_signal: np.ndarray, test_df: pd.DataFrame
 
     Expected Return Shape and Types:
       Tuple[float, float, float, float]
-        leftZeroHalfHeight
-        rightZeroHalfHeight
-        leftBaseHalfHeight
-        rightBaseHalfHeight
+        left_zero_half_height
+        right_zero_half_height
+        left_base_half_height
+        right_base_half_height
 
     Constraints:
-      • leftZero <= leftZeroHalfHeight <= maxFrame
-      • maxFrame <= rightZeroHalfHeight <= rightZero
+      • left_zero <= left_zero_half_height <= max_blink
+      • max_blink <= right_zero_half_height <= right_zero
     """
     df_bases = create_left_right_base(candidate_signal, test_df)
     for idx, row in test_df.iterrows():
         lzh, rzh, lbh, rbh = _get_half_height(
             candidate_signal,
-            int(row["maxFrame"]),
-            int(row["leftZero"]),
-            int(row["rightZero"]),
-            int(df_bases.loc[idx, "leftBase"]),
-            int(row["outerEnds"])
+            int(row["max_blink"]),
+            int(row["left_zero"]),
+            int(row["right_zero"]),
+            int(df_bases.loc[idx, "left_base"]),
+            int(row["outer_end"])
         )
         # assert isinstance((lzh, rzh, lbh, rbh), tuple) and len((lzh, rzh, lbh, rbh)) == 4
         # for v in (lzh, rzh, lbh, rbh):
         #     assert isinstance(v, float)
-        # assert row["leftZero"] <= lzh <= row["maxFrame"]
-        # assert row["maxFrame"] <= rzh <= row["rightZero"]
+        # assert row["left_zero"] <= lzh <= row["max_blink"]
+        # assert row["max_blink"] <= rzh <= row["right_zero"]
 
 
 def test_compute_fit_range_all(candidate_signal: np.ndarray, test_df: pd.DataFrame):
@@ -193,7 +195,7 @@ def test_compute_fit_range_all(candidate_signal: np.ndarray, test_df: pd.DataFra
     Test compute_fit_range for all segments.
 
     Internals:
-      - blink_height = signal[maxFrame] - signal[leftZero]
+      - blink_height = signal[max_blink] - signal[left_zero]
       - blinkTop = peak - base_fraction*blink_height
       - blinkBottom = base + base_fraction*blink_height
       - get_left_range and get_right_range identify two-point bounds
@@ -222,9 +224,9 @@ def test_compute_fit_range_all(candidate_signal: np.ndarray, test_df: pd.DataFra
     for _, row in test_df.iterrows():
         result = compute_fit_range(
             candidate_signal,
-            int(row["maxFrame"]),
-            int(row["leftZero"]),
-            int(row["rightZero"]),
+            int(row["max_blink"]),
+            int(row["left_zero"]),
+            int(row["right_zero"]),
             base_fraction,
             top_bottom=True
         )
@@ -239,8 +241,8 @@ def test_lines_intersection_matlabx_first_two(candidate_signal: np.ndarray, test
     Validate lines_intersection_matlabx on first two segments.
 
     Internals:
-      - polyfitMatlab(x_left,y_left,1) and (x_right,y_right,1)
-      - polyvalMatlab and corrMatlab to compute R2
+      - polyfit_matlab(x_left, y_left, 1) and (x_right, y_right, 1)
+      - polyval_matlab and corr_matlab to compute R2
       - get_intersection returns (xI,yI,leftXI,rightXI)
       - get_line_intersection_slope derives slopes from intersection coords
       - average velocity = p.coef[1] / std(x)
@@ -250,14 +252,14 @@ def test_lines_intersection_matlabx_first_two(candidate_signal: np.ndarray, test
       Tuple of 14 floats:
        0: leftSlope
        1: rightSlope
-       2: averLeftVelocity
-       3: averRightVelocity
+       2: aver_left_velocity
+       3: aver_right_velocity
        4: rightR2
        5: leftR2
-       6: xIntersect
-       7: yIntersect
-       8: leftXIntercept
-       9: rightXIntercept
+       6: x_intersect
+       7: y_intersect
+       8: left_x_intercept
+       9: right_x_intercept
       10: xLineCross_l (=nan)
       11: yLineCross_l (=nan)
       12: xLineCross_r (=nan)
@@ -277,9 +279,9 @@ def test_lines_intersection_matlabx_first_two(candidate_signal: np.ndarray, test
             xRight=xRight
         )
     col_result=[
-            'leftSlope', 'rightSlope', 'averLeftVelocity', 'averRightVelocity',
-            'rightR2', 'leftR2', 'xIntersect', 'yIntersect',
-            'leftXIntercept', 'rightXIntercept',
+            'leftSlope', 'rightSlope', 'aver_left_velocity', 'aver_right_velocity',
+            'rightR2', 'leftR2', 'x_intersect', 'y_intersect',
+            'left_x_intercept', 'right_x_intercept',
             'xLineCross_l', 'yLineCross_l', 'xLineCross_r', 'yLineCross_r'
         ]
         # assert isinstance(result, tuple) and len(result) == 14

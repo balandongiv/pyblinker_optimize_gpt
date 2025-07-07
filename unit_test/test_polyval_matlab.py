@@ -1,7 +1,7 @@
 import numpy as np
-from pyblinkers.matlab_forking import polyvalMatlab
+from pyblinkers.utils.matlab.matlab_forking import polyval_matlab
 # Unit test remains the same
-def test_polyvalMatlab():
+def test_polyval_matlab():
     # Input variables
     p = np.array([24.709207534790040, 47.429222106933594])
     x = np.array([43, 44, 45, 46, 47, 48])
@@ -24,7 +24,7 @@ def test_polyvalMatlab():
     ])
 
     # Run function
-    y, delta = polyvalMatlab(p, x, S=S, mu=mu)
+    y, delta = polyval_matlab(p, x, S=S, mu=mu)
 
     # Check outputs
     np.testing.assert_allclose(y, y_expected, rtol=1e-6, atol=1e-6)
@@ -37,4 +37,4 @@ def test_polyvalMatlab():
         print("Delta computation skipped due to singular matrix.")
 
 # Run the unit test
-test_polyvalMatlab()
+test_polyval_matlab()

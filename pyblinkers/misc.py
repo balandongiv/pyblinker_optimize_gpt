@@ -11,8 +11,8 @@ def create_annotation(sblink, sfreq, label):
         raise ValueError('No appropriate channel. sorry. Try to use large channel selection')
 
 
-    onset = (sblink['startBlinks'] / sfreq).tolist()
-    duration= (sblink['endBlinks'] - sblink['startBlinks']) / sfreq
+    onset = (sblink['start_blink'] / sfreq).tolist()
+    duration= (sblink['end_blink'] - sblink['start_blink']) / sfreq
     des_s = [label] * len(onset)
 
     annot = mne.Annotations(onset=onset,  # in seconds

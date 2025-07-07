@@ -4,8 +4,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def viz_line_intersection(candidateSignal,xRight,xLeft,leftXIntercept,rightXIntercept,
-                          xIntersect,yIntersect):
+def viz_line_intersection(candidateSignal,xRight,xLeft,left_x_intercept,right_x_intercept,
+                          x_intersect,y_intersect):
     #### make_Plot
 
 
@@ -18,14 +18,14 @@ def viz_line_intersection(candidateSignal,xRight,xLeft,leftXIntercept,rightXInte
     plt.plot(t, bTrace, linewidth=10,alpha=0.5)
 
 
-    plt.plot([leftXIntercept[0],xIntersect[0]], [0,yIntersect[0]],'--')
+    plt.plot([left_x_intercept[0],x_intersect[0]], [0,y_intersect[0]],'--')
 
 
-    plt.plot([xIntersect[0],rightXIntercept[0],], [yIntersect[0],0],'--')
+    plt.plot([x_intersect[0],right_x_intercept[0],], [y_intersect[0],0],'--')
     # plt.show()
 
 
-    z=[leftXIntercept,rightXIntercept]
+    z=[left_x_intercept,right_x_intercept]
     y=[0,0]
 
     n =  [f'XIntercept_{float("{0:.2f}".format(i[0]))}' for i in z]
@@ -40,9 +40,9 @@ def viz_line_intersection(candidateSignal,xRight,xLeft,leftXIntercept,rightXInte
             arrowprops=dict(arrowstyle = '->', connectionstyle='arc3,rad=0'))
 
 
-    plt.scatter([xIntersect],[yIntersect])
+    plt.scatter([x_intersect],[y_intersect])
 
-    for label, x, y in zip([f'xy_intersect'], [xIntersect],[yIntersect]):
+    for label, x, y in zip([f'xy_intersect'], [x_intersect],[y_intersect]):
         plt.annotate(
             label,
             xy=(x, y), xytext=(-20, 20),
@@ -52,19 +52,19 @@ def viz_line_intersection(candidateSignal,xRight,xLeft,leftXIntercept,rightXInte
 
     plt.show()
 
-def viz_blink_top_buttom_point(candidateSignal,blinkRange,blinkTop,blinkBottom,maxFrame,rightZero,leftRange,rightRange):
+def viz_blink_top_buttom_point(candidateSignal,blinkRange,blinkTop,blinkBottom,max_blink,right_zero,leftRange,rightRange):
 
     srate=1
     npad=20
-    idx_t=(np.arange ( maxFrame-npad, rightZero +npad))
+    idx_t=(np.arange ( max_blink-npad, right_zero +npad))
     bTrace= candidateSignal[idx_t]
     t=idx_t/srate
     #
     plt.plot(t, bTrace)
     #
-    maxFrame_Y=candidateSignal[maxFrame]
-    rightZero_Y=candidateSignal[rightZero]
-    ee=[(maxFrame)/srate,(rightZero)/srate]
+    maxFrame_Y=candidateSignal[max_blink]
+    rightZero_Y=candidateSignal[right_zero]
+    ee=[(max_blink)/srate,(right_zero)/srate]
     ddd=[maxFrame_Y,rightZero_Y]
     #
     plt.scatter(ee,ddd)
@@ -83,22 +83,22 @@ def viz_blink_top_buttom_point(candidateSignal,blinkRange,blinkTop,blinkBottom,m
     hh=1
 
 
-def cross_check_maxFrame(candidateSignal,maxFrame,srate):
+def cross_check_maxFrame(candidateSignal,max_blink,srate):
 
-    idx_t=(np.arange ( maxFrame-10, maxFrame +10))
+    idx_t=(np.arange ( max_blink-10, max_blink +10))
     bTrace= candidateSignal[idx_t]
     t=idx_t/srate
 
     plt.plot(t, bTrace)
 
-    ddd=candidateSignal[maxFrame-1]
-    ee=(maxFrame-1)/srate
+    ddd=candidateSignal[max_blink-1]
+    ee=(max_blink-1)/srate
 
     plt.scatter(ee,ddd)
 
     plt.show()
 
-def _viz_sanity_zero_crossing(start_f,stop_f,maxFrame,dsignal,dlegend=''):
+def _viz_sanity_zero_crossing(start_f,stop_f,max_blink,dsignal,dlegend=''):
 
     srate=1
     npad=20
@@ -115,8 +115,8 @@ def _viz_sanity_zero_crossing(start_f,stop_f,maxFrame,dsignal,dlegend=''):
                                [dsignal[start_f], dsignal[stop_f]],
                                marker='*',s=300)
 
-    plt.scatter([maxFrame],
-                [dsignal[maxFrame]],
+    plt.scatter([max_blink],
+                [dsignal[max_blink]],
                 marker='o',s=300)
 
     plt.plot([t[0], t[-1]], [0, 0], 'r-', lw=2)

@@ -1,6 +1,7 @@
 import unittest
 import logging
 import pandas as pd
+from pathlib import Path
 from pyblinkers.getRepresentativeChannel import (
     filter_blink_amplitude_ratios,
     filter_good_blinks,
@@ -9,6 +10,7 @@ from pyblinkers.getRepresentativeChannel import (
 )
 from unit_test.debugging_tools import load_matlab_data
 from pyblinkers import default_setting
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -21,8 +23,9 @@ class TestSelectChannelCompact(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        cls.mat_file_path_input = r'..\migration_files\step3a_input_selectChannel_compact.mat'
-        cls.mat_file_path_output = r'..\migration_files\step3a_output_selectChannel_compact.mat'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        cls.mat_file_path_input = base_path / 'step3a_input_selectChannel_compact.mat'
+        cls.mat_file_path_output = base_path / 'step3a_output_selectChannel_compact.mat'
 
         # Load candidate_signal
         input_data, output_data = load_matlab_data(
@@ -36,11 +39,13 @@ class TestSelectChannelCompact(unittest.TestCase):
         cls.signal_data_gt = pd.DataFrame.from_records(cls.output_data['blinks']['signalData'])
         cls.signal_data_gt = cls.signal_data_gt.drop(columns=['signal', 'blinkPositions', 'signalType', 'signalNumber'])
         cls.signal_data_gt = cls.signal_data_gt.rename(columns={'signalLabel': 'ch'})
+        cls.signal_data_gt.rename(columns=RENAME_MAP, inplace=True)
 
         # Signal candidate_signal for processing
         cls.signal_data = pd.DataFrame.from_records(cls.input_data['signalData'])
         cls.signal_data = cls.signal_data.drop(columns=['signal', 'blinkPositions', 'signalType', 'signalNumber'])
         cls.signal_data = cls.signal_data.rename(columns={'signalLabel': 'ch'})
+        cls.signal_data.rename(columns=RENAME_MAP, inplace=True)
 
         # Parameters
         cls.params = default_setting.params
