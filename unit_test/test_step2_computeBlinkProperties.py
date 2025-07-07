@@ -48,17 +48,11 @@ class TestBlinkProperties(unittest.TestCase):
         data = input_data['signalData']['signal']
         df_input = pd.DataFrame.from_records(input_data['blinkFits'])
         df_input.rename(columns=RENAME_MAP, inplace=True)
-        df_input.rename(columns={'leftOuter': 'outer_start',
-                                 'rightOuter': 'outer_end'}, inplace=True)
 
         df_ground_truth_blinkFits = pd.DataFrame.from_records(output_data['blinkFits'])
         df_ground_truth_blinkProps = pd.DataFrame.from_records(output_data['blinkProps'])
         df_ground_truth_blinkFits.rename(columns=RENAME_MAP, inplace=True)
         df_ground_truth_blinkProps.rename(columns=RENAME_MAP, inplace=True)
-        df_ground_truth_blinkFits.rename(columns={'leftOuter': 'outer_start',
-                                                 'rightOuter': 'outer_end'}, inplace=True)
-        df_ground_truth_blinkProps.rename(columns={'leftOuter': 'outer_start',
-                                                  'rightOuter': 'outer_end'}, inplace=True)
 
         df_ground_truth = pd.concat([df_ground_truth_blinkFits, df_ground_truth_blinkProps], axis=1)
 

@@ -25,7 +25,7 @@ class FitBlinks:
         self.frame_blinks = []
         self.base_fraction = params['base_fraction']
 
-        # Column lists (these names remain unchanged)
+        # Column lists (these names remain unchanged for assignment)
         self.cols_half_height = [
             'left_zero_half_height', 'right_zero_half_height',
             'left_base_half_height', 'right_base_half_height'
@@ -149,5 +149,23 @@ class FitBlinks:
             axis=1,
             result_type='expand'
         )
+
+        rename_map = {
+            'xLeft': 'x_left',
+            'xRight': 'x_right',
+            'leftRange': 'left_range',
+            'rightRange': 'right_range',
+            'blinkBottomPoint_l_Y': 'blink_bottom_point_l_y',
+            'blinkBottomPoint_l_X': 'blink_bottom_point_l_x',
+            'blinkTopPoint_l_Y': 'blink_top_point_l_y',
+            'blinkTopPoint_l_X': 'blink_top_point_l_x',
+            'blinkBottomPoint_r_X': 'blink_bottom_point_r_x',
+            'blinkBottomPoint_r_Y': 'blink_bottom_point_r_y',
+            'blinkTopPoint_r_X': 'blink_top_point_r_x',
+            'blinkTopPoint_r_Y': 'blink_top_point_r_y',
+            'leftSlope': 'left_slope',
+            'rightSlope': 'right_slope',
+        }
+        self.frame_blinks.rename(columns=rename_map, inplace=True)
 
 

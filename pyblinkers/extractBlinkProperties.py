@@ -64,15 +64,15 @@ def get_blink_statistic(df, zThresholds, signal=None):
 
     number_good_blinks = np.sum(good_mask_bottom)
 
-    return dict(
-        numberBlinks=len(df_data),
-        numberGoodBlinks=number_good_blinks,
-        blinkAmpRatio=blink_amp_ratio,
-        cutoff=cutoff,
-        bestMedian=best_median,
-        bestRobustStd=best_robust_std,
-        goodRatio=good_ratio
-    )
+    return {
+        "number_blinks": len(df_data),
+        "number_good_blinks": number_good_blinks,
+        "blink_amp_ratio": blink_amp_ratio,
+        "cutoff": cutoff,
+        "best_median": best_median,
+        "best_robust_std": best_robust_std,
+        "good_ratio": good_ratio,
+    }
 
 
 def get_good_blink_mask(blink_fits, specified_median, specified_std, z_thresholds):

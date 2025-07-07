@@ -31,8 +31,6 @@ class TestFitBlinks(unittest.TestCase):
         # Convert MATLAB ground truth candidate_signal to a DataFrame
         cls.df_ground_truth = pd.DataFrame.from_records(cls.output_data)
         cls.df_ground_truth.rename(columns=RENAME_MAP, inplace=True)
-        cls.df_ground_truth.rename(columns={'leftOuter': 'outer_start',
-                                            'rightOuter': 'outer_end'}, inplace=True)
 
         # Drop the 'number' column if it exists
         if 'number' in cls.df_ground_truth.columns:
@@ -79,17 +77,17 @@ class TestFitBlinks(unittest.TestCase):
         third_columns_to_increment = ['y_intersect']
         df_output[third_columns_to_increment] = df_output[third_columns_to_increment] - 2
 
-        # Adjust `leftRange` and `rightRange`
-        df_output['leftRange'] = df_output['leftRange'].apply(lambda x: [val + 1 for val in x])
-        df_output['rightRange'] = df_output['rightRange'].apply(lambda x: [val + 1 for val in x])
+        # Adjust `left_range` and `right_range`
+        df_output['left_range'] = df_output['left_range'].apply(lambda x: [val + 1 for val in x])
+        df_output['right_range'] = df_output['right_range'].apply(lambda x: [val + 1 for val in x])
 
         # Desired column order
         column_order = [
             'max_blink', 'max_value', 'outer_start', 'outer_end',
             'left_zero', 'right_zero', 'left_base', 'right_base',
             'left_base_half_height', 'right_base_half_height', 'left_zero_half_height',
-            'right_zero_half_height', 'leftRange', 'rightRange', 'leftSlope',
-            'rightSlope', 'aver_left_velocity', 'aver_right_velocity',
+            'right_zero_half_height', 'left_range', 'right_range', 'left_slope',
+            'right_slope', 'aver_left_velocity', 'aver_right_velocity',
             'leftR2', 'rightR2', 'x_intersect', 'y_intersect',
             'left_x_intercept', 'right_x_intercept'
         ]

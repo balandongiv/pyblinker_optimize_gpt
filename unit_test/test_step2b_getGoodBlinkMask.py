@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from unit_test.debugging_tools import load_matlab_data
 from pyblinkers.extractBlinkProperties import get_good_blink_mask
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 from pathlib import Path
 
 
@@ -23,6 +24,7 @@ class TestGetGoodBlinkMask(unittest.TestCase):
 
         # Blink fits as DataFrame
         cls.blinkFits = pd.DataFrame.from_records(cls.input_data['blinkFits'])
+        cls.blinkFits.rename(columns=RENAME_MAP, inplace=True)
 
         # Use fixed z_thresholds instead of MATLAB values
         cls.zThresholds = np.array([[0.9, 0.98], [2.0, 5.0]])

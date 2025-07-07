@@ -10,6 +10,7 @@ from pyblinkers.getRepresentativeChannel import (
 )
 from unit_test.debugging_tools import load_matlab_data
 from pyblinkers import default_setting
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 # Configure logger
 logging.basicConfig(level=logging.INFO)
@@ -38,11 +39,13 @@ class TestSelectChannelCompact(unittest.TestCase):
         cls.signal_data_gt = pd.DataFrame.from_records(cls.output_data['blinks']['signalData'])
         cls.signal_data_gt = cls.signal_data_gt.drop(columns=['signal', 'blinkPositions', 'signalType', 'signalNumber'])
         cls.signal_data_gt = cls.signal_data_gt.rename(columns={'signalLabel': 'ch'})
+        cls.signal_data_gt.rename(columns=RENAME_MAP, inplace=True)
 
         # Signal candidate_signal for processing
         cls.signal_data = pd.DataFrame.from_records(cls.input_data['signalData'])
         cls.signal_data = cls.signal_data.drop(columns=['signal', 'blinkPositions', 'signalType', 'signalNumber'])
         cls.signal_data = cls.signal_data.rename(columns={'signalLabel': 'ch'})
+        cls.signal_data.rename(columns=RENAME_MAP, inplace=True)
 
         # Parameters
         cls.params = default_setting.params

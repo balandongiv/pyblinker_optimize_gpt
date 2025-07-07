@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pyblinkers.extractBlinkProperties import get_blink_statistic
 from unit_test.debugging_tools import load_matlab_data
-from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP, rename_keys
 
 
 class TestBlinkStatistic(unittest.TestCase):
@@ -29,11 +29,9 @@ class TestBlinkStatistic(unittest.TestCase):
         # Blink fits as DataFrame
         cls.df = pd.DataFrame.from_records(cls.input_data['blinkFits'])
         cls.df.rename(columns=RENAME_MAP, inplace=True)
-        cls.df.rename(columns={'leftOuter': 'outer_start',
-                               'rightOuter': 'outer_end'}, inplace=True)
 
         # Ground truth signal candidate_signal
-        cls.signalData_gt = cls.output_data['blinks']['signalData']
+        cls.signalData_gt = rename_keys(cls.output_data['blinks']['signalData'], RENAME_MAP)
 
         # Remove unwanted keys from the ground truth for comparison
         for key in ["signal", "blinkPositions", "signalType", "signalNumber", "signalLabel"]:
