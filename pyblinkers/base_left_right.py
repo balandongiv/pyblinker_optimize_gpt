@@ -43,7 +43,7 @@ def create_left_right_base(candidate_signal, df):
     df = df.copy()
 
     # Compute blink velocity by differencing the candidate_signal
-    blinkVelocity = np.diff(candidate_signal, axis=0)
+    blink_velocity = np.diff(candidate_signal, axis=0)
 
     # Remove rows with NaNs so we don't pass invalid candidate_signal to our calculations
     df.dropna(inplace=True)
@@ -51,7 +51,7 @@ def create_left_right_base(candidate_signal, df):
     # Calculate max_pos_vel_frame and max_neg_vel_frame safely
     df[['max_pos_vel_frame', 'max_neg_vel_frame']] = df.apply(
         lambda row: _max_pos_vel_frame(
-            blink_velocity=blinkVelocity,
+            blink_velocity=blink_velocity,
             max_blink=row['max_blink'],
             left_zero=row['left_zero'],
             right_zero=row['right_zero']
@@ -66,7 +66,7 @@ def create_left_right_base(candidate_signal, df):
     # Compute left_base safely using .assign()
     df = df.assign(left_base=df.apply(
         lambda row: _get_left_base(
-            blink_velocity=blinkVelocity,
+            blink_velocity=blink_velocity,
             left_outer=row['outer_start'],
             max_pos_vel_frame=row['max_pos_vel_frame']
         ),
@@ -80,7 +80,7 @@ def create_left_right_base(candidate_signal, df):
     df = df.assign(right_base=df.apply(
         lambda row: _get_right_base(
             candidate_signal=candidate_signal,
-            blink_velocity=blinkVelocity,
+            blink_velocity=blink_velocity,
             right_outer=row['outer_end'],
             max_neg_vel_frame=row['max_neg_vel_frame']
         ),

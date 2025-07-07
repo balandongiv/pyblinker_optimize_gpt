@@ -31,47 +31,47 @@ class TestBlinkStatistic(unittest.TestCase):
         cls.df.rename(columns=RENAME_MAP, inplace=True)
 
         # Ground truth signal candidate_signal
-        cls.signalData_gt = rename_keys(cls.output_data['blinks']['signalData'], RENAME_MAP)
+        cls.signal_data_gt = rename_keys(cls.output_data['blinks']['signalData'], RENAME_MAP)
 
         # Remove unwanted keys from the ground truth for comparison
         for key in ["signal", "blinkPositions", "signalType", "signalNumber", "signalLabel"]:
-            cls.signalData_gt.pop(key, None)
+            cls.signal_data_gt.pop(key, None)
 
         # Use fixed z_thresholds
-        cls.zThresholds = np.array([[0.9, 0.98], [2.0, 5.0]])
+        cls.z_thresholds = np.array([[0.9, 0.98], [2.0, 5.0]])
 
     def test_blink_statistic(self):
         """
         Test the get_blink_statistic function output against the MATLAB ground truth.
         """
         # Compute blink statistics
-        signalData = get_blink_statistic(self.df, self.zThresholds, signal=self.signal)
+        signal_data = get_blink_statistic(self.df, self.z_thresholds, signal=self.signal)
 
         # Check for differences between the dictionaries
         differences = {}
-        for key in self.signalData_gt.keys():
-            if key not in signalData:
-                differences[key] = f"Key '{key}' is missing in the computed signalData."
-            elif not np.allclose(self.signalData_gt[key], signalData[key], atol=1e-6, equal_nan=True):
+        for key in self.signal_data_gt.keys():
+            if key not in signal_data:
+                differences[key] = f"Key '{key}' is missing in the computed signal_data."
+            elif not np.allclose(self.signal_data_gt[key], signal_data[key], atol=1e-6, equal_nan=True):
                 differences[key] = {
-                    'ground_truth': self.signalData_gt[key],
-                    'computed': signalData[key]
+                    'ground_truth': self.signal_data_gt[key],
+                    'computed': signal_data[key]
                 }
 
-        for key in signalData.keys():
-            if key not in self.signalData_gt:
-                differences[key] = f"Key '{key}' is missing in the ground truth signalData."
+        for key in signal_data.keys():
+            if key not in self.signal_data_gt:
+                differences[key] = f"Key '{key}' is missing in the ground truth signal_data."
 
         # Log differences if any
         if differences:
-            print("\nDifferences found in signalData:")
+            print("\nDifferences found in signal_data:")
             for key, diff in differences.items():
                 print(f"Key: {key}, Difference: {diff}")
 
         # Assert no differences
         self.assertFalse(
             differences,
-            f"The computed signalData does not match the ground truth. Differences: {differences}"
+            f"The computed signal_data does not match the ground truth. Differences: {differences}"
         )
 
 

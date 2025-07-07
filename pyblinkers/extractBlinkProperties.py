@@ -27,7 +27,7 @@ def calculate_good_ratio(all_values, best_median, best_robust_std, all_x):
     return np.sum(within_mask) / all_x
 
 
-def get_blink_statistic(df, zThresholds, signal=None):
+def get_blink_statistic(df, z_thresholds, signal=None):
 
     dfx = df.copy()
     dfx[['left_zero', 'right_zero']] = dfx[['left_zero', 'right_zero']] - 1
@@ -42,7 +42,7 @@ def get_blink_statistic(df, zThresholds, signal=None):
     outside_blink = (signal > 0) & ~blink_mask
     blink_amp_ratio = np.mean(signal[inside_blink]) / np.mean(signal[outside_blink])
 
-    correlation_threshold_bottom, correlation_threshold_top = zThresholds[0]
+    correlation_threshold_bottom, correlation_threshold_top = z_thresholds[0]
     df_data = df[['leftR2', 'rightR2', 'max_value']]
 
     good_mask_top = (df_data['leftR2'] >= correlation_threshold_top) & (df_data['rightR2'] >= correlation_threshold_top)
@@ -173,13 +173,13 @@ class BlinkProperties:
                - 'z_thresholds': Z-score thresholds (structure of thresholds is assumed to be handled internally by methods using it).
        """
         self.signal_l = None
-        self.blinkVelocity = None
+        self.blink_velocity = None
         self.candidate_signal = candidate_signal
         self.df = df
         self.srate = srate
         self.shut_amp_fraction = params['shut_amp_fraction']
         self.p_avr_threshold = params['p_avr_threshold']
-        self.zThresholds = params['z_thresholds']
+        self.z_thresholds = params['z_thresholds']
 
         self.df_res = []
         self.reset_index()
@@ -197,7 +197,7 @@ class BlinkProperties:
 
     def set_blink_velocity(self):
         self.signal_l = self.candidate_signal.shape[0]
-        self.blinkVelocity = np.diff(self.candidate_signal)
+        self.blink_velocity = np.diff(self.candidate_signal)
 
     def set_blink_duration(self):
 
@@ -222,7 +222,7 @@ class BlinkProperties:
         """
         start_vals = self.df[start_key].to_numpy().astype(int)
         end_vals = self.df[end_key].to_numpy().astype(int)
-        blink_vel = self.blinkVelocity
+        blink_vel = self.blink_velocity
 
         lengths = (end_vals - start_vals + 1).astype(int)
         max_len = lengths.max()

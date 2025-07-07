@@ -102,7 +102,6 @@ def blink_df() -> pd.DataFrame:
     base_path = Path(__file__).resolve().parent
     df = pd.read_pickle(base_path / "blink_properties_fits.pkl")
     df.rename(columns=RENAME_MAP, inplace=True)
-    df.rename(columns={'leftOuter': 'outer_start', 'rightOuter': 'outer_end'}, inplace=True)
     assert not df.empty and isinstance(df, pd.DataFrame)
     return df
 
