@@ -331,9 +331,9 @@ def get_intersection(p, q, u, v):
         v (list or array): [mean of second line, std deviation of second line].
 
     Returns:
-        tuple: (xIntersect, yIntersect, xIntercept1, xIntercept2)
-            xIntersect (float): x-coordinate of intersection point.
-            yIntersect (float): y-coordinate of intersection point.
+        tuple: (x_intersect, y_intersect, xIntercept1, xIntercept2)
+            x_intersect (float): x-coordinate of intersection point.
+            y_intersect (float): y-coordinate of intersection point.
             xIntercept1 (float): x-intercept of the first line.
             xIntercept2 (float): x-intercept of the second line.
     """
@@ -348,12 +348,12 @@ def get_intersection(p, q, u, v):
 
     denom = p[0]*v[1] - q[0]*u[1]
     if denom == 0:  # Check for parallel or coincident lines
-        xIntersect = np.nan
-        yIntersect = np.nan
+        x_intersect = np.nan
+        y_intersect = np.nan
     else:
         numer = (u[0]*p[0]*v[1] - v[0]*q[0]*u[1] +
                  q[1]*v[1]*u[1] - p[1]*u[1]*v[1])
-        xIntersect = numer / denom
-        yIntersect = p[0]*(xIntersect - u[0])/u[1] + p[1]
+        x_intersect = numer / denom
+        y_intersect = p[0]*(x_intersect - u[0])/u[1] + p[1]
 
-    return xIntersect, yIntersect, xIntercept1, xIntercept2
+    return x_intersect, y_intersect, xIntercept1, xIntercept2

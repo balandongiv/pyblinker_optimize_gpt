@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from unit_test.debugging_tools import load_matlab_data
 from pyblinkers.extractBlinkProperties import get_good_blink_mask
+from pathlib import Path
 
 
 class TestGetGoodBlinkMask(unittest.TestCase):
@@ -11,8 +12,9 @@ class TestGetGoodBlinkMask(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        cls.mat_file_path_input = r'..\migration_files\step2b_data_input_getGoodBlinkMask.mat'
-        cls.mat_file_path_output = r'..\migration_files\step2b_data_output_getGoodBlinkMask.mat'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        cls.mat_file_path_input = base_path / 'step2b_data_input_getGoodBlinkMask.mat'
+        cls.mat_file_path_output = base_path / 'step2b_data_output_getGoodBlinkMask.mat'
 
         # Load candidate_signal
         input_data, output_datax = load_matlab_data(cls.mat_file_path_input, cls.mat_file_path_output)

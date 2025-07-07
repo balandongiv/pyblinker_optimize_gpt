@@ -2,9 +2,11 @@ import unittest
 import logging
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from pyblinkers import default_setting
 from pyblinkers.fit_blink import FitBlinks
 from pyblinkers.getBlinkPositions import get_blink_position
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 from unit_test.debugging_tools import load_matlab_data
 
 # Configure logger
@@ -18,8 +20,9 @@ class TestFitBlinks(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal and initializing parameters.
         """
-        cls.mat_file_path_input = r'..\migration_files\step1bii_data_input_process_FitBlinks.mat'
-        cls.mat_file_path_output = r'..\migration_files\step1bii_data_output_process_FitBlinks.mat'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        cls.mat_file_path_input = base_path / 'step1bii_data_input_process_FitBlinks.mat'
+        cls.mat_file_path_output = base_path / 'step1bii_data_output_process_FitBlinks.mat'
 
         # Load candidate_signal
         cls.input_data, output_datax = load_matlab_data(cls.mat_file_path_input, cls.mat_file_path_output)
@@ -27,6 +30,9 @@ class TestFitBlinks(unittest.TestCase):
 
         # Convert MATLAB ground truth candidate_signal to a DataFrame
         cls.df_ground_truth = pd.DataFrame.from_records(cls.output_data)
+        cls.df_ground_truth.rename(columns=RENAME_MAP, inplace=True)
+        cls.df_ground_truth.rename(columns={'leftOuter': 'outer_start',
+                                            'rightOuter': 'outer_end'}, inplace=True)
 
         # Drop the 'number' column if it exists
         if 'number' in cls.df_ground_truth.columns:
@@ -58,19 +64,19 @@ class TestFitBlinks(unittest.TestCase):
 
         # Adjust indices for MATLAB compatibility
         columns_to_increment = [
-            'maxFrame', 'startBlinks', 'endBlinks',
-            'outerStarts', 'outerEnds', 'leftZero', 'rightZero',
-            'maxPosVelFrame', 'maxNegVelFrame', 'leftBase',
-            'rightBase', 'leftZeroHalfHeight', 'rightZeroHalfHeight',
-            'leftBaseHalfHeight', 'rightBaseHalfHeight',
-            'xIntersect', 'yIntersect', 'rightXIntercept',
+            'max_blink', 'start_blink', 'end_blink',
+            'outer_start', 'outer_end', 'left_zero', 'right_zero',
+            'max_pos_vel_frame', 'max_neg_vel_frame', 'left_base',
+            'right_base', 'left_zero_half_height', 'right_zero_half_height',
+            'left_base_half_height', 'right_base_half_height',
+            'x_intersect', 'y_intersect', 'right_x_intercept',
         ]
         df_output[columns_to_increment] = df_output[columns_to_increment] + 1
 
-        second_columns_to_increment = ['yIntersect', 'leftXIntercept']
+        second_columns_to_increment = ['y_intersect', 'left_x_intercept']
         df_output[second_columns_to_increment] = df_output[second_columns_to_increment] + 1
 
-        third_columns_to_increment = ['yIntersect']
+        third_columns_to_increment = ['y_intersect']
         df_output[third_columns_to_increment] = df_output[third_columns_to_increment] - 2
 
         # Adjust `leftRange` and `rightRange`
@@ -79,26 +85,19 @@ class TestFitBlinks(unittest.TestCase):
 
         # Desired column order
         column_order = [
-            'maxFrame', 'maxValue', 'outerStarts', 'outerEnds',
-            'leftZero', 'rightZero', 'leftBase', 'rightBase',
-            'leftBaseHalfHeight', 'rightBaseHalfHeight', 'leftZeroHalfHeight',
-            'rightZeroHalfHeight', 'leftRange', 'rightRange', 'leftSlope',
-            'rightSlope', 'averLeftVelocity', 'averRightVelocity',
-            'leftR2', 'rightR2', 'xIntersect', 'yIntersect',
-            'leftXIntercept', 'rightXIntercept'
+            'max_blink', 'max_value', 'outer_start', 'outer_end',
+            'left_zero', 'right_zero', 'left_base', 'right_base',
+            'left_base_half_height', 'right_base_half_height', 'left_zero_half_height',
+            'right_zero_half_height', 'leftRange', 'rightRange', 'leftSlope',
+            'rightSlope', 'aver_left_velocity', 'aver_right_velocity',
+            'leftR2', 'rightR2', 'x_intersect', 'y_intersect',
+            'left_x_intercept', 'right_x_intercept'
         ]
         df_output = df_output[column_order]
 
-        # Rename columns to match ground truth
-        df_output = df_output.copy()
-        df_output.rename(columns={
-            'outerStarts': 'leftOuter',
-            'outerEnds': 'rightOuter',
-        }, inplace=True)
-
         # df_output.rename(columns={
-        #     'outerStarts': 'leftOuter',
-        #     'outerEnds': 'rightOuter',
+        #     'outer_start': 'leftOuter',
+        #     'outer_end': 'rightOuter',
         # }, inplace=True)
 
         return df_output
@@ -198,8 +197,8 @@ class TestFitBlinks(unittest.TestCase):
         # Define the cases to ignore
         ignore_cases = [
             {'row': 78, 'column': 'rightOuter', 'ground_truth_value': 27800, 'output_value': 27801},
-            {'row': 26, 'column': 'yIntersect', 'ground_truth_value': 43.0, 'output_value': 44.0},
-            {'row': 65, 'column': 'yIntersect', 'ground_truth_value': 80.0, 'output_value': 79.0},
+            {'row': 26, 'column': 'y_intersect', 'ground_truth_value': 43.0, 'output_value': 44.0},
+            {'row': 65, 'column': 'y_intersect', 'ground_truth_value': 80.0, 'output_value': 79.0},
         ]
 
         # Compare ground truth and output

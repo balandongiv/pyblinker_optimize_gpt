@@ -17,19 +17,19 @@ def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None):
     yPredRight, delta = polyvalMatlab(pRight, xRight, S=SRight, mu= muRight)
     rightR2, _ = corrMatlab(yRight , yPredRight)
 
-    xIntersect, yIntersect, leftXIntercept, rightXIntercept = get_intersection(pLeft, pRight, muLeft, muRight)
+    x_intersect, y_intersect, left_x_intercept, right_x_intercept = get_intersection(pLeft, pRight, muLeft, muRight)
 
 
 
     ### leftSlope,rightSlope
-    leftSlope,rightSlope=get_line_intersection_slope(xIntersect,yIntersect,leftXIntercept,rightXIntercept)
+    leftSlope,rightSlope=get_line_intersection_slope(x_intersect,y_intersect,left_x_intercept,right_x_intercept)
 
-    ### averLeftVelocity,averRightVelocity
-    averLeftVelocity=pLeft[0]/muLeft[1]
-    averRightVelocity=pRight[0]/muRight[1]
+    ### aver_left_velocity,aver_right_velocity
+    aver_left_velocity=pLeft[0]/muLeft[1]
+    aver_right_velocity=pRight[0]/muRight[1]
 
     # I am not sure about the following lines, and whether it will be use or not
     xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r=np.nan, np.nan, np.nan, np.nan
-    return leftSlope, rightSlope, averLeftVelocity, averRightVelocity, \
-        rightR2[0][0], leftR2[0][0], xIntersect, yIntersect, leftXIntercept, rightXIntercept, \
+    return leftSlope, rightSlope, aver_left_velocity, aver_right_velocity, \
+        rightR2[0][0], leftR2[0][0], x_intersect, y_intersect, left_x_intercept, right_x_intercept, \
         xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r

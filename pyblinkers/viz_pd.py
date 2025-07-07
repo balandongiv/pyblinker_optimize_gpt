@@ -22,8 +22,8 @@ def viz_complete_blink_prop(data,row,srate):
     fig, ax = plt.subplots(figsize=(8, 6))
 
     npad = 20
-    preLimit = row['startBlinks'] - npad
-    postLimit = row['endBlinks'] + npad
+    preLimit = row['start_blink'] - npad
+    postLimit = row['end_blink'] + npad
 
     idx_t = np.arange(preLimit, postLimit + 1)
 
@@ -35,8 +35,8 @@ def viz_complete_blink_prop(data,row,srate):
     plt.plot([idx_t[0], idx_t[-1]], [0, 0], "--", color="gray", lw=2,label='Y0')
 
 
-    plt.plot([row['xLineCross_l'] , row['xIntersect']], [row['yLineCross_l'],  row['yIntersect']], "--", color="gray", lw=2)
-    plt.plot([row['xIntersect'],row['xLineCross_r']], [row['yIntersect'],row['yLineCross_r']], "--", color="gray", lw=2)
+    plt.plot([row['xLineCross_l'] , row['x_intersect']], [row['yLineCross_l'],  row['y_intersect']], "--", color="gray", lw=2)
+    plt.plot([row['x_intersect'],row['xLineCross_r']], [row['y_intersect'],row['yLineCross_r']], "--", color="gray", lw=2)
 
     ## PLot key point
     plt.scatter([row['blinkBottomPoint_l_X'],row['blinkTopPoint_l_X']],
@@ -49,25 +49,25 @@ def viz_complete_blink_prop(data,row,srate):
 
 
 
-    plt.scatter(row['xIntersect'], row['yIntersect'],label='tent_point')
+    plt.scatter(row['x_intersect'], row['y_intersect'],label='tent_point')
 
 
-    plt.scatter([row['leftZero'], row['rightZero']], [0, 0], marker='d', s=100,label='zero crossing')
-    plt.scatter(row['maxFrame'], data[row['maxFrame']],label='max Frame')
+    plt.scatter([row['left_zero'], row['right_zero']], [0, 0], marker='d', s=100,label='zero crossing')
+    plt.scatter(row['max_blink'], data[row['max_blink']],label='max Frame')
 
-    # plt.scatter([row['leftBase'], row['rightBase']],
-    #             [candidate_signal[row['leftBase']], candidate_signal[row['rightBase']]],label='base')
+    # plt.scatter([row['left_base'], row['right_base']],
+    #             [candidate_signal[row['left_base']], candidate_signal[row['right_base']]],label='base')
     #
-    # plt.scatter([row['leftBaseHalfHeight'], row['rightBaseHalfHeight']],
-    #             [candidate_signal[row['leftBaseHalfHeight']], candidate_signal[row['rightBaseHalfHeight']]],
+    # plt.scatter([row['left_base_half_height'], row['right_base_half_height']],
+    #             [candidate_signal[row['left_base_half_height']], candidate_signal[row['right_base_half_height']]],
     #             marker='<', s=200,label='BaseHalfHeight')
     #
-    # plt.scatter([row['rightZeroHalfHeight'], row['leftZeroHalfHeight']],
-    #             [candidate_signal[row['rightZeroHalfHeight']], candidate_signal[row['leftZeroHalfHeight']]],
+    # plt.scatter([row['right_zero_half_height'], row['left_zero_half_height']],
+    #             [candidate_signal[row['right_zero_half_height']], candidate_signal[row['left_zero_half_height']]],
     #             marker='>', s=300,label='ZeroHalfHeight')
     #
-    # plt.scatter([row['maxPosVelFrame'],  row['maxNegVelFrame']],
-    #             [candidate_signal[row['maxPosVelFrame']], candidate_signal[ row['maxNegVelFrame']]],
+    # plt.scatter([row['max_pos_vel_frame'],  row['max_neg_vel_frame']],
+    #             [candidate_signal[row['max_pos_vel_frame']], candidate_signal[ row['max_neg_vel_frame']]],
     #             marker='>', s=300,label='maxVelFrame')
 
 
@@ -77,9 +77,9 @@ def viz_complete_blink_prop(data,row,srate):
     plt.xlabel(xLabelString)
     plt.ylabel(ylabel)
     bquality= 'Good'
-    maxFrame=row['maxFrame']
+    max_blink=row['max_blink']
     d=dict(fig=fig,
            blink_quality=bquality,
-           maxFrames=maxFrame)
+           maxFrames=max_blink)
 
     return d

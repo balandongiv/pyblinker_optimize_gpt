@@ -1,8 +1,11 @@
 import unittest
 import numpy as np
 import pandas as pd
+from pathlib import Path
+
 from pyblinkers.extractBlinkProperties import get_blink_statistic
 from unit_test.debugging_tools import load_matlab_data
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 
 class TestBlinkStatistic(unittest.TestCase):
@@ -11,8 +14,9 @@ class TestBlinkStatistic(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        cls.mat_file_path_input = r'..\migration_files\step1bii_v_input_blinkStatProperties.mat'
-        cls.mat_file_path_output = r'..\migration_files\step1bii_v_output_blinkStatProperties.mat'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        cls.mat_file_path_input = base_path / 'step1bii_v_input_blinkStatProperties.mat'
+        cls.mat_file_path_output = base_path / 'step1bii_v_output_blinkStatProperties.mat'
 
         # Load candidate_signal
         input_data, output_datax = load_matlab_data(cls.mat_file_path_input, cls.mat_file_path_output)
@@ -24,6 +28,9 @@ class TestBlinkStatistic(unittest.TestCase):
 
         # Blink fits as DataFrame
         cls.df = pd.DataFrame.from_records(cls.input_data['blinkFits'])
+        cls.df.rename(columns=RENAME_MAP, inplace=True)
+        cls.df.rename(columns={'leftOuter': 'outer_start',
+                               'rightOuter': 'outer_end'}, inplace=True)
 
         # Ground truth signal candidate_signal
         cls.signalData_gt = cls.output_data['blinks']['signalData']

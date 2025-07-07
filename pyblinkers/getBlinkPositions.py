@@ -28,8 +28,8 @@ def get_blink_position(params, blink_component=None, ch=None):
     -------
     pandas.DataFrame
         A DataFrame containing two columns:
-        - 'startBlinks' (numpy.ndarray): Indices of the start frames of detected blinks.
-        - 'endBlinks' (numpy.ndarray): Indices of the end frames of detected blinks.
+        - 'start_blink' (numpy.ndarray): Indices of the start frames of detected blinks.
+        - 'end_blink' (numpy.ndarray): Indices of the end frames of detected blinks.
         If no blinks are detected, an empty DataFrame with the same column names is returned.
     """
 
@@ -70,7 +70,7 @@ def get_blink_position(params, blink_component=None, ch=None):
 
     if arr_end.size == 0:
         # No blinks found, return empty DataFrame
-        return pd.DataFrame({'startBlinks': [], 'endBlinks': []})
+        return pd.DataFrame({'start_blink': [], 'end_blink': []})
 
     # Remove blinks that are too close together (< minEventLen apart)
     pos_mask = np.ones(arr_end.size, dtype=bool)
@@ -83,8 +83,8 @@ def get_blink_position(params, blink_component=None, ch=None):
     pos_mask[close_indices + 1] = False
 
     blink_position = {
-        'startBlinks': arr_start[pos_mask],
-        'endBlinks': arr_end[pos_mask]
+        'start_blink': arr_start[pos_mask],
+        'end_blink': arr_end[pos_mask]
     }
     return pd.DataFrame(blink_position)
 

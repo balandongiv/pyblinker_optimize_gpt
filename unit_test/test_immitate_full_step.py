@@ -2,11 +2,13 @@ import unittest
 import pandas as pd
 import numpy as np
 import logging
+from pathlib import Path
 from pyblinkers import default_setting
 from pyblinkers.extractBlinkProperties import BlinkProperties, get_good_blink_mask, get_blink_statistic
 from pyblinkers.fit_blink import FitBlinks
 from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 # Configure logger
 logging.basicConfig(level=logging.WARNING)
@@ -106,8 +108,9 @@ class TestExtractBlinkProperties(unittest.TestCase):
         """
         cls.params = default_setting.params
         cls.params['sfreq'] = 100
-        cls.mat_file_path_input = r'..\migration_files\step1bi_data_input_getBlinkPositions.mat'
-        cls.mat_file_path_output = r'..\migration_files\immitate_full_step.mat'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        cls.mat_file_path_input = base_path / 'step1bi_data_input_getBlinkPositions.mat'
+        cls.mat_file_path_output = base_path / 'immitate_full_step.mat'
 
         # Load MATLAB input and ground truth candidate_signal
         cls.input_data, cls.output_data = load_matlab_data(
@@ -117,6 +120,9 @@ class TestExtractBlinkProperties(unittest.TestCase):
         # Prepare input and output for blink detection
         cls.blink_comp = cls.input_data['blinkComp']
         cls.signal_data_gt = pd.DataFrame.from_records(cls.output_data['combinedStruct'])
+        cls.signal_data_gt.rename(columns=RENAME_MAP, inplace=True)
+        cls.signal_data_gt.rename(columns={'leftOuter': 'outer_start',
+                                            'rightOuter': 'outer_end'}, inplace=True)
 
     @staticmethod
     def adjust_indices(df):
@@ -124,19 +130,19 @@ class TestExtractBlinkProperties(unittest.TestCase):
         Adjust indices for MATLAB compatibility.
         """
         columns_to_increment = [
-            'maxFrame', 'startBlinks', 'endBlinks', 'outerStarts', 'outerEnds',
-            'leftZero', 'rightZero', 'maxPosVelFrame', 'maxNegVelFrame', 'leftBase',
-            'rightBase', 'leftZeroHalfHeight', 'rightZeroHalfHeight',
-            'leftBaseHalfHeight', 'rightBaseHalfHeight', 'xIntersect', 'yIntersect',
-            'rightXIntercept',
+            'max_blink', 'start_blink', 'end_blink', 'outer_start', 'outer_end',
+            'left_zero', 'right_zero', 'max_pos_vel_frame', 'max_neg_vel_frame', 'left_base',
+            'right_base', 'left_zero_half_height', 'right_zero_half_height',
+            'left_base_half_height', 'right_base_half_height', 'x_intersect', 'y_intersect',
+            'right_x_intercept',
         ]
         df.loc[:, columns_to_increment] += 1
 
-        second_columns_to_increment = ['yIntersect', 'leftXIntercept']
+        second_columns_to_increment = ['y_intersect', 'left_x_intercept']
         df = df.copy()
         df[second_columns_to_increment] += 1
 
-        third_columns_to_increment = ['yIntersect']
+        third_columns_to_increment = ['y_intersect']
         df[third_columns_to_increment] -= 2
 
         # Adjust `leftRange` and `rightRange`
@@ -152,7 +158,7 @@ class TestExtractBlinkProperties(unittest.TestCase):
 
         # Define the cases to ignore
         ignore_cases = [
-            {'row': 41, 'column': 'yIntersect', 'ground_truth_value': 43.0, 'output_value': 44.0},
+            {'row': 41, 'column': 'y_intersect', 'ground_truth_value': 43.0, 'output_value': 44.0},
         ]
         min_blink_frames=5.0
         threshold=12.241726391783821
@@ -178,8 +184,8 @@ class TestExtractBlinkProperties(unittest.TestCase):
         df = BlinkProperties(self.blink_comp, df, sfreq, self.params).df
 
         # STEP 6: Apply pAVR restriction
-        condition_1 = df['posAmpVelRatioZero'] < self.params['pAVRThreshold']
-        condition_2 = df['maxValue'] < (signal_data['bestMedian'] - signal_data['bestRobustStd'])
+        condition_1 = df['pos_amp_vel_ratio_zero'] < self.params['p_avr_threshold']
+        condition_2 = df['max_value'] < (signal_data['bestMedian'] - signal_data['bestRobustStd'])
         signal_data_output = df[~(condition_1 & condition_2)]
 
         # Adjust indices for MATLAB compatibility
@@ -187,11 +193,11 @@ class TestExtractBlinkProperties(unittest.TestCase):
 
         # Select desired columns
         column_order = [
-            'maxFrame', 'maxValue', 'leftZero', 'rightZero', 'leftBase', 'rightBase',
-            'leftBaseHalfHeight', 'rightBaseHalfHeight', 'leftZeroHalfHeight',
-            'rightZeroHalfHeight', 'leftRange', 'rightRange', 'leftSlope',
-            'rightSlope', 'averLeftVelocity', 'averRightVelocity', 'leftR2', 'rightR2',
-            'xIntersect', 'yIntersect', 'leftXIntercept', 'rightXIntercept'
+            'max_blink', 'max_value', 'left_zero', 'right_zero', 'left_base', 'right_base',
+            'left_base_half_height', 'right_base_half_height', 'left_zero_half_height',
+            'right_zero_half_height', 'leftRange', 'rightRange', 'leftSlope',
+            'rightSlope', 'aver_left_velocity', 'aver_right_velocity', 'leftR2', 'rightR2',
+            'x_intersect', 'y_intersect', 'left_x_intercept', 'right_x_intercept'
         ]
         signal_data_output = signal_data_output[column_order].reset_index(drop=True)
         self.signal_data_gt = self.signal_data_gt[column_order].reset_index(drop=True)

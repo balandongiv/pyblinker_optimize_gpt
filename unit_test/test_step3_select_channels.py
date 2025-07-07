@@ -1,6 +1,7 @@
 import unittest
 import logging
 import pandas as pd
+from pathlib import Path
 from pyblinkers.getRepresentativeChannel import (
     filter_blink_amplitude_ratios,
     filter_good_blinks,
@@ -21,8 +22,9 @@ class TestSelectChannelCompact(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        cls.mat_file_path_input = r'..\migration_files\step3a_input_selectChannel_compact.mat'
-        cls.mat_file_path_output = r'..\migration_files\step3a_output_selectChannel_compact.mat'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        cls.mat_file_path_input = base_path / 'step3a_input_selectChannel_compact.mat'
+        cls.mat_file_path_output = base_path / 'step3a_output_selectChannel_compact.mat'
 
         # Load candidate_signal
         input_data, output_data = load_matlab_data(

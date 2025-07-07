@@ -8,7 +8,7 @@ This script provides:
   left_right_zero_crossing function under typical conditions.
 - Assertions to ensure the function returns expected crossing points.
 - A visualization tool using matplotlib to aid in understanding
-  how the left and right zero crossings are detected around a given max_frame.
+  how the left and right zero crossings are detected around a given max_blink.
 
 Key Components:
 ---------------
@@ -16,8 +16,8 @@ Key Components:
    - Creates a mock candidate_signal with a known negative-to-positive
      transition pattern.
    - Tests the left_right_zero_crossing function to ensure it identifies the
-     correct last negative index before max_frame (left_zero), and the first
-     negative index after max_frame (right_zero).
+     correct last negative index before max_blink (left_zero), and the first
+     negative index after max_blink (right_zero).
    - Includes sanity checks and validations via assertions.
    - Optionally visualizes the result using the plot_zero_crossings function.
 
@@ -54,8 +54,8 @@ import matplotlib.pyplot as plt
 from pyblinkers.zero_crossing import left_right_zero_crossing
 
 
-def plot_zero_crossings(candidate_signal, max_frame, left_zero, right_zero,
-                        outer_starts, outer_ends, title="Zero Crossing Visualization"):
+def plot_zero_crossings(candidate_signal, max_blink, left_zero, right_zero,
+                        outer_start, outer_end, title="Zero Crossing Visualization"):
     """
     Plots the signal using scatter and vertical lines for zero crossing indicators.
     """
@@ -66,9 +66,9 @@ def plot_zero_crossings(candidate_signal, max_frame, left_zero, right_zero,
     plt.axhline(0, color='gray', linestyle='-', linewidth=1)  # zero line
 
     # Vertical markers
-    plt.axvline(outer_starts, color='blue', linestyle='--', label='outer_starts')
-    plt.axvline(outer_ends, color='blue', linestyle='--', label='outer_ends')
-    plt.axvline(max_frame, color='orange', linestyle='--', label='max_frame')
+    plt.axvline(outer_start, color='blue', linestyle='--', label='outer_start')
+    plt.axvline(outer_end, color='blue', linestyle='--', label='outer_end')
+    plt.axvline(max_blink, color='orange', linestyle='--', label='max_blink')
 
     if left_zero is not None:
         plt.axvline(left_zero, color='green', linestyle='--', label='left_zero')
@@ -87,53 +87,53 @@ def plot_zero_crossings(candidate_signal, max_frame, left_zero, right_zero,
 def test_left_right_zero_crossing_basic():
     """Standard case: zero crossings found within left/right outer ranges."""
     candidate_signal = np.array([0.5, -0.4, -0.3, 0.2, 0.4, 0.5, 0.6, -0.1, -0.3, 0.2])
-    max_frame = 4
-    outer_starts = 1
-    outer_ends = 8
+    max_blink = 4
+    outer_start = 1
+    outer_end = 8
 
-    left_zero, right_zero = left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_ends)
+    left_zero, right_zero = left_right_zero_crossing(candidate_signal, max_blink, outer_start, outer_end)
     print(f"Test Basic - Left: {left_zero}, Right: {right_zero}")
 
     assert left_zero is not None
     assert right_zero is not None
-    assert left_zero <= max_frame
-    assert max_frame <= right_zero
+    assert left_zero <= max_blink
+    assert max_blink <= right_zero
 
-    plot_zero_crossings(candidate_signal, max_frame, left_zero, right_zero, outer_starts, outer_ends,
+    plot_zero_crossings(candidate_signal, max_blink, left_zero, right_zero, outer_start, outer_end,
                         title="Test Basic - Normal Zero Crossings")
 
 
 def test_left_zero_fallback():
-    """Triggers fallback: no negative values within outer_starts to max_frame."""
+    """Triggers fallback: no negative values within outer_start to max_blink."""
     candidate_signal = np.array([-0.2,0.2, 0.3, 0.4, 0.5, -0.1, -0.3])
-    max_frame = 3
-    outer_starts = 1
-    outer_ends = 5  # won't matter here
+    max_blink = 3
+    outer_start = 1
+    outer_end = 5  # won't matter here
 
-    left_zero, right_zero = left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_ends)
+    left_zero, right_zero = left_right_zero_crossing(candidate_signal, max_blink, outer_start, outer_end)
     print(f"Test Left Fallback - Left: {left_zero}, Right: {right_zero}")
 
-    assert left_zero is not None, "Fallback should find last negative in [0, max_frame]"
+    assert left_zero is not None, "Fallback should find last negative in [0, max_blink]"
     assert right_zero is not None, "Right zero should not be None"
 
-    plot_zero_crossings(candidate_signal, max_frame, left_zero, right_zero, outer_starts, outer_ends,
+    plot_zero_crossings(candidate_signal, max_blink, left_zero, right_zero, outer_start, outer_end,
                         title="Test Left Fallback")
 
 
 def test_right_zero_fallback():
-    """Triggers fallback: no negative values within max_frame to outer_ends."""
+    """Triggers fallback: no negative values within max_blink to outer_end."""
     candidate_signal = np.array([0.2, -0.2, -0.3, 0.4, 0.5, 0.6, 0.7, -0.4])
-    max_frame = 5
-    outer_starts = 0
-    outer_ends = 6  # no negative between 5 and 6
+    max_blink = 5
+    outer_start = 0
+    outer_end = 6  # no negative between 5 and 6
 
-    left_zero, right_zero = left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_ends)
+    left_zero, right_zero = left_right_zero_crossing(candidate_signal, max_blink, outer_start, outer_end)
     print(f"Test Right Fallback - Left: {left_zero}, Right: {right_zero}")
 
     assert left_zero is not None
-    assert right_zero == 7, "Fallback should find first negative in [max_frame, end]"
+    assert right_zero == 7, "Fallback should find first negative in [max_blink, end]"
 
-    plot_zero_crossings(candidate_signal, max_frame, left_zero, right_zero, outer_starts, outer_ends,
+    plot_zero_crossings(candidate_signal, max_blink, left_zero, right_zero, outer_start, outer_end,
                         title="Test Right Fallback")
 
 def test_left_right_zero_nan():
@@ -141,11 +141,11 @@ def test_left_right_zero_nan():
     we deal with epoch format, as the signal windows might be small, therefore,we cannot extend the search window
     to extreme."""
     candidate_signal = np.array([0.2, 0.3, 0.4, 0.4, 0.5, 0.6, 0.7, 0.7])
-    max_frame = 5
-    outer_starts = 0
-    outer_ends = 6
+    max_blink = 5
+    outer_start = 0
+    outer_end = 6
 
-    left_zero, right_zero = left_right_zero_crossing(candidate_signal, max_frame, outer_starts, outer_ends)
+    left_zero, right_zero = left_right_zero_crossing(candidate_signal, max_blink, outer_start, outer_end)
     print(f"Test Right Fallback - Left: {left_zero}, Right: {right_zero}")
 
     assert np.isnan(left_zero), "Fallback should give nan for left_zero"

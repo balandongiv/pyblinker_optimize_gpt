@@ -105,12 +105,12 @@ class TestMatlabForking(unittest.TestCase):
             expected_xIntersect = 49.67326354980469
             expected_yIntersect = 102.5481115
 
-            xIntersect, yIntersect, leftXIntercept, rightXIntercept = get_intersection(p, q, u, v)
+            x_intersect, y_intersect, left_x_intercept, right_x_intercept = get_intersection(p, q, u, v)
 
-            self.assertAlmostEqual(xIntersect, expected_xIntersect, places=3)
-            self.assertAlmostEqual(yIntersect, expected_yIntersect, places=3)
-            self.assertAlmostEqual(leftXIntercept, expected_leftXIntercept, places=3)
-            self.assertAlmostEqual(rightXIntercept, expected_rightXIntercept, places=3)
+            self.assertAlmostEqual(x_intersect, expected_xIntersect, places=3)
+            self.assertAlmostEqual(y_intersect, expected_yIntersect, places=3)
+            self.assertAlmostEqual(left_x_intercept, expected_leftXIntercept, places=3)
+            self.assertAlmostEqual(right_x_intercept, expected_rightXIntercept, places=3)
 
 
             logger.info("Test get_intersection passed.")
@@ -136,7 +136,7 @@ class TestMatlabForking(unittest.TestCase):
         yPredRight, delta = polyvalMatlab(pRight, xRight, S=SRight, mu= muRight)
         rightR2, _ = corrMatlab(yRight , yPredRight)
 
-        xIntersect, yIntersect, leftXIntercept, rightXIntercept = get_intersection(pLeft, pRight, muLeft, muRight)
+        x_intersect, y_intersect, left_x_intercept, right_x_intercept = get_intersection(pLeft, pRight, muLeft, muRight)
 
         expected_leftXIntercept = 41.90895080566406
         expected_rightXIntercept = 67.81009674072266
@@ -153,10 +153,10 @@ class TestMatlabForking(unittest.TestCase):
         # self.assertAlmostEqual(pval_right,  expected_pval_right, places=3)
 
 
-        self.assertAlmostEqual(xIntersect, expected_xIntersect, places=3)
-        self.assertAlmostEqual(yIntersect, expected_yIntersect, places=3)
-        self.assertAlmostEqual(leftXIntercept, expected_leftXIntercept, places=3)
-        self.assertAlmostEqual(rightXIntercept, expected_rightXIntercept, places=3)
+        self.assertAlmostEqual(x_intersect, expected_xIntersect, places=3)
+        self.assertAlmostEqual(y_intersect, expected_yIntersect, places=3)
+        self.assertAlmostEqual(left_x_intercept, expected_leftXIntercept, places=3)
+        self.assertAlmostEqual(right_x_intercept, expected_rightXIntercept, places=3)
         logger.info("Test get_intersection passed.")
 
 

@@ -120,8 +120,8 @@ class BlinkDetector:
         ).df
 
         # STEP 6: Apply pAVR restriction
-        condition_1 = df['posAmpVelRatioZero'] < self.params['pAVRThreshold']
-        condition_2 = df['maxValue'] < (blink_stats['bestMedian'] - blink_stats['bestRobustStd'])
+        condition_1 = df['pos_amp_vel_ratio_zero'] < self.params['p_avr_threshold']
+        condition_2 = df['max_value'] < (blink_stats['bestMedian'] - blink_stats['bestRobustStd'])
         df = df[~(condition_1 & condition_2)]
 
         # Store results
