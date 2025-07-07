@@ -1,6 +1,6 @@
 import numpy as np
-from pyblinkers.matlab_forking import corrMatlab
-def test_corrMatlab():
+from pyblinkers.utils.matlab.matlab_forking import corr_matlab
+def test_corr_matlab():
     x = [15.399296760559082,
          26.770189285278320,
          40.020221710205080,
@@ -17,7 +17,7 @@ def test_corrMatlab():
 
     expected_coef = 0.999531686306000
 
-    coef, pval = corrMatlab(x, y)
+    coef, pval = corr_matlab(x, y)
     print("Computed coef:", coef[0, 0])
     print("Expected coef:", expected_coef)
 
@@ -25,4 +25,4 @@ def test_corrMatlab():
     print("Test passed. Coefficient:", coef[0, 0])
 
 if __name__ == '__main__':
-    test_corrMatlab()
+    test_corr_matlab()

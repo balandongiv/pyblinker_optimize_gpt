@@ -4,7 +4,11 @@ import numpy as np
 import logging
 from pathlib import Path
 from pyblinkers import default_setting
-from pyblinkers.extractBlinkProperties import BlinkProperties, get_good_blink_mask, get_blink_statistic
+from pyblinkers.extract_blink_properties import (
+    BlinkProperties,
+    get_good_blink_mask,
+    get_blink_statistic,
+)
 from pyblinkers.fit_blink import FitBlinks
 from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.debugging_tools import load_matlab_data

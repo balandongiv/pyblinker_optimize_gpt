@@ -44,8 +44,8 @@ Each function under test is implemented with the following logic:
      blinkBottom_r_X, blinkBottom_r_Y, blinkTop_r_X, blinkTop_r_Y).
 
 4. lines_intersection_matlabx:
-   - Fits first-order polynomials to (x_left, y_left) and (x_right, y_right) via polyfitMatlab.
-   - Uses polyvalMatlab and corrMatlab to compute R² for each fit.
+   - Fits first-order polynomials to (x_left, y_left) and (x_right, y_right) via polyfit_matlab.
+   - Uses polyval_matlab and corr_matlab to compute R² for each fit.
    - Computes line intersection via get_intersection.
    - Computes intersection slopes via get_line_intersection_slope.
    - Computes average velocities as p.coef[1] / std(x).
@@ -64,7 +64,7 @@ Each function under test is implemented with the following logic:
         - right_x_intercept, left_x_intercept
         - right_base_half_height, left_base_half_height
         - right_zero_half_height. left_zero_half_height
-    upon which, all will be used in extractBlinkProperties() to extract blink properties.
+    upon which, all will be used in extract_blink_properties() to extract blink properties.
 """
 import numpy as np
 import pandas as pd
@@ -77,7 +77,7 @@ from pyblinkers.zero_crossing import (
     compute_fit_range
 )
 from pyblinkers.base_left_right import create_left_right_base
-from pyblinkers.line_intersection_matlab import lines_intersection_matlabx
+from pyblinkers.utils.matlab.line_intersection_matlab import lines_intersection_matlabx
 
 
 @pytest.fixture(scope="module")
@@ -241,8 +241,8 @@ def test_lines_intersection_matlabx_first_two(candidate_signal: np.ndarray, test
     Validate lines_intersection_matlabx on first two segments.
 
     Internals:
-      - polyfitMatlab(x_left,y_left,1) and (x_right,y_right,1)
-      - polyvalMatlab and corrMatlab to compute R2
+      - polyfit_matlab(x_left, y_left, 1) and (x_right, y_right, 1)
+      - polyval_matlab and corr_matlab to compute R2
       - get_intersection returns (xI,yI,leftXI,rightXI)
       - get_line_intersection_slope derives slopes from intersection coords
       - average velocity = p.coef[1] / std(x)

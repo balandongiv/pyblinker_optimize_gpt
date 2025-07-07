@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import pandas as pd
 from unit_test.debugging_tools import load_matlab_data
-from pyblinkers.extractBlinkProperties import get_good_blink_mask
+from pyblinkers.extract_blink_properties import get_good_blink_mask
 from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 from pathlib import Path
 

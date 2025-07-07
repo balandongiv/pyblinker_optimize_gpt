@@ -1,15 +1,20 @@
 import unittest
 import logging
 import numpy as np
-from pyblinkers.matlab_forking import corrMatlab, polyvalMatlab, polyfitMatlab, get_intersection
+from pyblinkers.utils.matlab.matlab_forking import (
+    corr_matlab,
+    polyval_matlab,
+    polyfit_matlab,
+    get_intersection,
+)
 
 # Set up logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class TestMatlabForking(unittest.TestCase):
-    def test_polyfitMatlab(self):
-        logger.info("Testing polyfitMatlab function")
+    def test_polyfit_matlab(self):
+        logger.info("Testing polyfit_matlab function")
         n = 1
         x = np.array([43, 44, 45, 46, 47, 48])
         y = np.array([15.399296760559082, 26.770189285278320, 40.020221710205080,
@@ -25,7 +30,7 @@ class TestMatlabForking(unittest.TestCase):
         }
         expected_mu = np.array([45.5, 1.870828693386971])
 
-        p, S, mu = polyfitMatlab(x, y, n)
+        p, S, mu = polyfit_matlab(x, y, n)
 
         np.testing.assert_allclose(p, expected_p, rtol=1e-6)
         np.testing.assert_allclose(mu, expected_mu, rtol=1e-6)
@@ -34,9 +39,9 @@ class TestMatlabForking(unittest.TestCase):
         np.testing.assert_equal(S['df'], expected_S['df'])
 
         logger.info(f"Computed p: {p}, Expected p: {expected_p}")
-        logger.info(f"Test polyfitMatlab passed.")
-    def test_polyvalMatlab(self):
-        logger.info("Testing polyvalMatlab function")
+        logger.info(f"Test polyfit_matlab passed.")
+    def test_polyval_matlab(self):
+        logger.info("Testing polyval_matlab function")
         p = np.array([24.709207534790040, 47.429222106933594])
         x = np.array([43, 44, 45, 46, 47, 48])
         mu = [45.5, 1.870828693386971]
@@ -57,7 +62,7 @@ class TestMatlabForking(unittest.TestCase):
             80.448287963867190
         ])
 
-        y, delta = polyvalMatlab(p, x, S=S, mu=mu)
+        y, delta = polyval_matlab(p, x, S=S, mu=mu)
 
         np.testing.assert_allclose(y, y_expected, rtol=1e-6, atol=1e-6)
         logger.info(f"Computed y: {y}, Expected y: {y_expected}")
@@ -67,10 +72,10 @@ class TestMatlabForking(unittest.TestCase):
         else:
             logger.info("Delta computation skipped due to singular matrix.")
 
-        logger.info("Test polyvalMatlab passed.")
+        logger.info("Test polyval_matlab passed.")
 
-    def test_corrMatlab(self):
-            logger.info("Testing corrMatlab function")
+    def test_corr_matlab(self):
+            logger.info("Testing corr_matlab function")
             x = [15.399296760559082,
                  26.770189285278320,
                  40.020221710205080,
@@ -87,11 +92,11 @@ class TestMatlabForking(unittest.TestCase):
 
             expected_coef = 0.999531686306000
 
-            coef, pval = corrMatlab(x, y)
+            coef, pval = corr_matlab(x, y)
             logger.info(f"Computed coef: {coef[0, 0]}, Expected coef: {expected_coef}")
 
             np.testing.assert_almost_equal(coef[0, 0], expected_coef, decimal=6)
-            logger.info("Test corrMatlab passed.")
+            logger.info("Test corr_matlab passed.")
     #
     def test_get_intersection(self):
             logger.info("Testing get_intersection function")
@@ -126,15 +131,15 @@ class TestMatlabForking(unittest.TestCase):
                          22.177107,15.572393,9.2089672])
 
         n=1
-        pLeft, SLeft, muLeft = polyfitMatlab(xLeft, yLeft, n)
-        yPred, delta = polyvalMatlab(pLeft, xLeft, S=SLeft, mu= muLeft)
-        leftR2, _ = corrMatlab(yLeft , yPred)
+        pLeft, SLeft, muLeft = polyfit_matlab(xLeft, yLeft, n)
+        yPred, delta = polyval_matlab(pLeft, xLeft, S=SLeft, mu=muLeft)
+        leftR2, _ = corr_matlab(yLeft, yPred)
 
 
 
-        pRight, SRight, muRight = polyfitMatlab(xRight, yRight, 1)
-        yPredRight, delta = polyvalMatlab(pRight, xRight, S=SRight, mu= muRight)
-        rightR2, _ = corrMatlab(yRight , yPredRight)
+        pRight, SRight, muRight = polyfit_matlab(xRight, yRight, 1)
+        yPredRight, delta = polyval_matlab(pRight, xRight, S=SRight, mu=muRight)
+        rightR2, _ = corr_matlab(yRight, yPredRight)
 
         x_intersect, y_intersect, left_x_intercept, right_x_intercept = get_intersection(pLeft, pRight, muLeft, muRight)
 

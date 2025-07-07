@@ -4,7 +4,7 @@ import logging
 import numpy as np
 import pandas as pd
 
-from pyblinkers.matlab_forking import mad_matlab
+from pyblinkers.utils.matlab.matlab_forking import mad_matlab
 
 logging.getLogger().setLevel(logging.INFO)
 

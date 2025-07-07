@@ -1,3 +1,5 @@
+"""Channel selection utilities derived from the legacy MATLAB Blinker approach."""
+
 def filter_blink_amplitude_ratios(df, params):
     """
     Reduce the number of candidate signals based on the blink amplitude ratios.

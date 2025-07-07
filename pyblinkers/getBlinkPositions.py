@@ -6,11 +6,11 @@ from tqdm import tqdm
 
 from pyblinkers.default_setting import SCALING_FACTOR
 
-from pyblinkers.matlab_forking import mad_matlab
+from pyblinkers.utils.matlab.matlab_forking import mad_matlab
 
 
 def get_blink_position(params, blink_component=None, ch=None):
-    """Detects blink positions (start and end frames) in a blink component.
+    """Detect blink start and end frames using the legacy MATLAB Blinker approach.
     
     Parameters
     ----------
