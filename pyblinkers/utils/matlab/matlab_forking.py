@@ -12,7 +12,7 @@ def mad_matlab(arr, axis=None, keepdims=True):
     mad = np.median(np.abs(arr - median), axis=axis, keepdims=keepdims)[0]
     return mad
 
-def corrMatlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None):
+def corr_matlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None):
     """
     Computes correlation coefficient(s) and p-values between pairs of candidate_signal.
 
@@ -163,7 +163,7 @@ def corrMatlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None)
     return coef, pval
 
 def weighted_corr(x, y, w):
-    """This function is related to the corrMatlab
+    """This function is related to the ``corr_matlab``
     Compute weighted Pearson correlation coefficient."""
     w_sum = np.sum(w)
     w_mean_x = np.sum(w * x) / w_sum
@@ -175,7 +175,7 @@ def weighted_corr(x, y, w):
 
 
 
-def polyfitMatlab(x, y, n):
+def polyfit_matlab(x, y, n):
     """
     Fit a polynomial of degree n to candidate_signal using least squares.
 
@@ -240,7 +240,7 @@ def polyfitMatlab(x, y, n):
 
     return p, S, mu
 
-def polyvalMatlab(p, x, S=None, mu=None):
+def polyval_matlab(p, x, S=None, mu=None):
     """
     Evaluate polynomial with optional error estimates.
 
@@ -331,9 +331,9 @@ def get_intersection(p, q, u, v):
         v (list or array): [mean of second line, std deviation of second line].
 
     Returns:
-        tuple: (xIntersect, yIntersect, xIntercept1, xIntercept2)
-            xIntersect (float): x-coordinate of intersection point.
-            yIntersect (float): y-coordinate of intersection point.
+        tuple: (x_intersect, y_intersect, xIntercept1, xIntercept2)
+            x_intersect (float): x-coordinate of intersection point.
+            y_intersect (float): y-coordinate of intersection point.
             xIntercept1 (float): x-intercept of the first line.
             xIntercept2 (float): x-intercept of the second line.
     """
@@ -348,12 +348,12 @@ def get_intersection(p, q, u, v):
 
     denom = p[0]*v[1] - q[0]*u[1]
     if denom == 0:  # Check for parallel or coincident lines
-        xIntersect = np.nan
-        yIntersect = np.nan
+        x_intersect = np.nan
+        y_intersect = np.nan
     else:
         numer = (u[0]*p[0]*v[1] - v[0]*q[0]*u[1] +
                  q[1]*v[1]*u[1] - p[1]*u[1]*v[1])
-        xIntersect = numer / denom
-        yIntersect = p[0]*(xIntersect - u[0])/u[1] + p[1]
+        x_intersect = numer / denom
+        y_intersect = p[0]*(x_intersect - u[0])/u[1] + p[1]
 
-    return xIntersect, yIntersect, xIntercept1, xIntercept2
+    return x_intersect, y_intersect, xIntercept1, xIntercept2

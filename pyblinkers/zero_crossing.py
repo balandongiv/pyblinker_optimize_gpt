@@ -26,33 +26,33 @@ def get_average_velocity(p_left, p_right, x_left, x_right):
 
 
 
-def left_right_zero_crossing(candidate_signal: np.ndarray, max_frame: float,
-                             outer_starts: float, outer_ends: float) -> Tuple[int, Optional[int]]:
+def left_right_zero_crossing(candidate_signal: np.ndarray, max_blink: float,
+                             outer_start: float, outer_end: float) -> Tuple[int, Optional[int]]:
     """
     Find the nearest zero-crossing indices to the left and right of a given peak in the signal.
 
     This function searches for the nearest zero-crossings in a 1D signal array around a specified
-    `max_frame`. It looks to the left in the range [outer_starts, max_frame) and to the right in the
-    range (max_frame, outer_ends].
+    `max_blink`. It looks to the left in the range [outer_start, max_blink) and to the right in the
+    range (max_blink, outer_end].
 
     Parameters:
         candidate_signal (np.ndarray): 1D array representing the signal data.
-        max_frame (float): The frame index of the peak (or maximum) to evaluate crossings around.
-        outer_starts (float): The lower bound index of the left-side search region.
-        outer_ends (float): The upper bound index of the right-side search region.
+        max_blink (float): The frame index of the peak (or maximum) to evaluate crossings around.
+        outer_start (float): The lower bound index of the left-side search region.
+        outer_end (float): The upper bound index of the right-side search region.
 
     Returns:
         Tuple[int, Optional[int]]: A tuple containing two values:
-            - Left zero-crossing index (int): nearest zero crossing to the left of max_frame.
-            - Right zero-crossing index (Optional[int]): nearest zero crossing to the right of max_frame,
+            - Left zero-crossing index (int): nearest zero crossing to the left of max_blink.
+            - Right zero-crossing index (Optional[int]): nearest zero crossing to the right of max_blink,
               or None if not found even after fallback search.
 
     Raises:
         ValueError: If input index boundaries are invalid or logic assumptions break.
     """
-    start_idx = int(outer_starts)
-    m_frame = int(max_frame)
-    end_idx = int(outer_ends)
+    start_idx = int(outer_start)
+    m_frame = int(max_blink)
+    end_idx = int(outer_end)
 
     # Left side search
     left_range = np.arange(start_idx, m_frame)
@@ -65,7 +65,7 @@ def left_right_zero_crossing(candidate_signal: np.ndarray, max_frame: float,
         # Fall back if no negative crossing found in left_range
         full_left_range = np.arange(0, m_frame).astype(int)
         left_neg_idx = np.flatnonzero(candidate_signal[full_left_range] < 0)
-        left_zero = full_left_range[left_neg_idx[-1]]
+        left_zero = full_left_range[left_neg_idx[-1]] if left_neg_idx.size > 0 else np.nan
 
     # Right side search
     right_range = np.arange(m_frame, end_idx)
@@ -75,7 +75,7 @@ def left_right_zero_crossing(candidate_signal: np.ndarray, max_frame: float,
     if s_ind_right_zero.size > 0:
         right_zero = right_range[s_ind_right_zero[0]]
     else:
-        # Extreme remedy by extending beyond outer_ends to the max signal length
+        # Extreme remedy by extending beyond outer_end to the max signal length
         try:
             extreme_outer = np.arange(m_frame, candidate_signal.shape[0]).astype(int)
         except TypeError:
@@ -87,24 +87,24 @@ def left_right_zero_crossing(candidate_signal: np.ndarray, max_frame: float,
         if s_ind_right_zero_ex.size > 0:
             right_zero = extreme_outer[s_ind_right_zero_ex[0]]
         else:
-            return left_zero, None
+            return left_zero, np.nan
 
     if left_zero > m_frame:
-        raise ValueError("Validation error: left_zero = {left_zero}, max_frame = {max_frame}. Ensure left_zero <= max_frame.")
+        raise ValueError("Validation error: left_zero = {left_zero}, max_blink = {max_blink}. Ensure left_zero <= max_blink.")
 
     if m_frame > right_zero:
-        raise ValueError("Validation error: max_frame = {max_frame}, right_zero = {right_zero}. Ensure max_frame <= right_zero.")
+        raise ValueError("Validation error: max_blink = {max_blink}, right_zero = {right_zero}. Ensure max_blink <= right_zero.")
 
     return left_zero, right_zero
 
 
-def get_up_down_stroke(max_frame, left_zero, right_zero):
+def get_up_down_stroke(max_blink, left_zero, right_zero):
     """
     Compute the place of maximum positive and negative velocities.
-    up_stroke is the interval between left_zero and max_frame,
-    down_stroke is the interval between max_frame and right_zero.
+    up_stroke is the interval between left_zero and max_blink,
+    down_stroke is the interval between max_blink and right_zero.
     """
-    m_frame = int(max_frame)
+    m_frame = int(max_blink)
     l_zero = int(left_zero)
     r_zero = int(right_zero)
 
@@ -113,13 +113,13 @@ def get_up_down_stroke(max_frame, left_zero, right_zero):
     return up_stroke, down_stroke
 
 
-def _max_pos_vel_frame(blink_velocity, max_frame, left_zero, right_zero):
+def _max_pos_vel_frame(blink_velocity, max_blink, left_zero, right_zero):
     """
     In the context of *blink_velocity* time series,
     the `max_pos_vel_frame` and `max_neg_vel_frame` represent the indices where
     the *blink_velocity* reaches its maximum positive value and maximum negative value, respectively.
     """
-    m_frame = int(max_frame)
+    m_frame = int(max_blink)
     l_zero = int(left_zero)
     r_zero = int(right_zero)
 
@@ -187,7 +187,7 @@ def _get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_f
     return right_base
 
 
-def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_base, right_outer):
+def _get_half_height(candidate_signal, max_blink, left_zero, right_zero, left_base, right_outer):
     """
     left_base_half_height:
         The coordinate of the signal halfway (in height) between
@@ -196,13 +196,13 @@ def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_ba
         The coordinate of the signal halfway (in height) between
         the blink maximum and the right base value.
     """
-    m_frame = int(max_frame)
+    m_frame = int(max_blink)
     l_zero = int(left_zero)
     r_zero = int(right_zero)
     l_base = int(left_base)
     r_outer = int(right_outer)
 
-    # Halfway point (vertical) from candidate_signal[max_frame] to candidate_signal[left_base]
+    # Halfway point (vertical) from candidate_signal[max_blink] to candidate_signal[left_base]
     max_val = candidate_signal[m_frame]
     left_base_val = candidate_signal[l_base]
     half_height_val = max_val - 0.5 * (max_val - left_base_val)
@@ -229,7 +229,7 @@ def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_ba
         )
 
     # Now compute the left and right half-height frames from zero
-    # Halfway from candidate_signal[max_frame] down to 0 (the "zero" crossing region).
+    # Halfway from candidate_signal[max_blink] down to 0 (the "zero" crossing region).
     # left_zero_half_height
     zero_half_val = 0.5 * max_val
     left_zero_range = np.arange(l_zero, m_frame + 1)
@@ -244,13 +244,13 @@ def _get_half_height(candidate_signal, max_frame, left_zero, right_zero, left_ba
     return left_zero_half_height, right_zero_half_height, left_base_half_height, right_base_half_height
 
 
-def get_left_range(left_zero, max_frame, candidate_signal, blink_top, blink_bottom):
+def get_left_range(left_zero, max_blink, candidate_signal, blink_top, blink_bottom):
     """
     Identify the left blink range based on blink_top/blink_bottom thresholds
     within candidate_signal.
     """
     l_zero = int(left_zero)
-    m_frame = int(max_frame)
+    m_frame = int(max_blink)
 
     blink_range = np.arange(l_zero, m_frame + 1, dtype=int)
     cand_slice = candidate_signal[blink_range]
@@ -274,12 +274,12 @@ def get_left_range(left_zero, max_frame, candidate_signal, blink_top, blink_bott
     return left_range, blink_top_point_l_x, blink_top_point_l_y, blink_bottom_point_l_x, blink_bottom_point_l_y
 
 
-def get_right_range(max_frame, right_zero, candidate_signal, blink_top, blink_bottom):
+def get_right_range(max_blink, right_zero, candidate_signal, blink_top, blink_bottom):
     """
     Identify the right blink range based on blink_top/blink_bottom thresholds
     within candidate_signal.
     """
-    m_frame = int(max_frame)
+    m_frame = int(max_blink)
     r_zero = int(right_zero)
 
     blink_range = np.arange(m_frame, r_zero + 1, dtype=int)
@@ -307,13 +307,13 @@ def get_right_range(max_frame, right_zero, candidate_signal, blink_top, blink_bo
             blink_bottom_point_r_x, blink_bottom_point_r_y)
 
 
-def compute_fit_range(candidate_signal, max_frame, left_zero, right_zero, base_fraction, top_bottom=None):
+def compute_fit_range(candidate_signal, max_blink, left_zero, right_zero, base_fraction, top_bottom=None):
     """
     Computes x_left, x_right, left_range, right_range,
     plus optional top/bottom blink points,
     for the candidate_signal around a blink event.
     """
-    m_frame = int(max_frame)
+    m_frame = int(max_blink)
     l_zero = int(left_zero)
     r_zero = int(right_zero)
 

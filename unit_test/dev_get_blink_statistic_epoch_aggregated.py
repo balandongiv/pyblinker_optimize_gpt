@@ -4,22 +4,22 @@ import pandas as pd
 def generate_mock_blink_epoch_data(num_rows=5, seed=42):
     np.random.seed(seed)
     data = {
-        'startBlinks': np.random.randint(0, 300, num_rows),
-        'endBlinks': np.random.randint(1, 301, num_rows),
-        'maxValue': np.random.uniform(1e-6, 1e-5, num_rows),
-        'maxFrame': np.random.randint(0, 300, num_rows),
-        'outerStarts': np.random.randint(0, 300, num_rows),
-        'outerEnds': np.random.randint(0, 300, num_rows),
-        'leftZero': np.random.randint(0, 300, num_rows),
-        'rightZero': np.random.randint(1, 301, num_rows),
-        'maxPosVelFrame': np.random.randint(0, 300, num_rows),
-        'maxNegVelFrame': np.random.randint(0, 300, num_rows),
+        'start_blink': np.random.randint(0, 300, num_rows),
+        'end_blink': np.random.randint(1, 301, num_rows),
+        'max_value': np.random.uniform(1e-6, 1e-5, num_rows),
+        'max_blink': np.random.randint(0, 300, num_rows),
+        'outer_start': np.random.randint(0, 300, num_rows),
+        'outer_end': np.random.randint(0, 300, num_rows),
+        'left_zero': np.random.randint(0, 300, num_rows),
+        'right_zero': np.random.randint(1, 301, num_rows),
+        'max_pos_vel_frame': np.random.randint(0, 300, num_rows),
+        'max_neg_vel_frame': np.random.randint(0, 300, num_rows),
         'leftR2': np.random.uniform(0, 1, num_rows),
         'rightR2': np.random.uniform(0, 1, num_rows),
-        'xIntersect': np.random.uniform(0, 300, num_rows),
-        'yIntersect': np.random.uniform(-1e-5, 1e-5, num_rows),
-        'leftXIntercept': np.random.uniform(0, 300, num_rows),
-        'rightXIntercept': np.random.uniform(0, 300, num_rows),
+        'x_intersect': np.random.uniform(0, 300, num_rows),
+        'y_intersect': np.random.uniform(-1e-5, 1e-5, num_rows),
+        'left_x_intercept': np.random.uniform(0, 300, num_rows),
+        'right_x_intercept': np.random.uniform(0, 300, num_rows),
         'xLineCross_l': [np.nan] * num_rows,
         'yLineCross_l': [np.nan] * num_rows,
         'xLineCross_r': [np.nan] * num_rows,
@@ -40,7 +40,7 @@ def generate_mock_blink_signal(length=301, blink_indices=[50, 120, 200, 250], se
 if __name__ == "__main__":
     df_list = [generate_mock_blink_epoch_data(num_rows=5, seed=seed) for seed in [42, 43]]
     signal_list = [generate_mock_blink_signal(length=301, blink_indices=[50, 120, 200, 250], seed=seed) for seed in [42, 43]]
-    from pyblinkers.extractBlinkProperties import get_blink_statistic_epoch_aggregated
+    from pyblinkers.extract_blink_properties import get_blink_statistic_epoch_aggregated
     zThresholds = [
         (0.90, 0.98),  # first threshold set
         (2.00, 5.00)   # second threshold set

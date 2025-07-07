@@ -29,7 +29,7 @@ def get_blink_position(
 
     Returns
     -------
-    pd.DataFrame with columns ['startBlinks', 'endBlinks']
+    pd.DataFrame with columns ['start_blink', 'end_blink']
     """
     if blink_component is None:
         raise ValueError("blink_component must be provided")
@@ -52,7 +52,7 @@ def get_blink_position(
 
     if starts.size == 0 or ends.size == 0:
         # No complete blink found
-        return pd.DataFrame({'startBlinks': [], 'endBlinks': []})
+        return pd.DataFrame({'start_blink': [], 'end_blink': []})
 
     # --- 3. enforce minimum blink duration ----------------------------------
     durations = ends - starts
@@ -60,7 +60,7 @@ def get_blink_position(
     starts, ends = starts[valid], ends[valid]
 
     if starts.size == 0:
-        return pd.DataFrame({'startBlinks': [], 'endBlinks': []})
+        return pd.DataFrame({'start_blink': [], 'end_blink': []})
 
     # --- 4. remove blinks that are too close together -----------------------
     sfreq = params["sfreq"]
@@ -78,4 +78,4 @@ def get_blink_position(
 
     starts, ends = starts[keep], ends[keep]
 
-    return pd.DataFrame({'startBlinks': starts, 'endBlinks': ends})
+    return pd.DataFrame({'start_blink': starts, 'end_blink': ends})
