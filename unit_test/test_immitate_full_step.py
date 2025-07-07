@@ -4,8 +4,8 @@ import numpy as np
 import logging
 from pathlib import Path
 from pyblinkers import default_setting
-from pyblinkers.extract_blink_properties import (
-    BlinkProperties,
+from pyblinkers.extract_blink_properties import BlinkProperties
+from pyblinkers.utils.blink_statistics import (
     get_good_blink_mask,
     get_blink_statistic,
 )

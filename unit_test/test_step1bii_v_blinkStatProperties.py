@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-from pyblinkers.extract_blink_properties import get_blink_statistic
+from pyblinkers.utils.blink_statistics import get_blink_statistic
 from unit_test.debugging_tools import load_matlab_data
 from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP, rename_keys
 
