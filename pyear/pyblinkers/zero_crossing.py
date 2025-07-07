@@ -69,7 +69,9 @@ def left_right_zero_crossing(
         # Fall back if no negative crossing found in left_range
         full_left_range = np.arange(0, m_frame).astype(int)
         left_neg_idx = np.flatnonzero(candidate_signal[full_left_range] < 0)
-        left_zero = full_left_range[left_neg_idx[-1]]
+        left_zero = (
+            full_left_range[left_neg_idx[-1]] if left_neg_idx.size > 0 else np.nan
+        )
 
     # Right side search
     right_range = np.arange(m_frame, end_idx)
@@ -85,13 +87,13 @@ def left_right_zero_crossing(
         except TypeError:
             print("Error")
             # If this except triggers, raise or handle accordingly
-            return left_zero, None
+            return left_zero, np.nan
 
         s_ind_right_zero_ex = np.flatnonzero(candidate_signal[extreme_outer] < 0)
         if s_ind_right_zero_ex.size > 0:
             right_zero = extreme_outer[s_ind_right_zero_ex[0]]
         else:
-            return left_zero, None
+            return left_zero, np.nan
 
     if left_zero > m_frame:
         raise ValueError(
