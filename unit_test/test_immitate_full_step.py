@@ -9,7 +9,7 @@ from pyblinkers.extract_blink_properties import (
     get_good_blink_mask,
     get_blink_statistic,
 )
-from pyblinkers.fit_blink import FitBlinks
+from pyear.pyblinkers.fit_blink import FitBlinks
 from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
 from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP

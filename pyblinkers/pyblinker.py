@@ -7,7 +7,7 @@ from tqdm import tqdm
 from pyblinkers import default_setting
 from pyblinkers.extract_blink_properties import BlinkProperties, get_good_blink_mask
 from pyblinkers.extract_blink_properties import get_blink_statistic
-from pyblinkers.fit_blink import FitBlinks
+from pyear.pyblinkers.fit_blink import FitBlinks
 from pyblinkers.getBlinkPositions import get_blink_position
 from pyblinkers.getRepresentativeChannel import channel_selection
 from pyblinkers.misc import create_annotation
