@@ -2,6 +2,7 @@
 
 This script will run all the test in the 'unit_test' directory.
 Everything that is in the 'unit_test' directory with the name 'test_*.py' will be run.
+s
 '''
 
 import unittest
