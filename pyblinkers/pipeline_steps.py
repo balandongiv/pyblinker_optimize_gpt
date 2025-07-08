@@ -1,4 +1,10 @@
-"""Core blink detection steps for processing channels."""
+"""Core blink detection steps for processing channels.
+
+This module implements the heart of the original Matlab legacy approach used
+by *Blinker* to detect and characterize blinks.  The six-step workflow mirrors
+the historical code path closely so that results remain comparable to the
+Matlab version.
+"""
 
 from __future__ import annotations
 
@@ -17,6 +23,7 @@ def process_channel_data(detector, channel: str, verbose: bool = True) -> None:
     """Process blink data for a single channel using the legacy six-step pipeline."""
     logger.info(f"Processing channel: {channel}")
 
+    # STEP 1: Get blink positions
     df = get_blink_position(
         detector.params,
         blink_component=detector.raw_data.get_data(picks=channel)[0],
@@ -26,6 +33,7 @@ def process_channel_data(detector, channel: str, verbose: bool = True) -> None:
     if df.empty and verbose:
         logger.warning(f"No blinks detected in channel: {channel}")
 
+    # STEP 2: Fit blinks
     fitblinks = FitBlinks(
         candidate_signal=detector.raw_data.get_data(picks=channel)[0],
         df=df,
@@ -34,6 +42,7 @@ def process_channel_data(detector, channel: str, verbose: bool = True) -> None:
     fitblinks.dprocess()
     df = fitblinks.frame_blinks
 
+    # STEP 3: Extract blink statistics
     blink_stats = get_blink_statistic(
         df,
         detector.params["z_thresholds"],
@@ -41,6 +50,7 @@ def process_channel_data(detector, channel: str, verbose: bool = True) -> None:
     )
     blink_stats["ch"] = channel
 
+    # STEP 4: Get good blink mask
     _, df = get_good_blink_mask(
         df,
         blink_stats["best_median"],
@@ -48,6 +58,7 @@ def process_channel_data(detector, channel: str, verbose: bool = True) -> None:
         detector.params["z_thresholds"],
     )
 
+    # STEP 5: Compute blink properties
     df = BlinkProperties(
         detector.raw_data.get_data(picks=channel)[0],
         df,
@@ -55,6 +66,7 @@ def process_channel_data(detector, channel: str, verbose: bool = True) -> None:
         detector.params,
     ).df
 
+    # STEP 6: Apply pAVR restriction
     condition_1 = df["pos_amp_vel_ratio_zero"] < detector.params["p_avr_threshold"]
     condition_2 = df["max_value"] < (
         blink_stats["best_median"] - blink_stats["best_robust_std"]
