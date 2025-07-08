@@ -4,12 +4,12 @@ import numpy as np
 import logging
 from pathlib import Path
 from pyblinkers import default_setting
-from pyblinkers.extract_blink_properties import (
-    BlinkProperties,
+from pyear.pyblinkers.extract_blink_properties import BlinkProperties
+from pyblinkers.utils.blink_statistics import (
     get_good_blink_mask,
     get_blink_statistic,
 )
-from pyblinkers.fit_blink import FitBlinks
+from pyear.pyblinkers.fit_blink import FitBlinks
 from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.debugging_tools import load_matlab_data
 from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
@@ -110,7 +110,7 @@ class TestExtractBlinkProperties(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal and initializing parameters.
         """
-        cls.params = default_setting.params
+        cls.params = default_setting.DEFAULT_PARAMS.copy()
         cls.params['sfreq'] = 100
         base_path = Path(__file__).resolve().parents[1] / 'migration_files'
         cls.mat_file_path_input = base_path / 'step1bi_data_input_getBlinkPositions.mat'

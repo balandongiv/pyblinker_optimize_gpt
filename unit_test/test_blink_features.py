@@ -71,13 +71,13 @@ import pandas as pd
 import pytest
 from pathlib import Path
 
-from pyblinkers.zero_crossing import (
+from pyear.pyblinkers.zero_crossing import (
     left_right_zero_crossing,
-    _get_half_height,
-    compute_fit_range
+    get_half_height as _get_half_height,
+    compute_fit_range,
 )
-from pyblinkers.base_left_right import create_left_right_base
-from pyblinkers.utils.matlab.line_intersection_matlab import lines_intersection_matlabx
+from pyear.pyblinkers.base_left_right import create_left_right_base
+from pyear.matlab_fork.line_intersection_matlab import lines_intersection_matlabx
 
 
 @pytest.fixture(scope="module")

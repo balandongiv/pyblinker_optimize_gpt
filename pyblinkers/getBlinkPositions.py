@@ -5,8 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from pyblinkers.default_setting import SCALING_FACTOR
-
-from pyblinkers.utils.matlab.matlab_forking import mad_matlab
+from pyblinkers.utils.matlab import mad_matlab
 
 
 def get_blink_position(params, blink_component=None, ch=None):
@@ -17,8 +16,8 @@ def get_blink_position(params, blink_component=None, ch=None):
     params : dict
         A dictionary containing processing parameters, which must include:
         - 'sfreq' (float): Sampling frequency of the candidate_signal in Hz.
-        - 'minEventLen' (float): Minimum blink length in seconds.
-        - 'stdThreshold' (float): Standard deviation threshold for blink detection.
+        - 'min_event_len' (float): Minimum blink length in seconds.
+        - 'std_threshold' (float): Standard deviation threshold for blink detection.
     blink_component : numpy.ndarray
         A 1D array representing the blink component (e.g., an independent component related to eye blinks).
     ch : str, optional
@@ -42,8 +41,8 @@ def get_blink_position(params, blink_component=None, ch=None):
     robust_std= SCALING_FACTOR * mad_val
 
     # Minimum blink length in frames
-    min_blink_frames = params['minEventLen'] * params['sfreq']
-    threshold = mu + params['stdThreshold'] * robust_std
+    min_blink_frames = params['min_event_len'] * params['sfreq']
+    threshold = mu + params['std_threshold'] * robust_std
 
     in_blink = False
     start_blinks = []
@@ -72,11 +71,11 @@ def get_blink_position(params, blink_component=None, ch=None):
         # No blinks found, return empty DataFrame
         return pd.DataFrame({'start_blink': [], 'end_blink': []})
 
-    # Remove blinks that are too close together (< minEventLen apart)
+    # Remove blinks that are too close together (< min_event_len apart)
     pos_mask = np.ones(arr_end.size, dtype=bool)
     # Differences between consecutive end and subsequent start
     blink_durations = (arr_start[1:] - arr_end[:-1]) / params['sfreq']
-    close_indices = np.argwhere(blink_durations <= params['minEventLen'])
+    close_indices = np.argwhere(blink_durations <= params['min_event_len'])
 
     # Invalidate both the earlier and later blink intervals
     pos_mask[close_indices] = False

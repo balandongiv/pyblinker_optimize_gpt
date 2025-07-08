@@ -8,9 +8,9 @@ def filter_blink_amplitude_ratios(df, params):
     """
     # Filter DataFrame based on the blink amplitude ratio range
     filtered_df = df[
-        (df['blink_amp_ratio'] >= params['blinkAmpRange_1'])
+        (df['blink_amp_ratio'] >= params['blink_amp_range_1'])
         &
-        (df['blink_amp_ratio'] <= params['blinkAmpRange_2'])
+        (df['blink_amp_ratio'] <= params['blink_amp_range_2'])
         ]
 
     if filtered_df.empty:
@@ -35,11 +35,11 @@ def filter_good_blinks(df, params):
     If no rows remain, set status and select the row with max number_good_blinks.
     """
     # Filter DataFrame based on minimum good blinks
-    filtered_df = df[df['number_good_blinks'] > params['minGoodBlinks']]
+    filtered_df = df[df['number_good_blinks'] > params['min_good_blinks']]
 
     if filtered_df.empty:
         # Handle the case where no rows meet the threshold
-        df['status'] = "Fewer than {} minimum Good Blinks were found".format(params['minGoodBlinks'])
+        df['status'] = "Fewer than {} minimum Good Blinks were found".format(params['min_good_blinks'])
         df['select'] = False  # Initialize 'select' column
         max_good_blinks_idx = df['number_good_blinks'].idxmax()  # Find the index of the max value
         df.loc[max_good_blinks_idx, 'select'] = True  # Mark the row as selected
@@ -57,7 +57,7 @@ def filter_good_ratio(df, params):
     If no rows meet the criteria, add a status column and select the row with the maximum number of good blinks.
     """
     # Filter based on good ratio threshold
-    filtered_df = df[df['good_ratio'] >= params['goodRatioThreshold']]
+    filtered_df = df[df['good_ratio'] >= params['good_ratio_threshold']]
 
     if filtered_df.empty:
         # Create a status column

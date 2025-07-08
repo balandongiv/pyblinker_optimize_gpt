@@ -40,7 +40,7 @@ def generate_mock_blink_signal(length=301, blink_indices=[50, 120, 200, 250], se
 if __name__ == "__main__":
     df_list = [generate_mock_blink_epoch_data(num_rows=5, seed=seed) for seed in [42, 43]]
     signal_list = [generate_mock_blink_signal(length=301, blink_indices=[50, 120, 200, 250], seed=seed) for seed in [42, 43]]
-    from pyblinkers.extract_blink_properties import get_blink_statistic_epoch_aggregated
+    from pyear.pyblinkers.extract_blink_properties import get_blink_statistic_epoch_aggregated
     zThresholds = [
         (0.90, 0.98),  # first threshold set
         (2.00, 5.00)   # second threshold set

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 from pyblinkers import default_setting
-from pyblinkers.fit_blink import FitBlinks
+from pyear.pyblinkers.fit_blink import FitBlinks
 from pyblinkers.getBlinkPositions import get_blink_position
 from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
 from unit_test.debugging_tools import load_matlab_data
@@ -37,7 +37,7 @@ class TestFitBlinks(unittest.TestCase):
             cls.df_ground_truth.drop(columns=['number'], inplace=True)
 
         # Parameters
-        cls.params = default_setting.params
+        cls.params = default_setting.DEFAULT_PARAMS.copy()
         cls.params['sfreq'] = 100
         cls.channel = 'No_channel'
 

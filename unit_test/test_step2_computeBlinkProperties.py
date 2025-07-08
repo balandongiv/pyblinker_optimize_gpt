@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-from pyblinkers.extract_blink_properties import BlinkProperties
+from pyear.pyblinkers.extract_blink_properties import BlinkProperties
 from unit_test.debugging_tools import load_matlab_data
 from pyblinkers import default_setting
 from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP
@@ -23,7 +23,7 @@ class TestBlinkProperties(unittest.TestCase):
         cls.mat_file_path_input = base_path / 'step2c_data_input_computeBlinkProperties.mat'
         cls.mat_file_path_output = base_path / 'step2c_data_output_computeBlinkProperties.mat'
 
-        cls.params = default_setting.params
+        cls.params = default_setting.DEFAULT_PARAMS.copy()
         cls.params['sfreq'] = 100
         cls.channel = 'No_channel'
 
@@ -59,7 +59,7 @@ class TestBlinkProperties(unittest.TestCase):
         # Adjust for 0-based indexing
         df_input[columns_to_decrease] = df_input[columns_to_decrease] - 1
 
-        df_output = BlinkProperties(data, df_input, input_data['srate'], default_setting.params).df
+        df_output = BlinkProperties(data, df_input, input_data['srate'], default_setting.DEFAULT_PARAMS).df
 
         # Drop the specified columns from the output DataFrame
         columns_to_drop = ['peaks_pos_vel_base', 'peaks_pos_vel_zero']
