@@ -7,6 +7,7 @@ from pathlib import Path
 
 # from unit_test.develop_blink_position import get_blink_position
 from pyblinkers.getBlinkPositions import get_blink_position
+from unit_test.pyblinker.utils.update_pkl_variables import RENAME_MAP, rename_keys
 
 class TestGetBlinkPosition(unittest.TestCase):
 
@@ -16,6 +17,7 @@ class TestGetBlinkPosition(unittest.TestCase):
         base_path = Path(__file__).resolve().parent
         with (base_path / 'file_test_blink_position.pkl').open('rb') as f:
             cls.debug_data = pickle.load(f)
+        cls.debug_data['params'] = rename_keys(cls.debug_data['params'], RENAME_MAP)
 
     def test_blink_detection(self):
         params = self.debug_data['params']

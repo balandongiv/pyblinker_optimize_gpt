@@ -48,7 +48,7 @@ class TestSelectChannelCompact(unittest.TestCase):
         cls.signal_data.rename(columns=RENAME_MAP, inplace=True)
 
         # Parameters
-        cls.params = default_setting.params
+        cls.params = default_setting.DEFAULT_PARAMS.copy()
 
     def test_select_channel_compact(self):
         """

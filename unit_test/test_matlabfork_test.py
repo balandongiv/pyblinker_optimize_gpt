@@ -1,10 +1,10 @@
 import unittest
 import logging
 import numpy as np
-from pyblinkers.utils.matlab.matlab_forking import (
-    corr_matlab,
-    polyval_matlab,
-    polyfit_matlab,
+from pyear.matlab_fork.matlab_forking import (
+    corrMatlab as corr_matlab,
+    polyvalMatlab as polyval_matlab,
+    polyfitMatlab as polyfit_matlab,
     get_intersection,
 )
 

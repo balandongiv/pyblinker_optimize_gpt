@@ -1,6 +1,10 @@
 import numpy as np
-import pandas as pd
-from pyblinkers.zero_crossing import (_max_pos_vel_frame, _get_left_base, _get_right_base)
+from pyear.pyblinkers.zero_crossing import (
+    max_pos_vel_frame,
+    get_left_base,
+    get_right_base,
+)
+
 
 def create_left_right_base(candidate_signal, df):
     """
@@ -48,43 +52,47 @@ def create_left_right_base(candidate_signal, df):
     # Remove rows with NaNs so we don't pass invalid candidate_signal to our calculations
     df.dropna(inplace=True)
 
-    # Calculate max_pos_vel_frame and max_neg_vel_frame safely
-    df[['max_pos_vel_frame', 'max_neg_vel_frame']] = df.apply(
-        lambda row: _max_pos_vel_frame(
+    # Calculate maxPosVelFrame and maxNegVelFrame safely
+    df[["max_pos_vel_frame", "max_neg_vel_frame"]] = df.apply(
+        lambda row: max_pos_vel_frame(
             blink_velocity=blink_velocity,
-            max_blink=row['max_blink'],
-            left_zero=row['left_zero'],
-            right_zero=row['right_zero']
+            max_blink=row["max_blink"],
+            left_zero=row["left_zero"],
+            right_zero=row["right_zero"],
         ),
         axis=1,
-        result_type='expand'
+        result_type="expand",
     )
 
     # Ensure df is a new variable after filtering
-    df = df[df['outer_start'] < df['max_pos_vel_frame']].copy()
+    df = df[df["outer_start"] < df["max_pos_vel_frame"]].copy()
 
-    # Compute left_base safely using .assign()
-    df = df.assign(left_base=df.apply(
-        lambda row: _get_left_base(
-            blink_velocity=blink_velocity,
-            left_outer=row['outer_start'],
-            max_pos_vel_frame=row['max_pos_vel_frame']
-        ),
-        axis=1
-    ))
+    # Compute leftBase safely using .assign()
+    df = df.assign(
+        left_base=df.apply(
+            lambda row: get_left_base(
+                blink_velocity=blink_velocity,
+                left_outer=row["outer_start"],
+                max_pos_vel_frame=row["max_pos_vel_frame"],
+            ),
+            axis=1,
+        )
+    )
 
     # Drop rows with NaNs again if any were introduced
     df.dropna(inplace=True)
 
-    # Compute right_base safely using .assign()
-    df = df.assign(right_base=df.apply(
-        lambda row: _get_right_base(
-            candidate_signal=candidate_signal,
-            blink_velocity=blink_velocity,
-            right_outer=row['outer_end'],
-            max_neg_vel_frame=row['max_neg_vel_frame']
-        ),
-        axis=1
-    ))
+    # Compute rightBase safely using .assign()
+    df = df.assign(
+        right_base=df.apply(
+            lambda row: get_right_base(
+                candidate_signal=candidate_signal,
+                blink_velocity=blink_velocity,
+                right_outer=row["outer_end"],
+                max_neg_vel_frame=row["max_neg_vel_frame"],
+            ),
+            axis=1,
+        )
+    )
 
     return df

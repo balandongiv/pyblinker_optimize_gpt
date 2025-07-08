@@ -4,7 +4,9 @@ from typing import Tuple, Optional
 import numpy as np
 
 
-def get_line_intersection_slope(x_intersect, y_intersect, left_x_intersect, right_x_intersect):
+def get_line_intersection_slope(
+    x_intersect, y_intersect, left_x_intersect, right_x_intersect
+):
     """
     Original logic retained. Computes slopes at the intersection point.
     """
@@ -24,10 +26,12 @@ def get_average_velocity(p_left, p_right, x_left, x_right):
     return aver_left_velocity, aver_right_velocity
 
 
-
-
-def left_right_zero_crossing(candidate_signal: np.ndarray, max_blink: float,
-                             outer_start: float, outer_end: float) -> Tuple[int, Optional[int]]:
+def left_right_zero_crossing(
+    candidate_signal: np.ndarray,
+    max_blink: float,
+    outer_start: float,
+    outer_end: float,
+) -> Tuple[int, Optional[int]]:
     """
     Find the nearest zero-crossing indices to the left and right of a given peak in the signal.
 
@@ -65,7 +69,9 @@ def left_right_zero_crossing(candidate_signal: np.ndarray, max_blink: float,
         # Fall back if no negative crossing found in left_range
         full_left_range = np.arange(0, m_frame).astype(int)
         left_neg_idx = np.flatnonzero(candidate_signal[full_left_range] < 0)
-        left_zero = full_left_range[left_neg_idx[-1]] if left_neg_idx.size > 0 else np.nan
+        left_zero = (
+            full_left_range[left_neg_idx[-1]] if left_neg_idx.size > 0 else np.nan
+        )
 
     # Right side search
     right_range = np.arange(m_frame, end_idx)
@@ -79,9 +85,9 @@ def left_right_zero_crossing(candidate_signal: np.ndarray, max_blink: float,
         try:
             extreme_outer = np.arange(m_frame, candidate_signal.shape[0]).astype(int)
         except TypeError:
-            print('Error')
+            print("Error")
             # If this except triggers, raise or handle accordingly
-            return left_zero, None
+            return left_zero, np.nan
 
         s_ind_right_zero_ex = np.flatnonzero(candidate_signal[extreme_outer] < 0)
         if s_ind_right_zero_ex.size > 0:
@@ -90,10 +96,14 @@ def left_right_zero_crossing(candidate_signal: np.ndarray, max_blink: float,
             return left_zero, np.nan
 
     if left_zero > m_frame:
-        raise ValueError("Validation error: left_zero = {left_zero}, max_blink = {max_blink}. Ensure left_zero <= max_blink.")
+        raise ValueError(
+            "Validation error: left_zero = {left_zero}, max_blink = {max_blink}. Ensure left_zero <= max_blink."
+        )
 
     if m_frame > right_zero:
-        raise ValueError("Validation error: max_blink = {max_blink}, right_zero = {right_zero}. Ensure max_blink <= right_zero.")
+        raise ValueError(
+            "Validation error: max_blink = {max_blink}, right_zero = {right_zero}. Ensure max_blink <= right_zero."
+        )
 
     return left_zero, right_zero
 
@@ -113,7 +123,7 @@ def get_up_down_stroke(max_blink, left_zero, right_zero):
     return up_stroke, down_stroke
 
 
-def _max_pos_vel_frame(blink_velocity, max_blink, left_zero, right_zero):
+def max_pos_vel_frame(blink_velocity, max_blink, left_zero, right_zero):
     """
     In the context of *blink_velocity* time series,
     the `max_pos_vel_frame` and `max_neg_vel_frame` represent the indices where
@@ -134,12 +144,15 @@ def _max_pos_vel_frame(blink_velocity, max_blink, left_zero, right_zero):
         max_neg_vel_idx = np.argmin(blink_velocity[down_stroke])
         max_neg_vel_frame = down_stroke[max_neg_vel_idx]
     else:
-        warnings.warn('Force nan but require further investigation why happen like this')
+        warnings.warn(
+            "Force nan but require further investigation why happen like this"
+        )
         max_neg_vel_frame = np.nan
 
     return max_pos_vel_frame, max_neg_vel_frame
 
-def _get_left_base(blink_velocity, left_outer, max_pos_vel_frame):
+
+def get_left_base(blink_velocity, left_outer, max_pos_vel_frame):
     """
     Determine the left base index from left_outer to max_pos_vel_frame
     by searching for where blink_velocity crosses <= 0.
@@ -155,7 +168,7 @@ def _get_left_base(blink_velocity, left_outer, max_pos_vel_frame):
     return left_base
 
 
-def _get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_frame):
+def get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_frame):
     """
     Determine the right base index from max_neg_vel_frame to right_outer
     by searching for where blink_velocity crosses >= 0.
@@ -179,7 +192,7 @@ def _get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_f
         right_range = right_range[:-1]
         if right_range.size == 0 or right_range[-1] >= blink_velocity.size:
             # TODO: Handle this case more gracefully
-            raise ValueError('Please strategies how to address this')
+            raise ValueError("Please strategies how to address this")
 
     right_base_velocity = blink_velocity[right_range]
     right_base_index = np.argmax(right_base_velocity >= 0)
@@ -187,7 +200,9 @@ def _get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_f
     return right_base
 
 
-def _get_half_height(candidate_signal, max_blink, left_zero, right_zero, left_base, right_outer):
+def get_half_height(
+    candidate_signal, max_blink, left_zero, right_zero, left_base, right_outer
+):
     """
     left_base_half_height:
         The coordinate of the signal halfway (in height) between
@@ -218,14 +233,14 @@ def _get_half_height(candidate_signal, max_blink, left_zero, right_zero, left_ba
     try:
         right_base_half_height = min(
             r_outer,
-            np.argmax(candidate_signal[right_range] <= half_height_val) + m_frame
+            np.argmax(candidate_signal[right_range] <= half_height_val) + m_frame,
         )
     except IndexError:
         # If out-of-bounds, reduce range by 1
         right_range = np.arange(m_frame, r_outer)
         right_base_half_height = min(
             r_outer,
-            np.argmax(candidate_signal[right_range] <= half_height_val) + m_frame
+            np.argmax(candidate_signal[right_range] <= half_height_val) + m_frame,
         )
 
     # Now compute the left and right half-height frames from zero
@@ -241,7 +256,12 @@ def _get_half_height(candidate_signal, max_blink, left_zero, right_zero, left_ba
     right_zero_index = np.argmax(candidate_signal[right_zero_range] <= zero_half_val)
     right_zero_half_height = min(r_outer, m_frame + right_zero_index)
 
-    return left_zero_half_height, right_zero_half_height, left_base_half_height, right_base_half_height
+    return (
+        left_zero_half_height,
+        right_zero_half_height,
+        left_base_half_height,
+        right_base_half_height,
+    )
 
 
 def get_left_range(left_zero, max_blink, candidate_signal, blink_top, blink_bottom):
@@ -271,7 +291,13 @@ def get_left_range(left_zero, max_blink, candidate_signal, blink_top, blink_bott
 
     left_range = [blink_bottom_point_l_x, blink_top_point_l_x]
 
-    return left_range, blink_top_point_l_x, blink_top_point_l_y, blink_bottom_point_l_x, blink_bottom_point_l_y
+    return (
+        left_range,
+        blink_top_point_l_x,
+        blink_top_point_l_y,
+        blink_bottom_point_l_x,
+        blink_bottom_point_l_y,
+    )
 
 
 def get_right_range(max_blink, right_zero, candidate_signal, blink_top, blink_bottom):
@@ -286,11 +312,11 @@ def get_right_range(max_blink, right_zero, candidate_signal, blink_top, blink_bo
     cand_slice = candidate_signal[blink_range]
 
     # Indices where candidate_signal < blink_top
-    top_mask = (cand_slice < blink_top)
+    top_mask = cand_slice < blink_top
     blink_top_point_r = np.argmax(top_mask)  # first True
 
     # Indices where candidate_signal > blink_bottom
-    bottom_mask = (cand_slice > blink_bottom)
+    bottom_mask = cand_slice > blink_bottom
     bottom_idx = np.where(bottom_mask)[0]
     blink_bottom_point_r = bottom_idx[-1]  # last True
 
@@ -302,12 +328,18 @@ def get_right_range(max_blink, right_zero, candidate_signal, blink_top, blink_bo
 
     right_range = [blink_range[blink_top_point_r], blink_range[blink_bottom_point_r]]
 
-    return (right_range,
-            blink_top_point_r_x, blink_top_point_r_y,
-            blink_bottom_point_r_x, blink_bottom_point_r_y)
+    return (
+        right_range,
+        blink_top_point_r_x,
+        blink_top_point_r_y,
+        blink_bottom_point_r_x,
+        blink_bottom_point_r_y,
+    )
 
 
-def compute_fit_range(candidate_signal, max_blink, left_zero, right_zero, base_fraction, top_bottom=None):
+def compute_fit_range(
+    candidate_signal, max_blink, left_zero, right_zero, base_fraction, top_bottom=None
+):
     """
     Computes x_left, x_right, left_range, right_range,
     plus optional top/bottom blink points,
@@ -322,16 +354,26 @@ def compute_fit_range(candidate_signal, max_blink, left_zero, right_zero, base_f
     blink_top = candidate_signal[m_frame] - base_fraction * blink_height
     blink_bottom = candidate_signal[l_zero] + base_fraction * blink_height
 
-    (left_range,
-     blink_top_point_l_x, blink_top_point_l_y,
-     blink_bottom_point_l_x, blink_bottom_point_l_y) = get_left_range(l_zero, m_frame, candidate_signal, blink_top, blink_bottom)
+    (
+        left_range,
+        blink_top_point_l_x,
+        blink_top_point_l_y,
+        blink_bottom_point_l_x,
+        blink_bottom_point_l_y,
+    ) = get_left_range(l_zero, m_frame, candidate_signal, blink_top, blink_bottom)
 
-    (right_range,
-     blink_top_point_r_x, blink_top_point_r_y,
-     blink_bottom_point_r_x, blink_bottom_point_r_y) = get_right_range(m_frame, r_zero, candidate_signal, blink_top, blink_bottom)
+    (
+        right_range,
+        blink_top_point_r_x,
+        blink_top_point_r_y,
+        blink_bottom_point_r_x,
+        blink_bottom_point_r_y,
+    ) = get_right_range(m_frame, r_zero, candidate_signal, blink_top, blink_bottom)
 
     # Create arrays for fitting
-    x_left = np.arange(left_range[0], left_range[1] + 1, dtype=int)  # +1 to include the last index
+    x_left = np.arange(
+        left_range[0], left_range[1] + 1, dtype=int
+    )  # +1 to include the last index
     x_right = np.arange(right_range[0], right_range[1] + 1, dtype=int)
 
     # Replace empty arrays with np.nan for consistency
@@ -342,12 +384,21 @@ def compute_fit_range(candidate_signal, max_blink, left_zero, right_zero, base_f
 
     if top_bottom is None:
         # Return minimal information
-        warnings.warn('To modify this so that all function return the top_bottom point')
+        warnings.warn("To modify this so that all function return the top_bottom point")
         return x_left, x_right, left_range, right_range
     else:
         # Return extended info including top/bottom points
-        return (x_left, x_right, left_range, right_range,
-                blink_bottom_point_l_y, blink_bottom_point_l_x,
-                blink_top_point_l_y, blink_top_point_l_x,
-                blink_bottom_point_r_x, blink_bottom_point_r_y,
-                blink_top_point_r_x, blink_top_point_r_y)
+        return (
+            x_left,
+            x_right,
+            left_range,
+            right_range,
+            blink_bottom_point_l_y,
+            blink_bottom_point_l_x,
+            blink_top_point_l_y,
+            blink_top_point_l_x,
+            blink_bottom_point_r_x,
+            blink_bottom_point_r_y,
+            blink_top_point_r_x,
+            blink_top_point_r_y,
+        )

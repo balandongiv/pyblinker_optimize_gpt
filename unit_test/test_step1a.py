@@ -19,7 +19,7 @@ class TestBlinkPosition(unittest.TestCase):
         cls.mat_file_path_output = str(base_path / 'step1bi_data_output_getBlinkPositions.mat')
 
         # Parameters for `get_blink_position`
-        cls.params = dict(minEventLen=0.05, stdThreshold=1.5, sfreq=100)
+        cls.params = dict(min_event_len=0.05, std_threshold=1.5, sfreq=100)
 
         # Load MATLAB input and ground truth candidate_signal
         cls.input_data, cls.output_data = load_matlab_data(
