@@ -52,6 +52,7 @@ def plot_blinks(raw_file):
     raw.plot(block=True, title=f'Eye close based on channel {ch}')
 
 if __name__ == '__main__':
+
     sample_data_folder = mne.datasets.sample.data_path()
     sample_data_raw_file = os.path.join(sample_data_folder, 'MEG', 'sample', 'sample_audvis_filt-0-40_raw.fif')
     plot_blinks(sample_data_raw_file)
