@@ -51,7 +51,7 @@ This script tests detection of zero crossings and provides plotting to debug vis
 
 import numpy as np
 import matplotlib.pyplot as plt
-from pyear.pyblinkers.zero_crossing import left_right_zero_crossing
+from pyblinkers.zero_crossing import left_right_zero_crossing
 
 
 def plot_zero_crossings(candidate_signal, max_blink, left_zero, right_zero,

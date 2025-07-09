@@ -1,7 +1,7 @@
 import unittest
 import logging
 import numpy as np
-from pyear.matlab_fork.matlab_forking import (
+from pyblinkers.matlab_fork.matlab_forking import (
     corrMatlab as corr_matlab,
     polyvalMatlab as polyval_matlab,
     polyfitMatlab as polyfit_matlab,

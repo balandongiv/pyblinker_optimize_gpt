@@ -13,8 +13,8 @@ from tqdm import tqdm
 
 from pyblinkers.utils._logging import logger
 from pyblinkers.utils.blink_statistics import get_good_blink_mask, get_blink_statistic
-from pyear.pyblinkers.fit_blink import FitBlinks
-from pyear.pyblinkers.extract_blink_properties import BlinkProperties
+from pyblinkers.fit_blink import FitBlinks
+from pyblinkers.extract_blink_properties import BlinkProperties
 from pyblinkers.getBlinkPositions import get_blink_position
 from pyblinkers.getRepresentativeChannel import channel_selection
 

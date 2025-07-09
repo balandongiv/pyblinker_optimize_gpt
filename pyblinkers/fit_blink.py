@@ -1,13 +1,15 @@
 import numpy as np
 import warnings
 
-from pyear.pyblinkers.zero_crossing import (
+from pyblinkers.zero_crossing import (
     get_half_height,
     compute_fit_range,
     left_right_zero_crossing,
 )
-from pyear.pyblinkers.base_left_right import create_left_right_base
-from pyear.matlab_fork.line_intersection_matlab import lines_intersection_matlabx
+from pyblinkers.base_left_right import create_left_right_base
+from pyblinkers.matlab_fork.line_intersection_matlab import (
+    lines_intersection_matlabx,
+)
 
 
 class FitBlinks:

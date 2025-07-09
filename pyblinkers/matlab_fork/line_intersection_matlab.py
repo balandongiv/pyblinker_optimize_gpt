@@ -1,8 +1,13 @@
 
 import numpy as np
 
-from pyear.matlab_fork.matlab_forking import corrMatlab, polyvalMatlab, polyfitMatlab, get_intersection
-from pyear.pyblinkers.zero_crossing import get_line_intersection_slope
+from pyblinkers.matlab_fork.matlab_forking import (
+    corrMatlab,
+    polyvalMatlab,
+    polyfitMatlab,
+    get_intersection,
+)
+from pyblinkers.zero_crossing import get_line_intersection_slope
 
 
 def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None):
