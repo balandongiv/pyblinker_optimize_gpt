@@ -19,7 +19,7 @@ class TestBlinkProperties(unittest.TestCase):
         Set up class-level variables and configurations for testing.
         Load MATLAB candidate_signal and define parameters for the blink properties calculation.
         """
-        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        base_path = Path(__file__).resolve().parents[2] / 'migration_files'
         cls.mat_file_path_input = base_path / 'step2c_data_input_computeBlinkProperties.mat'
         cls.mat_file_path_output = base_path / 'step2c_data_output_computeBlinkProperties.mat'
 

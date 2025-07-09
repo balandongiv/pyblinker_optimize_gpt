@@ -13,7 +13,7 @@ class TestGetGoodBlinkMask(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
+        base_path = Path(__file__).resolve().parents[2] / 'migration_files'
         cls.mat_file_path_input = base_path / 'step2b_data_input_getGoodBlinkMask.mat'
         cls.mat_file_path_output = base_path / 'step2b_data_output_getGoodBlinkMask.mat'
 
