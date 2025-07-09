@@ -169,14 +169,33 @@ class FitBlinks:
             self.fit()
 
     def fit(self):
-        """
+        """Run baseline fitting and associated calculations for each blink.
+
         Main method to create base line fits, compute half-height, fit ranges,
         and line intersections.
+
+        If no valid blink segments remain after baseline creation or filtering,
+        the method returns an empty ``DataFrame`` with all expected columns. This
+        prevents downstream ``Columns must be same length as key`` errors.
         """
         # candidate_signal = self.candidate_signal  # Local reference for efficiency
 
         # Create left and right base lines
         self.frame_blinks = create_left_right_base(self.candidate_signal, self.df)
+
+        # Baseline generation may drop every potential blink. Provide an empty
+        # DataFrame with the correct schema so later operations don't fail.
+        if self.frame_blinks.empty:
+            # No valid blink regions after baseline calculation
+            all_cols = (
+                list(self.df.columns)
+                + self.cols_half_height
+                + self.cols_fit_range
+                + ["nsize_x_left", "nsize_x_right"]
+                + self.cols_lines_intesection
+            )
+            self.frame_blinks = pd.DataFrame(columns=all_cols)
+            return
 
         # Get half height
         self.frame_blinks[self.cols_half_height] = self.frame_blinks.apply(
@@ -216,6 +235,20 @@ class FitBlinks:
             (self.frame_blinks["nsize_x_left"] > 1)
             & (self.frame_blinks["nsize_x_right"] > 1)
         ].reset_index(drop=True)
+
+        # Filtering for valid fit ranges may remove all rows. Return an empty
+        # DataFrame with the expected schema so subsequent code does not raise
+        # a length mismatch error.
+        if self.frame_blinks.empty:
+            all_cols = (
+                list(self.df.columns)
+                + self.cols_half_height
+                + self.cols_fit_range
+                + ["nsize_x_left", "nsize_x_right"]
+                + self.cols_lines_intesection
+            )
+            self.frame_blinks = pd.DataFrame(columns=all_cols)
+            return
 
         # Calculate line intersections
 
