@@ -1,8 +1,8 @@
 from ..utils._logging import logger
 
 from . import default_setting
-from ..misc import create_annotation
-from ..viz_pd import viz_complete_blink_prop
+from ..utils.misc import create_annotation
+from ..viz.viz_pd import viz_complete_blink_prop
 from ..pipeline_steps import (
     process_channel_data as core_process_channel_data,
     process_all_channels as core_process_all_channels,

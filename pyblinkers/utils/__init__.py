@@ -13,6 +13,7 @@ from .refinement import (
     plot_refined_blinks,
 )
 from .raw_preprocessing import prepare_refined_segments
+from .misc import create_annotation
 
 __all__ = [
     "slice_raw_to_segments",
@@ -25,4 +26,5 @@ __all__ = [
     "refine_blinks_from_epochs",
     "plot_refined_blinks",
     "prepare_refined_segments",
+    "create_annotation",
 ]
