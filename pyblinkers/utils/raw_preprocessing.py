@@ -20,18 +20,24 @@ logger = logging.getLogger(__name__)
 def _update_segment_annotations(
     segments: Sequence[mne.io.BaseRaw],
     refined: Sequence[Dict[str, int]],
+    *,
+    progress_bar: bool = True,
 ) -> None:
     """Update annotations on each segment with refined blink timings."""
     logger.info("Updating annotations for %d segments", len(segments))
     idx = 0
-    for seg_idx, seg in enumerate(tqdm(segments, desc="Segments")):
+    for seg_idx, seg in enumerate(
+        tqdm(segments, desc="Segments", disable=not progress_bar)
+    ):
         sfreq = seg.info["sfreq"]
         orig_anns = seg.annotations
         n_anns = len(orig_anns)
         new_onsets: List[float] = []
         new_durations: List[float] = []
         new_descriptions: List[str] = []
-        for ann_i in tqdm(range(n_anns), desc=f"Seg {seg_idx} annotations", leave=False):
+        for ann_i in tqdm(
+            range(n_anns), desc=f"Seg {seg_idx} annotations", leave=False, disable=not progress_bar
+        ):
             blink_info = refined[idx]
             start_frame = blink_info["refined_start_frame"]
             end_frame = blink_info["refined_end_frame"]
@@ -57,6 +63,7 @@ def prepare_refined_segments(
     *,
     epoch_len: float = EPOCH_LEN,
     keep_epoch_signal: bool = False,
+    progress_bar: bool = True,
 ) -> tuple[list[BaseRaw], list[dict[str, Any]]]:
     """Load and prepare raw segments with refined blink annotations.
 
@@ -100,7 +107,9 @@ def prepare_refined_segments(
     if len(raw.annotations) == 0:
         raise ValueError("Raw recording has no annotations to refine")
 
-    segments, _, _, _ = slice_raw_into_epochs(raw, epoch_len=epoch_len)
+    segments, _, _, _ = slice_raw_into_epochs(
+        raw, epoch_len=epoch_len, progress_bar=progress_bar
+    )
     refined = refine_blinks_from_epochs(segments, channel)
 
     # segments[1].plot(block=True)
@@ -108,7 +117,7 @@ def prepare_refined_segments(
         for blink in refined:
             blink.pop("epoch_signal", None)
 
-    _update_segment_annotations(segments, refined)
+    _update_segment_annotations(segments, refined, progress_bar=progress_bar)
     # refined = group_refined_by_epoch(refined)
     logger.info("Finished preparing %d segments", len(segments))
     return list(segments), refined

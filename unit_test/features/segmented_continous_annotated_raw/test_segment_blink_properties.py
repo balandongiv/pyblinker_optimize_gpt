@@ -103,11 +103,13 @@ class TestSegmentBlinkProperties(unittest.TestCase):
             raw,
             epoch_len=30.0,
             blink_label=None,
+            progress_bar=False,
         )
         self.blink_df = generate_blink_dataframe(
             self.segments,
             channel="EEG-E8",
             blink_label=None,
+            progress_bar=False,
         )
         self.params = {
             "base_fraction": 0.5,
@@ -141,6 +143,7 @@ class TestSegmentBlinkProperties(unittest.TestCase):
             self.params,
             channel="EEG-E8",
             run_fit=False,
+            progress_bar=False,
         )
         logger.debug("Blink properties DataFrame:\n%s", df.head())
         self.assertIsInstance(df, pd.DataFrame)
@@ -185,6 +188,7 @@ class TestSegmentBlinkProperties(unittest.TestCase):
                 self.params,
                 channel="EEG-E8",
                 run_fit=True,
+                progress_bar=False,
             )
 
         self.assertIsInstance(df, pd.DataFrame)

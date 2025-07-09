@@ -10,7 +10,9 @@ from tqdm import tqdm
 logger = logging.getLogger(__name__)
 
 
-def slice_raw_to_segments(raw: mne.io.BaseRaw, epoch_len: float = 30.0) -> List[mne.io.BaseRaw]:
+def slice_raw_to_segments(
+    raw: mne.io.BaseRaw, epoch_len: float = 30.0, *, progress_bar: bool = True
+) -> List[mne.io.BaseRaw]:
     """Slice a continuous :class:`mne.io.BaseRaw` into fixed-length segments.
 
     Parameters
@@ -27,7 +29,9 @@ def slice_raw_to_segments(raw: mne.io.BaseRaw, epoch_len: float = 30.0) -> List[
     """
     n_segments = int(raw.times[-1] // epoch_len)
     segments: List[mne.io.BaseRaw] = []
-    for i in tqdm(range(n_segments), desc="Segmenting", unit="segment"):
+    for i in tqdm(
+        range(n_segments), desc="Segmenting", unit="segment", disable=not progress_bar
+    ):
         start = i * epoch_len
         stop = start + epoch_len
         seg = raw.copy().crop(tmin=start, tmax=stop, include_tmax=False)

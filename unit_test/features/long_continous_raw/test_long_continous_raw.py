@@ -52,7 +52,7 @@ class TestLongContinuousRaw(unittest.TestCase):
         self.raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments = [self.raw]
         self.blink_df = generate_blink_dataframe(
-            self.segments, channel="EEG-E8", blink_label=None
+            self.segments, channel="EEG-E8", blink_label=None, progress_bar=False
         )
         csv_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_blink_count_epoch.csv"
         counts = pd.read_csv(csv_path)
@@ -100,6 +100,7 @@ class TestLongContinuousRaw(unittest.TestCase):
             self.params,
             channel="EEG-E8",
             run_fit=False,
+            progress_bar=False,
         )
         logger.debug("Blink properties head:\n%s", props.head())
         self.assertIsInstance(props, pd.DataFrame)

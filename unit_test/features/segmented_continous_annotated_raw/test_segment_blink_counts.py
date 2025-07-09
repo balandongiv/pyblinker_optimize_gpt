@@ -52,6 +52,7 @@ class TestSegmentBlinkCounts(unittest.TestCase):
             raw,
             epoch_len=30.0,
             blink_label=None,
+            progress_bar=False,
         )
         self.expected_counts = pd.read_csv(PROJECT_ROOT / "unit_test" / "features" / "ear_eog_blink_count_epoch.csv")
         self.params = {
@@ -80,13 +81,16 @@ class TestSegmentBlinkCounts(unittest.TestCase):
         blink events.  ``run_fit`` remains disabled to mirror the counting logic
         in :func:`generate_blink_dataframe`.
         """
-        blink_df = generate_blink_dataframe(self.segments, channel="EEG-E8", blink_label=None)
+        blink_df = generate_blink_dataframe(
+            self.segments, channel="EEG-E8", blink_label=None, progress_bar=False
+        )
         props = compute_segment_blink_properties(
             self.segments,
             blink_df,
             self.params,
             channel="EEG-E8",
             run_fit=False,
+            progress_bar=False,
         )
 
         total_expected = int(self.expected_counts["blink_count"].sum())

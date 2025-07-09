@@ -37,6 +37,7 @@ class TestSliceIntoMiniRaws(unittest.TestCase):
             raw,
             "EOG",
             epoch_len=self.epoch_len,
+            progress_bar=False,
         )
 
         # slice and save using the function under test. Although the helper
@@ -56,6 +57,7 @@ class TestSliceIntoMiniRaws(unittest.TestCase):
             save=True,
             overwrite=True,
             report=False,
+            progress_bar=False,
         )
         self.saved_segments = [
             mne.io.read_raw_fif(p, preload=True, verbose=False)
