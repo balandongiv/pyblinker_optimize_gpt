@@ -25,6 +25,7 @@ class TestPrepareRefinedSegments(unittest.TestCase):
             self.raw_path,
             "EOG-EEG-eog_vert_left",
             keep_epoch_signal=False,
+            progress_bar=False,
         )
         expected_len = len(pd.read_csv(self.expected_csv))
         self.assertEqual(len(segments), expected_len)
@@ -36,6 +37,7 @@ class TestPrepareRefinedSegments(unittest.TestCase):
             self.raw_path,
             "EOG-EEG-eog_vert_left",
             keep_epoch_signal=True,
+            progress_bar=False,
         )
         expected_len = len(pd.read_csv(self.expected_csv))
         self.assertEqual(len(segments), expected_len)

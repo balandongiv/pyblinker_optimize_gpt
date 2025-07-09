@@ -31,7 +31,9 @@ class TestGetBlinkPosition(unittest.TestCase):
         result = get_blink_position(
             params=params,
             blink_component=blink_component,
-            ch=ch)
+            ch=ch,
+            progress_bar=False,
+        )
 
         # Check that the result is a DataFrame
         self.assertIsInstance(result, pd.DataFrame)

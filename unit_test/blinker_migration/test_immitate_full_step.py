@@ -166,7 +166,11 @@ class TestExtractBlinkProperties(unittest.TestCase):
         threshold=12.241726391783821
         # STEP 1: Get blink positions
         blink_positions = get_blink_position(
-            self.params, blink_component=self.blink_comp, ch='No_channel')
+            self.params,
+            blink_component=self.blink_comp,
+            ch='No_channel',
+            progress_bar=False,
+        )
 
         # STEP 2: Fit blinks
         fitblinks = FitBlinks(candidate_signal=self.blink_comp, df=blink_positions, params=self.params)

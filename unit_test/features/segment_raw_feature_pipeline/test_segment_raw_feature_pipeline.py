@@ -40,10 +40,10 @@ class TestSegmentRawFeaturePipeline(unittest.TestCase):
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments, _, _, _ = slice_raw_into_epochs(
             raw, epoch_len=30.0, blink_label=None
-        )
+        , progress_bar=False)
         self.sfreq = raw.info["sfreq"]
         self.blink_df = generate_blink_dataframe(
-            self.segments, channel="EEG-E8", blink_label=None
+            self.segments, channel="EEG-E8", blink_label=None, progress_bar=False
         )
         self.params = {
             "base_fraction": 0.5,
@@ -88,6 +88,7 @@ class TestSegmentRawFeaturePipeline(unittest.TestCase):
                     self.params,
                     channel="EEG-E8",
                     run_fit=run_fit,
+                    progress_bar=False,
                 )
         else:
             blink_props = compute_segment_blink_properties(
@@ -96,6 +97,7 @@ class TestSegmentRawFeaturePipeline(unittest.TestCase):
                 self.params,
                 channel="EEG-E8",
                 run_fit=run_fit,
+                progress_bar=False,
             )
 
         blink_averages = (

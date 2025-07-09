@@ -8,7 +8,9 @@ from pyblinkers.default_setting import SCALING_FACTOR
 from pyblinkers.utils.matlab import mad_matlab
 
 
-def get_blink_position(params, blink_component=None, ch=None):
+def get_blink_position(
+    params, blink_component=None, ch=None, *, progress_bar: bool = True
+):
     """Detect blink start and end frames using the legacy MATLAB Blinker approach.
     
     Parameters
@@ -48,7 +50,11 @@ def get_blink_position(params, blink_component=None, ch=None):
     start_blinks = []
     end_blinks = []
 
-    for idx in tqdm(range(blink_component.size), desc=f"Get blink start and end for channel {ch}"):
+    for idx in tqdm(
+        range(blink_component.size),
+        desc=f"Get blink start and end for channel {ch}",
+        disable=not progress_bar,
+    ):
         val = blink_component[idx]
 
         # Start condition

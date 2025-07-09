@@ -34,7 +34,9 @@ class TestBlinkPosition(unittest.TestCase):
         blink_comp = input_data['blinkComp']
         min_blink_frames=5.0
         threshold=12.241726391783821
-        blink_positions = get_blink_position(params, blink_component=blink_comp, ch='No_channel')
+        blink_positions = get_blink_position(
+            params, blink_component=blink_comp, ch='No_channel', progress_bar=False
+        )
         return blink_positions
 
     def adjust_indices_for_matlab(self, blink_positions, shift_index=1):

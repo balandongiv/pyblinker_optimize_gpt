@@ -246,6 +246,8 @@ def _process_segment_blinks(
     channel: str,
     blink_label: str | None,
     channel_type: str | None,
+    *,
+    progress_bar: bool = True,
 ) -> List[Dict[str, int | None]]:
     """Extract blink information from one raw segment.
 
@@ -281,6 +283,7 @@ def _process_segment_blinks(
         zip(range(len(peaks)), zip(starts, ends, peaks), bounds),
         desc=f"Seg {seg_id} blinks",
         leave=False,
+        disable=not progress_bar,
     ):
         left_zero, right_zero = left_right_zero_crossing(
             signal,
@@ -311,6 +314,7 @@ def extract_blink_events_dataframe(
     channel: str = "EEG-E8",
     blink_label: str | None = "blink",
     channel_type: str | None = None,
+    progress_bar: bool = True,
 ) -> pd.DataFrame:
     """Create a blink event summary for the provided raw segments.
 
@@ -335,9 +339,18 @@ def extract_blink_events_dataframe(
     logger.info("Extracting blink events from %d segments", len(segments))
     rows: List[Dict[str, int | None]] = []
 
-    for seg_id, raw in enumerate(tqdm(segments, desc="Processing segments")):
+    for seg_id, raw in enumerate(
+        tqdm(segments, desc="Processing segments", disable=not progress_bar)
+    ):
         rows.extend(
-            _process_segment_blinks(seg_id, raw, channel, blink_label, channel_type)
+            _process_segment_blinks(
+                seg_id,
+                raw,
+                channel,
+                blink_label,
+                channel_type,
+                progress_bar=progress_bar,
+            )
         )
 
     df = pd.DataFrame(rows)

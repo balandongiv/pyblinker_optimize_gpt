@@ -31,6 +31,7 @@ def slice_raw_into_epochs(
     *,
     epoch_len: float = EPOCH_LEN,
     blink_label: Optional[str] = BLINK_LABEL,
+    progress_bar: bool = True,
 ) -> Tuple[List[mne.io.BaseRaw], pd.DataFrame, List[Tuple[int, int]], List[Tuple[float, float]]]:
     """Slice a raw recording into epochs and count blink annotations.
 
@@ -72,7 +73,9 @@ def slice_raw_into_epochs(
     segments: List[mne.io.BaseRaw] = []
     times: List[Tuple[float, float]] = []
 
-    for i in tqdm(range(n_epochs), desc="Cropping epochs", unit="epoch"):
+    for i in tqdm(
+        range(n_epochs), desc="Cropping epochs", unit="epoch", disable=not progress_bar
+    ):
         start = i * epoch_len
         stop = min(start + epoch_len, total_time)
         times.append((start, stop))
@@ -105,6 +108,7 @@ def save_epoch_raws(
     out_dir: Path,
     *,
     overwrite: bool = False,
+    verbose: bool = False,
 ) -> None:
     """Save cropped raw segments to disk.
 
@@ -126,12 +130,14 @@ def save_epoch_raws(
         if fname.exists() and not overwrite:
             logger.debug("Skipping existing %s", fname)
             continue
-        segment.save(fname, overwrite=overwrite)
+        segment.save(fname, overwrite=overwrite, verbose=verbose)
 
 
 def generate_epoch_report(
     segments: Sequence[mne.io.BaseRaw],
     times: Sequence[Tuple[float, float]],
+    *,
+    verbose: bool = False,
 ) -> mne.Report:
     """Create a simple report visualizing each segment.
 
@@ -155,6 +161,7 @@ def generate_epoch_report(
             scalings="auto",
             title=f"Epoch {idx} ({start:.2f}-{stop:.2f}s)",
             show=False,
+            verbose=verbose,
         )
         report.add_figure(fig, title=f"Epoch {idx}", section="epochs")
         plt.close(fig)
@@ -169,6 +176,7 @@ def slice_into_mini_raws(
     save: bool = True,
     overwrite: bool = False,
     report: bool = False,
+    progress_bar: bool = True,
 ) -> Tuple[List[mne.io.BaseRaw], pd.DataFrame, List[Tuple[int, int]], Optional[mne.Report]]:
     """Slice a raw recording into epochs with optional saving and reporting.
 
@@ -205,13 +213,13 @@ def slice_into_mini_raws(
     """
     logger.info("Entering slice_into_mini_raws")
     segments, df, boundary_pairs, times = slice_raw_into_epochs(
-        raw, epoch_len=epoch_len, blink_label=blink_label
+        raw, epoch_len=epoch_len, blink_label=blink_label, progress_bar=progress_bar
     )
     rep: Optional[mne.Report] = None
     if save:
-        save_epoch_raws(segments, times, out_dir, overwrite=overwrite)
+        save_epoch_raws(segments, times, out_dir, overwrite=overwrite, verbose=False)
         if report:
-            rep = generate_epoch_report(segments, times)
+            rep = generate_epoch_report(segments, times, verbose=False)
             rep.save(out_dir / "epoch_report.html", overwrite=overwrite, open_browser=False)
     logger.info("Exiting slice_into_mini_raws")
     return segments, df, boundary_pairs, rep

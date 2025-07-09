@@ -53,6 +53,7 @@ class TestRawBlinkCount(unittest.TestCase):
         self.segments, self.refined = prepare_refined_segments(
             self.raw_path,
             "EOG-EEG-eog_vert_left",
+            progress_bar=False,
         )
 
         # load expected blink counts and DataFrame for comparison
@@ -108,6 +109,7 @@ class TestRawBlinkCount(unittest.TestCase):
         segments, refined = prepare_refined_segments(
             self.raw_path,
             "EOG-EEG-eog_vert_left",
+            progress_bar=False,
         )
         expected = pd.read_csv(self.expected_csv)
         checks = {0: 2, 13: 4, 49: 13}

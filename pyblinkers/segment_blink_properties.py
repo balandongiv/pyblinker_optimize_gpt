@@ -28,6 +28,7 @@ def compute_segment_blink_properties(
     *,
     channel: str = "EEG-E8",
     run_fit: bool = False,
+    progress_bar: bool = True,
 ) -> pd.DataFrame:
     """Calculate blink properties for each blink found within every segment.
 
@@ -76,7 +77,9 @@ def compute_segment_blink_properties(
     sfreq = segments[0].info["sfreq"] if segments else 0.0
     all_props = []
 
-    for seg_id, raw in enumerate(tqdm(segments, desc="Segments")):
+    for seg_id, raw in enumerate(
+        tqdm(segments, desc="Segments", disable=not progress_bar)
+    ):
         rows = blink_df[blink_df["seg_id"] == seg_id].copy()
         rows["start_blink"] = rows["start_blink"].astype(int)
         rows["end_blink"] = rows["end_blink"].astype(int)

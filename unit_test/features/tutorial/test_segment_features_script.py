@@ -35,7 +35,7 @@ class TestSegmentFeaturesScript(unittest.TestCase):
         raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments, _, _, _ = slice_raw_into_epochs(
-            raw, epoch_len=30.0, blink_label=None
+            raw, epoch_len=30.0, blink_label=None, progress_bar=False
         )
         self.sfreq = raw.info["sfreq"]
         self.channels = [
@@ -43,7 +43,7 @@ class TestSegmentFeaturesScript(unittest.TestCase):
         ]
         blink_channel = next((ch for ch in raw.ch_names if ch.startswith("EEG")), raw.ch_names[0])
         blink_df = generate_blink_dataframe(
-            self.segments, channel=blink_channel, blink_label=None
+            self.segments, channel=blink_channel, blink_label=None, progress_bar=False
         )
         self.blink_counts = blink_df.groupby("seg_id").size().to_dict()
 
