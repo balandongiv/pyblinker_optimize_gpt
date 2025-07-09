@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
 import pandas as pd
-from pyblinkers.extract_blink_properties import BlinkProperties
+from pyblinkers.blinkers.extract_blink_properties import BlinkProperties
 from unit_test.blinker_migration.debugging_tools import load_matlab_data
-from pyblinkers import default_setting
+from pyblinkers.blinkers import default_setting
 from unit_test.blinker_migration.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 import logging

@@ -75,7 +75,7 @@ import pandas as pd
 import pytest
 from pathlib import Path
 
-from pyblinkers.extract_blink_properties import BlinkProperties
+from pyblinkers.blinkers.extract_blink_properties import BlinkProperties
 from unit_test.blinker_migration.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 

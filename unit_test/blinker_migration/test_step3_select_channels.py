@@ -2,14 +2,14 @@ import unittest
 import logging
 import pandas as pd
 from pathlib import Path
-from pyblinkers.getRepresentativeChannel import (
+from pyblinkers.blinkers.getRepresentativeChannel import (
     filter_blink_amplitude_ratios,
     filter_good_blinks,
     filter_good_ratio,
     select_max_good_blinks
 )
 from unit_test.blinker_migration.debugging_tools import load_matlab_data
-from pyblinkers import default_setting
+from pyblinkers.blinkers import default_setting
 from unit_test.blinker_migration.pyblinker.utils.update_pkl_variables import RENAME_MAP
 
 # Configure logger

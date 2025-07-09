@@ -31,6 +31,11 @@ Accurate analysis of eye-blink is paramount in biosignal research, providing cru
 
 The MATLAB-based BLINKERS (Kleifges et al., 2017 algorithm offers automated ocular index extraction specifically from Electroencephalography (EEG) and Electrooculography (EOG) data.  This MATLAB package automatically identifies blink-related components in EEG/EOG, calculates indices, generates reports, and provides summaries. Despite its sophistication for EEG/EOG, BLINKERS has limitations hindering broader use.
 
+For reference, the original BLINKER algorithms have been ported into the
+``pyblinkers/blinkers`` directory of this repository. These modules retain the
+legacy MATLAB logic so that results remain comparable when migrating existing
+workflows.
+
 Firstly, BLINKERS' input is strictly limited to EEG or EOG channels, excluding valuable ocular measures like EAR derived from video eye-tracking, which are increasingly integrated into multimodal biosignal analysis.  Secodly, and critically for many researchers, BLINKERS' reliance on MATLAB creates a significant barrier to entry.  The requirement for a proprietary MATLAB license restricts access, particularly within the growing open-source and Python-centric scientific community, limiting the adoption of this otherwise valuable tool.
 
 

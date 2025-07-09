@@ -1,9 +1,9 @@
-from pyblinkers.utils._logging import logger
+from ..utils._logging import logger
 
-from pyblinkers import default_setting
-from pyblinkers.misc import create_annotation
-from pyblinkers.viz_pd import viz_complete_blink_prop
-from .pipeline_steps import (
+from . import default_setting
+from ..misc import create_annotation
+from ..viz_pd import viz_complete_blink_prop
+from ..pipeline_steps import (
     process_channel_data as core_process_channel_data,
     process_all_channels as core_process_all_channels,
     select_representative_channel as core_select_representative_channel,

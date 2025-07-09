@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from pyblinkers.utils.matlab import mad_matlab
-from pyblinkers.default_setting import SCALING_FACTOR
+from pyblinkers.blinkers.default_setting import SCALING_FACTOR
 
 
 def calculate_within_range(all_values: np.ndarray, best_median: float, best_robust_std: float) -> int:

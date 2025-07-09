@@ -3,9 +3,9 @@ import logging
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from pyblinkers import default_setting
-from pyblinkers.fit_blink import FitBlinks
-from pyblinkers.getBlinkPositions import get_blink_position
+from pyblinkers.blinkers import default_setting
+from pyblinkers.blinkers.fit_blink import FitBlinks
+from pyblinkers.blinkers.getBlinkPositions import get_blink_position
 from unit_test.blinker_migration.pyblinker.utils.update_pkl_variables import RENAME_MAP
 from unit_test.blinker_migration.debugging_tools import load_matlab_data
 

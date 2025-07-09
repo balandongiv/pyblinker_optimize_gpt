@@ -6,7 +6,7 @@ import pandas as pd
 from pathlib import Path
 
 # from unit_test.develop_blink_position import get_blink_position
-from pyblinkers.getBlinkPositions import get_blink_position
+from pyblinkers.blinkers.getBlinkPositions import get_blink_position
 from unit_test.blinker_migration.pyblinker.utils.update_pkl_variables import RENAME_MAP, rename_keys
 
 class TestGetBlinkPosition(unittest.TestCase):

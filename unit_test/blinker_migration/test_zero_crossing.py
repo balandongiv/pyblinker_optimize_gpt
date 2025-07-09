@@ -1,4 +1,4 @@
-"""Unit tests for :func:`pyblinkers.zero_crossing.left_right_zero_crossing`.
+"""Unit tests for :func:`pyblinkers.blinkers.zero_crossing.left_right_zero_crossing`.
 
 This module verifies detection of zero crossings around a blink maximum.
 Plotting is disabled by default and can be enabled by setting `SHOW_PLOTS=1` in the environment.
@@ -6,7 +6,7 @@ Plotting is disabled by default and can be enabled by setting `SHOW_PLOTS=1` in 
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from pyblinkers.zero_crossing import left_right_zero_crossing
+from pyblinkers.blinkers.zero_crossing import left_right_zero_crossing
 
 SHOW_PLOTS = os.getenv("SHOW_PLOTS", "0") == "1"
 

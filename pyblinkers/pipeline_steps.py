@@ -13,10 +13,10 @@ from tqdm import tqdm
 
 from pyblinkers.utils._logging import logger
 from pyblinkers.utils.blink_statistics import get_good_blink_mask, get_blink_statistic
-from pyblinkers.fit_blink import FitBlinks
-from pyblinkers.extract_blink_properties import BlinkProperties
-from pyblinkers.getBlinkPositions import get_blink_position
-from pyblinkers.getRepresentativeChannel import channel_selection
+from pyblinkers.blinkers.fit_blink import FitBlinks
+from pyblinkers.blinkers.extract_blink_properties import BlinkProperties
+from pyblinkers.blinkers.getBlinkPositions import get_blink_position
+from pyblinkers.blinkers.getRepresentativeChannel import channel_selection
 
 
 def process_channel_data(detector, channel: str, verbose: bool = True) -> None:
