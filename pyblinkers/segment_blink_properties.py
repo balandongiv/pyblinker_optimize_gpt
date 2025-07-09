@@ -36,7 +36,7 @@ def compute_segment_blink_properties(
     segments : Sequence[mne.io.BaseRaw]
         Iterable of Raw segments containing blink annotations.
     blink_df : pandas.DataFrame
-        DataFrame returned by :func:`pyblinkers.blink_events.generate_blink_dataframe`.
+        DataFrame returned by :func:`pyblinkers.features.blink_events.generate_blink_dataframe`.
         Expected columns include ``seg_id``, ``start_blink``, ``end_blink``,
         ``outer_start``, ``outer_end``, ``left_zero`` and optionally
         ``right_zero``.

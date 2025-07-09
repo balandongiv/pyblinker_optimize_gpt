@@ -17,7 +17,7 @@ from pathlib import Path
 import mne
 import pandas as pd
 
-from pyear.utils.epochs import slice_raw_into_epochs
+from pyblinkers.utils.epochs import slice_raw_into_epochs
 from pyblinkers.features.energy_complexity.segment_features import compute_time_domain_features
 from pyblinkers.features.frequency_domain.segment_features import compute_frequency_domain_features
 from pyblinkers.features.blink_events import generate_blink_dataframe

@@ -9,6 +9,7 @@ import mne
 from mne.io import BaseRaw
 from tqdm import tqdm
 
+from .blink_refinement_helpers import group_refined_by_epoch
 from .epochs import slice_raw_into_epochs, EPOCH_LEN
 from .refinement import refine_blinks_from_epochs
 

@@ -1,5 +1,4 @@
 """Utility functions for pyblinkers."""
-
 from .segments import slice_raw_to_segments
 from .epochs import (
     slice_raw_into_epochs,

@@ -25,7 +25,7 @@ import unittest
 import mne
 import pandas as pd
 
-from pyear.utils import prepare_refined_segments
+from pyblinkers.utils import prepare_refined_segments
 from pyblinkers.features.blink_events.event_features.blink_count import blink_count_epoch
 
 logger = logging.getLogger(__name__)

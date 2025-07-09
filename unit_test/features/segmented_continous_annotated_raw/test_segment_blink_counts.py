@@ -15,9 +15,9 @@ import mne
 import pandas as pd
 import numpy as np
 
-from pyear.utils.epochs import slice_raw_into_epochs
+from pyblinkers.utils.epochs import slice_raw_into_epochs
 from pyblinkers.features.blink_events import generate_blink_dataframe
-from pyear.pyblinkers.segment_blink_properties import compute_segment_blink_properties
+from pyblinkers.segment_blink_properties import compute_segment_blink_properties
 
 logger = logging.getLogger(__name__)
 

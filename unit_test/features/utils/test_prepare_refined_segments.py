@@ -5,7 +5,7 @@ import unittest
 
 import pandas as pd
 
-from pyear.utils import prepare_refined_segments
+from pyblinkers.utils import prepare_refined_segments
 
 logger = logging.getLogger(__name__)
 

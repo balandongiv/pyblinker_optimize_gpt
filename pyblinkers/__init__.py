@@ -1,14 +1,11 @@
-"""Primary package initialization for pyblinkers."""
+"""Helper classes and functions for blink analysis."""
 
-from .fit_blink import FitBlinks
 from .extract_blink_properties import BlinkProperties
-try:
-    from .pipeline import extract_features
-except Exception:  # pragma: no cover - optional dependency
-    extract_features = None
+from .fit_blink import FitBlinks
+from .segment_blink_properties import compute_segment_blink_properties
 
 __all__ = [
-    "FitBlinks",
     "BlinkProperties",
-    "extract_features",
+    "FitBlinks",
+    "compute_segment_blink_properties",
 ]

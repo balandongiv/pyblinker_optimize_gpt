@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import mne
 import numpy as np
 
-from pyear.utils.refinement import refine_ear_extrema_and_threshold_stub
+from pyblinkers.utils.refinement import refine_ear_extrema_and_threshold_stub
 
 
 def _generate_signal_with_blinks(sfreq: float, epoch_len: float, n_epochs: int) -> Tuple[np.ndarray, List[Dict]]:

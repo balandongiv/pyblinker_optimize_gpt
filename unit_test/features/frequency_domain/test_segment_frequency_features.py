@@ -7,7 +7,7 @@ import mne
 import numpy as np
 import pandas as pd
 
-from pyear.utils.epochs import slice_raw_into_epochs
+from pyblinkers.utils.epochs import slice_raw_into_epochs
 from pyblinkers.features.frequency_domain.segment_features import compute_frequency_domain_features
 
 logger = logging.getLogger(__name__)

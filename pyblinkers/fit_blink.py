@@ -7,9 +7,7 @@ from pyblinkers.zero_crossing import (
     left_right_zero_crossing,
 )
 from pyblinkers.base_left_right import create_left_right_base
-from pyblinkers.matlab_fork.line_intersection_matlab import (
-    lines_intersection_matlabx,
-)
+from pyblinkers.matlab_fork.line_intersection_matlab import lines_intersection_matlabx
 
 
 class FitBlinks:
@@ -47,8 +45,8 @@ class FitBlinks:
             "right_slope",
             "aver_left_velocity",
             "aver_right_velocity",
-            "rightR2",
-            "leftR2",
+            "right_r2",
+            "left_r2",
             "x_intersect",
             "y_intersect",
             "left_x_intercept",

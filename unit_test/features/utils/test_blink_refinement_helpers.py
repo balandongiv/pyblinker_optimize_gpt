@@ -1,5 +1,5 @@
 import unittest
-from pyear.utils.blink_refinement_helpers import group_refined_by_epoch
+from pyblinkers.utils.blink_refinement_helpers import group_refined_by_epoch
 
 class TestGroupRefinedByEpoch(unittest.TestCase):
     def test_grouping(self):

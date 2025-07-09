@@ -7,7 +7,7 @@ import mne
 
 from pyblinkers.features.frequency_domain.features import compute_frequency_domain_features
 from pyblinkers.features.frequency_domain.aggregate import aggregate_frequency_domain_features
-from pyear.utils import slice_raw_to_segments
+from pyblinkers.utils import slice_raw_to_segments
 from unit_test.features.fixtures.mock_ear_generation import _generate_refined_ear
 
 logger = logging.getLogger(__name__)
