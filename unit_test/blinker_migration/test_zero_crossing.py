@@ -1,54 +1,8 @@
+"""Unit tests for :func:`pyblinkers.zero_crossing.left_right_zero_crossing`.
+
+This module verifies detection of zero crossings around a blink maximum.
+Plotting is disabled by default and can be enabled by setting `SHOW_PLOTS=1` in the environment.
 """
-test_zero_crossing.py
-
-Unit f test and visualization utilities for the left_right_zero_crossing function.
-
-This script provides:
-- A test case using mock signal data to validate the behavior of the
-  left_right_zero_crossing function under typical conditions.
-- Assertions to ensure the function returns expected crossing points.
-- A visualization tool using matplotlib to aid in understanding
-  how the left and right zero crossings are detected around a given max_blink.
-
-Key Components:
----------------
-1. test_left_right_zero_crossing:
-   - Creates a mock candidate_signal with a known negative-to-positive
-     transition pattern.
-   - Tests the left_right_zero_crossing function to ensure it identifies the
-     correct last negative index before max_blink (left_zero), and the first
-     negative index after max_blink (right_zero).
-   - Includes sanity checks and validations via assertions.
-   - Optionally visualizes the result using the plot_zero_crossings function.
-
-2. plot_zero_crossings:
-   - Takes the signal, frame indices, and highlights the zero crossing
-     locations using vertical lines on a matplotlib plot.
-
-Usage:
-------
-Run directly as a script to execute the test and view the plot:
-    python test_zero_crossing.py
-
-Or include as part of an automated test suite using pytest.
-
-Dependencies:
--------------
-- numpy
-- matplotlib
-- left_right_zero_crossing function (import from your main project module)
-
-Author: Your Name
-Date: 2025-04-17
-"""
-
-"""
-test_zero_crossing.py
-
-Unit tests and visualization for the left_right_zero_crossing function.
-This script tests detection of zero crossings and provides plotting to debug visually.
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 import os
