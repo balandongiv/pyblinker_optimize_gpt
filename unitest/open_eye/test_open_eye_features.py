@@ -7,7 +7,7 @@ import unittest
 import math
 import logging
 
-from pyear.open_eye.features import (
+from pyblinkers.features.open_eye.features import (
     baseline_mean_epoch,
     baseline_drift_epoch,
     baseline_std_epoch,

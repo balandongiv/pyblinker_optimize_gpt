@@ -8,18 +8,18 @@ from typing import Iterable, Dict, Sequence, Optional
 import pandas as pd
 import mne
 
-from .blink_events.event_features import (
+from .features.blink_events.event_features import (
     aggregate_blink_event_features,
     aggregate_blink_interval_distribution,
 )
-from .morphology import aggregate_morphology_features
-from .kinematics import aggregate_kinematic_features
-from .energy_complexity import aggregate_energy_complexity_features
-from .open_eye import aggregate_open_eye_features
-from .ear_metrics import aggregate_ear_features
-from .waveform_features import aggregate_waveform_features
-from .frequency_domain import aggregate_frequency_domain_features
-from .blink_events.classification import aggregate_classification_features
+from .features.morphology import aggregate_morphology_features
+from .features.kinematics import aggregate_kinematic_features
+from .features.energy_complexity import aggregate_energy_complexity_features
+from .features.open_eye import aggregate_open_eye_features
+from .features.ear_metrics import aggregate_ear_features
+from .features.waveform_features import aggregate_waveform_features
+from .features.frequency_domain import aggregate_frequency_domain_features
+from .features.blink_events.classification import aggregate_classification_features
 
 # Configure root logger
 logging.basicConfig(level=logging.INFO)

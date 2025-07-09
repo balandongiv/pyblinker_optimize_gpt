@@ -5,8 +5,8 @@ import logging
 from pathlib import Path
 import mne
 
-from pyear.frequency_domain.features import compute_frequency_domain_features
-from pyear.frequency_domain.aggregate import aggregate_frequency_domain_features
+from pyblinkers.features.frequency_domain.features import compute_frequency_domain_features
+from pyblinkers.features.frequency_domain.aggregate import aggregate_frequency_domain_features
 from pyear.utils import slice_raw_to_segments
 from unitest.fixtures.mock_ear_generation import _generate_refined_ear
 
