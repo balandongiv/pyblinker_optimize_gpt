@@ -1,4 +1,4 @@
-"""Run all unit tests for migration and feature suites."""
+"""Run only migration-related unit tests."""
 from __future__ import annotations
 
 import multiprocessing
@@ -7,13 +7,14 @@ from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parent
+MIGRATION_DIR = ROOT / "blinker_migration"
 sys.path.insert(0, str(ROOT.parent))
 
 def main() -> None:
-    """Discover and run all tests under :mod:`unit_test`."""
+    """Discover and run tests in :mod:`unit_test.blinker_migration`."""
     multiprocessing.set_start_method("spawn", force=True)
     loader = unittest.TestLoader()
-    suite = loader.discover(str(ROOT), pattern="test_*.py")
+    suite = loader.discover(str(MIGRATION_DIR), pattern="test_*.py")
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
 
