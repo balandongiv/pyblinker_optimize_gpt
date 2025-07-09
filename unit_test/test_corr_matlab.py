@@ -1,5 +1,5 @@
 import numpy as np
-from pyear.matlab_fork.matlab_forking import corrMatlab as corr_matlab
+from pyblinkers.matlab_fork.matlab_forking import corrMatlab as corr_matlab
 def test_corr_matlab():
     x = [15.399296760559082,
          26.770189285278320,
