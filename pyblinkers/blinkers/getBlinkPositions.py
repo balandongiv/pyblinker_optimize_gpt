@@ -1,11 +1,11 @@
-from pyblinkers.utils._logging import logger
+from ..utils._logging import logger
 
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyblinkers.default_setting import SCALING_FACTOR
-from pyblinkers.utils.matlab import mad_matlab
+from .default_setting import SCALING_FACTOR
+from ..utils.matlab import mad_matlab
 
 
 def get_blink_position(

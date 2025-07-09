@@ -3,14 +3,14 @@ import pandas as pd
 import numpy as np
 import logging
 from pathlib import Path
-from pyblinkers import default_setting
-from pyblinkers.extract_blink_properties import BlinkProperties
+from pyblinkers.blinkers import default_setting
+from pyblinkers.blinkers.extract_blink_properties import BlinkProperties
 from pyblinkers.utils.blink_statistics import (
     get_good_blink_mask,
     get_blink_statistic,
 )
-from pyblinkers.fit_blink import FitBlinks
-from pyblinkers.getBlinkPositions import get_blink_position
+from pyblinkers.blinkers.fit_blink import FitBlinks
+from pyblinkers.blinkers.getBlinkPositions import get_blink_position
 from unit_test.blinker_migration.debugging_tools import load_matlab_data
 from unit_test.blinker_migration.pyblinker.utils.update_pkl_variables import RENAME_MAP
 

@@ -4,7 +4,7 @@ import os
 
 import matplotlib
 import mne
-from pyblinkers.pyblinker import BlinkDetector
+from pyblinkers.blinkers.pyblinker import BlinkDetector
 logging.basicConfig(level=logging.INFO)
 
 matplotlib.use('TkAgg')

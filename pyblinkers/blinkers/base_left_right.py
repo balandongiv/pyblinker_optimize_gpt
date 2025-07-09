@@ -1,5 +1,5 @@
 import numpy as np
-from pyblinkers.zero_crossing import (
+from .zero_crossing import (
     max_pos_vel_frame,
     get_left_base,
     get_right_base,

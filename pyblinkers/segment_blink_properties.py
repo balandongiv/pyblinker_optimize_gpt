@@ -15,8 +15,8 @@ import pandas as pd
 import mne
 from tqdm import tqdm
 
-from .fit_blink import FitBlinks
-from .extract_blink_properties import BlinkProperties
+from .blinkers.fit_blink import FitBlinks
+from .blinkers.extract_blink_properties import BlinkProperties
 
 logger = logging.getLogger(__name__)
 

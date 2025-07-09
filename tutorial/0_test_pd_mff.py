@@ -1,7 +1,7 @@
 
 import mne
 
-from pyblinkers.pyblinker import BlinkDetector
+from pyblinkers.blinkers.pyblinker import BlinkDetector
 fname =r'C:\Users\balan\OneDrive\Desktop\dataset\drowsy_driving_raja\S6\P.mff'
 
 raw = mne.io.read_raw_egi(fname, preload=True)

@@ -3,7 +3,7 @@ import unittest
 import pandas as pd
 from pathlib import Path
 
-from pyblinkers.getBlinkPositions import get_blink_position
+from pyblinkers.blinkers.getBlinkPositions import get_blink_position
 from unit_test.blinker_migration.debugging_tools import load_matlab_data
 
 
