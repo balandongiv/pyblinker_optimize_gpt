@@ -1,5 +1,5 @@
 import unittest
-from pyear.blink_events.event_features import aggregate_blink_event_features
+from pyblinkers.features.blink_events.event_features import aggregate_blink_event_features
 from unitest.fixtures.mock_ear_generation import _generate_refined_ear
 
 

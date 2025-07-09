@@ -4,7 +4,7 @@ import unittest
 import math
 import logging
 
-from pyear.morphology.morphology_features import compute_morphology_features
+from pyblinkers.features.morphology.morphology_features import compute_morphology_features
 from unitest.fixtures.mock_ear_generation import _generate_refined_ear
 
 logger = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ Specifically, it checks the computation for the first and second epochs out of a
 import unittest
 import logging
 
-from pyear.blink_events.event_features.blink_rate import blink_rate_epoch
+from pyblinkers.features.blink_events.event_features.blink_rate import blink_rate_epoch
 from unitest.fixtures.mock_ear_generation import _generate_refined_ear
 
 logger = logging.getLogger(__name__)
