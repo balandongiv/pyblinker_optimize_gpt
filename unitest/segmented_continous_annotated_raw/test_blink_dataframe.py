@@ -1,6 +1,6 @@
 """Validate blink-event DataFrame generation.
 
-This module exercises :func:`pyear.blink_events.generate_blink_dataframe` on the
+This module exercises :func:`pyblinkers.features.blink_events.generate_blink_dataframe` on the
 example ``ear_eog.fif`` recording using the EEG-E8 channel.  The resulting
 DataFrame is compared against ``ear_eog_blink_count_epoch.csv`` to ensure the
 blink counts per segment and overall match the reference data.  The docstrings
@@ -15,7 +15,7 @@ import unittest
 import mne
 import pandas as pd
 
-from pyear.blink_events import generate_blink_dataframe
+from pyblinkers.features.blink_events import generate_blink_dataframe
 from pyear.utils.epochs import slice_raw_into_epochs
 
 logger = logging.getLogger(__name__)

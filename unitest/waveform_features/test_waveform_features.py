@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 import mne
 
-from pyear.waveform_features import (
+from pyblinkers.features.waveform_features import (
     duration_base,
     duration_zero,
     neg_amp_vel_ratio_zero,

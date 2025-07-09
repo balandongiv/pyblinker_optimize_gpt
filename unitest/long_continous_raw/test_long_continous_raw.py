@@ -16,7 +16,7 @@ import mne
 import numpy as np
 import pandas as pd
 
-from pyear.blink_events import generate_blink_dataframe
+from pyblinkers.features.blink_events import generate_blink_dataframe
 from pyear.pyblinkers.segment_blink_properties import (
     compute_segment_blink_properties,
 )
@@ -41,7 +41,7 @@ class TestLongContinuousRaw(unittest.TestCase):
 
         The method reads ``ear_eog.fif`` from the ``unitest`` directory and
         stores it as a one-element list in ``self.segments``.  Blink events are
-        extracted by :func:`pyear.blink_events.generate_blink_dataframe` and the
+        extracted by :func:`pyblinkers.features.blink_events.generate_blink_dataframe` and the
         expected total blink count is loaded from
         ``ear_eog_blink_count_epoch.csv`` which represents the epoch-based
         workflow.  A parameter dictionary for

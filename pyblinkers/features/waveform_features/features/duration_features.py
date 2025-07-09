@@ -7,7 +7,7 @@ derived from the eye aspect ratio (EAR) trace.
 
 Example
 -------
->>> from pyear.waveform_features.features.duration_features import duration_base
+>>> from pyblinkers.features.waveform_features.features.duration_features import duration_base
 >>> feat = duration_base(blink, sfreq=100.0)
 
 .. _BLINKER: https://github.com/VisLab/EEG-Blinks

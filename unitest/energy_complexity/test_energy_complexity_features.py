@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 import mne
 
-from pyear.energy_complexity.energy_complexity_features import compute_energy_complexity_features
+from pyblinkers.features.energy_complexity.energy_complexity_features import compute_energy_complexity_features
 from unitest.fixtures.mock_ear_generation import _generate_refined_ear
 
 logger = logging.getLogger(__name__)

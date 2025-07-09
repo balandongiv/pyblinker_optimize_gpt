@@ -19,7 +19,7 @@ def compute_frequency_domain_features(
     """Compute spectral and wavelet metrics for one segment.
 
     This is a thin wrapper around
-    :func:`pyear.frequency_domain.features.compute_frequency_domain_features`
+    :func:`pyblinkers.features.frequency_domain.features.compute_frequency_domain_features`
     so that segment-level processing mirrors the epoch-based API.
 
     Parameters

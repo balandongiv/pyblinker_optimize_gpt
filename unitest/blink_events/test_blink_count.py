@@ -7,7 +7,7 @@ Validates blink counting logic across multiple epochs.
 import unittest
 import logging
 
-from pyear.blink_events.event_features.blink_count import blink_count_epoch
+from pyblinkers.features.blink_events.event_features.blink_count import blink_count_epoch
 from unitest.fixtures.mock_ear_generation import _generate_refined_ear
 
 logger = logging.getLogger(__name__)
