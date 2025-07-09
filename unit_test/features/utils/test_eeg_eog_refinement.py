@@ -1,13 +1,19 @@
 """Tests for blink refinement on EEG and EOG channels.
-Here we want to improve the start, peak, and end frames of detected blinks (eeg and eog) based on the signal in the epochs."""
+
+The plotting of refined blinks is disabled by default to avoid GUI pop ups
+during automated test runs. Set ``SHOW_PLOTS=1`` in the environment to enable
+plotting."""
 import logging
 from pathlib import Path
+import os
 import unittest
 
 import mne
 
 from pyear.utils import prepare_refined_segments
 from pyear.utils.refinement import refine_blinks_from_epochs, plot_refined_blinks
+
+SHOW_PLOTS = os.getenv("SHOW_PLOTS", "0") == "1"
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +49,7 @@ class TestEEGEOGRefinement(unittest.TestCase):
             self.segments[1].info["sfreq"],
             30.0,
             epoch_indices=[0],
-            show=True,
+            show=SHOW_PLOTS,
         )
         self.assertTrue(len(figs) >= 1)
 
