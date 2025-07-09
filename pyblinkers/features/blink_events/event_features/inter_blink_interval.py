@@ -117,7 +117,7 @@ def compute_ibi_features(blinks: List[Dict[str, int]], sfreq: float) -> Dict[str
     ibi_cv = float(ibi_std / ibi_mean) if ibi_mean != 0 else float("nan")
     diff = np.diff(ibis)
     rmssd = float(np.sqrt(np.mean(diff**2))) if len(diff) > 0 else float("nan")
-    if len(ibis) >= 2:
+    if len(ibis) > 2:
         x1 = ibis[:-1]
         x2 = ibis[1:]
         sd1 = float(np.sqrt(np.var(x2 - x1, ddof=1) / 2.0))
