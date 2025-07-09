@@ -16,7 +16,7 @@ class TestPrepareRefinedSegments(unittest.TestCase):
     """Validate the end-to-end preprocessing helper."""
 
     def setUp(self) -> None:
-        self.raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        self.raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         self.expected_csv = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_blink_count_epoch.csv"
 
     def test_segments_count_no_epoch_signal(self) -> None:

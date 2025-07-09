@@ -2,7 +2,7 @@
 
 Synthetic blink waveforms are produced with ``mock_ear_generation`` for
 ``mne.Epochs``-based tests.  Additional tests rely on raw segments taken from
-``ear_eog.fif`` so that real data paths are covered as well.
+``ear_eog_raw.fif`` so that real data paths are covered as well.
 """
 import unittest
 import math
@@ -50,7 +50,7 @@ class TestKinematicRealRaw(unittest.TestCase):
     """Validate kinematic metrics on a real raw segment."""
 
     def setUp(self) -> None:
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=True, verbose=False)
         self.sfreq = raw.info["sfreq"]
         start, stop = 0.0, 30.0

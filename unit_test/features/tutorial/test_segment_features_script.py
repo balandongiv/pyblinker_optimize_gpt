@@ -2,7 +2,7 @@
 
 This test illustrates how to compute both time-domain complexity and
 frequency-domain metrics for 30-second raw segments. It processes the
-bundled ``ear_eog.fif`` file and extracts features for all channels whose
+bundled ``ear_eog_raw.fif`` file and extracts features for all channels whose
 names start with ``EAR``, ``EOG`` or ``EEG``. The number of blinks in each
 segment is obtained via ``generate_blink_dataframe`` and included in the
 result. Metrics from all segments are aggregated into a ``pandas.DataFrame``
@@ -32,7 +32,7 @@ class TestSegmentFeaturesScript(unittest.TestCase):
     """Validate combined segment-level feature extraction."""
 
     def setUp(self) -> None:
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments, _, _, _ = slice_raw_into_epochs(
             raw, epoch_len=30.0, blink_label=None

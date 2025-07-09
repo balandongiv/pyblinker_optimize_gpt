@@ -1,7 +1,7 @@
 """Energy and complexity feature extraction tests.
 
 This module contains tests for both synthetic :class:`mne.Epochs` data and
-real ``mne.io.Raw`` segments loaded from ``ear_eog.fif``.  The distinction is
+real ``mne.io.Raw`` segments loaded from ``ear_eog_raw.fif``.  The distinction is
 important for debugging because the feature functions operate on blink
 annotations extracted either from fabricated epochs or from cropped raw
 segments.
@@ -51,7 +51,7 @@ class TestEnergyComplexityRealRaw(unittest.TestCase):
     """Validate energy metrics using a real 30s raw segment."""
 
     def setUp(self) -> None:
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=True, verbose=False)
         self.sfreq = raw.info["sfreq"]
         start, stop = 0.0, 30.0

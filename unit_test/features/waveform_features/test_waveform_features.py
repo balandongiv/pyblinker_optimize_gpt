@@ -1,7 +1,7 @@
 """Waveform feature extraction tests.
 
 Synthetic blinks are generated with ``mock_ear_generation`` for epoch-based
-tests.  Real ``mne.io.Raw`` segments from ``ear_eog.fif`` are also used to
+tests.  Real ``mne.io.Raw`` segments from ``ear_eog_raw.fif`` are also used to
 validate the aggregation functions on actual data.
 """
 import unittest
@@ -56,7 +56,7 @@ class TestWaveformRealRaw(unittest.TestCase):
     """Validate waveform aggregation on a real raw segment."""
 
     def setUp(self) -> None:
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=True, verbose=False)
         self.sfreq = raw.info["sfreq"]
         start, stop = 0.0, 30.0

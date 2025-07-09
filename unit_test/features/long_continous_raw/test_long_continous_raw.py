@@ -1,7 +1,7 @@
 """Validate blink extraction on a full ``mne.Raw`` recording.
 
 This module contains integration tests that reproduce the legacy workflow in
-which ``ear_eog.fif`` is processed without slicing the recording into 30 second
+which ``ear_eog_raw.fif`` is processed without slicing the recording into 30 second
 epochs.  Blink events are detected for the entire file and per-blink properties
 are computed directly on the continuous data.  The expected blink count is
 loaded from a CSV produced by the epoch-based pipeline for comparison.
@@ -30,7 +30,7 @@ class TestLongContinuousRaw(unittest.TestCase):
     """Integration tests for a long continuous raw signal.
 
     The legacy MATLAB version of the project processes the entire
-    ``ear_eog.fif`` file as a single segment.  This test suite reproduces that
+    ``ear_eog_raw.fif`` file as a single segment.  This test suite reproduces that
     workflow to ensure compatibility with the Python implementation.  Blink
     events are detected over the continuous recording and the total blink count
     as well as extracted blink properties are validated against expectations.
@@ -39,7 +39,7 @@ class TestLongContinuousRaw(unittest.TestCase):
     def setUp(self) -> None:
         """Prepare a single-segment raw object and blink metadata.
 
-        The method reads ``ear_eog.fif`` from the ``unit_test.features`` directory and
+        The method reads ``ear_eog_raw.fif`` from the ``unit_test.features`` directory and
         stores it as a one-element list in ``self.segments``.  Blink events are
         extracted by :func:`pyblinkers.features.blink_events.generate_blink_dataframe` and the
         expected total blink count is loaded from
@@ -48,7 +48,7 @@ class TestLongContinuousRaw(unittest.TestCase):
         :func:`pyblinkers.segment_blink_properties.compute_segment_blink_properties`
         is also constructed here.
         """
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         self.raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments = [self.raw]
         self.blink_df = generate_blink_dataframe(
