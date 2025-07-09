@@ -10,8 +10,11 @@ import unittest
 
 import mne
 
-from pyear.utils import prepare_refined_segments
-from pyear.utils.refinement import refine_blinks_from_epochs, plot_refined_blinks
+from pyblinkers.utils import prepare_refined_segments
+from pyblinkers.utils.refinement import (
+    refine_blinks_from_epochs,
+    plot_refined_blinks,
+)
 
 SHOW_PLOTS = os.getenv("SHOW_PLOTS", "0") == "1"
 

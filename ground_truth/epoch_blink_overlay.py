@@ -6,7 +6,7 @@ from typing import Tuple, Optional
 import mne
 import pandas as pd
 
-from pyear.utils.epochs import slice_raw_into_epochs
+from pyblinkers.utils.epochs import slice_raw_into_epochs
 
 
 def summarize_blink_counts(

@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from pyear.utils.refinement import refine_local_maximum_stub
+from pyblinkers.utils.refinement import refine_local_maximum_stub
 
 
 class TestRefineLocalMaximumStub(unittest.TestCase):

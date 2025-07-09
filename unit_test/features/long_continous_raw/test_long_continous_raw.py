@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 from pyblinkers.features.blink_events import generate_blink_dataframe
-from pyear.pyblinkers.segment_blink_properties import (
+from pyblinkers.segment_blink_properties import (
     compute_segment_blink_properties,
 )
 
@@ -45,7 +45,7 @@ class TestLongContinuousRaw(unittest.TestCase):
         expected total blink count is loaded from
         ``ear_eog_blink_count_epoch.csv`` which represents the epoch-based
         workflow.  A parameter dictionary for
-        :func:`pyear.pyblinkers.segment_blink_properties.compute_segment_blink_properties`
+        :func:`pyblinkers.segment_blink_properties.compute_segment_blink_properties`
         is also constructed here.
         """
         raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"

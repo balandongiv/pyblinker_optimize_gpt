@@ -75,7 +75,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyear.pyblinkers.extract_blink_properties import BlinkProperties
+from pyblinkers.extract_blink_properties import BlinkProperties
 
 
 @pytest.fixture(scope="module")

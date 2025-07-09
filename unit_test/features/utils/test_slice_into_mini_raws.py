@@ -14,8 +14,8 @@ import numpy as np
 
 from unit_test.features.fixtures.mock_raw_generation import generate_mock_raw
 
-from pyear.utils import prepare_refined_segments
-from pyear.utils.epochs import slice_into_mini_raws
+from pyblinkers.utils import prepare_refined_segments
+from pyblinkers.utils.epochs import slice_into_mini_raws
 
 logger = logging.getLogger(__name__)
 

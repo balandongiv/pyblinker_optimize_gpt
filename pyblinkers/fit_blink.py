@@ -7,9 +7,7 @@ from pyblinkers.zero_crossing import (
     left_right_zero_crossing,
 )
 from pyblinkers.base_left_right import create_left_right_base
-from pyblinkers.matlab_fork.line_intersection_matlab import (
-    lines_intersection_matlabx,
-)
+from pyblinkers.matlab_fork.line_intersection_matlab import lines_intersection_matlabx
 
 
 class FitBlinks:

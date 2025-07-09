@@ -4,7 +4,7 @@ from pathlib import Path
 
 import mne
 
-from pyear.utils.epochs import slice_raw_into_epochs, EPOCH_LEN
+from pyblinkers.utils.epochs import slice_raw_into_epochs, EPOCH_LEN
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
