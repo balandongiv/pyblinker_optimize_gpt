@@ -169,11 +169,31 @@ def get_left_base(blink_velocity, left_outer, max_pos_vel_frame):
 
 
 def get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_frame):
-    """
-    Determine the right base index from max_neg_vel_frame to right_outer
-    by searching for where blink_velocity crosses >= 0.
+    """Compute the right base frame index.
+
+    Parameters
+    ----------
+    candidate_signal : numpy.ndarray
+        The filtered blink signal from which baseline metrics are derived.
+    blink_velocity : numpy.ndarray
+        First derivative of ``candidate_signal`` used to locate zero crossings.
+    right_outer : int
+        Right boundary frame of the blink segment.
+    max_neg_vel_frame : float | int | numpy.nan
+        Frame index corresponding to the most negative blink velocity.
+
+    Returns
+    -------
+    int | float
+        The frame index of the right base, or ``numpy.nan`` when
+        ``max_neg_vel_frame`` is ``NaN``.
     """
     r_outer = int(right_outer)
+    # If the maximum negative velocity frame is undefined (NaN),
+    # the right base cannot be determined, so return NaN to
+    # indicate that the segment should be ignored by downstream logic.
+    if np.isnan(max_neg_vel_frame):
+        return np.nan
     m_neg_vel = int(max_neg_vel_frame)
 
     # Ensure boundaries are valid
