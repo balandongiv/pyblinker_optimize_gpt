@@ -1,7 +1,7 @@
 """Validate blink-event DataFrame generation.
 
 This module exercises :func:`pyblinkers.features.blink_events.generate_blink_dataframe` on the
-example ``ear_eog.fif`` recording using the EEG-E8 channel.  The resulting
+example ``ear_eog_raw.fif`` recording using the EEG-E8 channel.  The resulting
 DataFrame is compared against ``ear_eog_blink_count_epoch.csv`` to ensure the
 blink counts per segment and overall match the reference data.  The docstrings
 provide explicit expectations so users know precisely what each assertion
@@ -46,7 +46,7 @@ class TestBlinkDataFrame(unittest.TestCase):
         counts for each epoch are loaded from the accompanying CSV file for
         comparison in :meth:`test_row_counts`.
         """
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments, _, _, _ = slice_raw_into_epochs(
             raw, epoch_len=30.0, blink_label=None

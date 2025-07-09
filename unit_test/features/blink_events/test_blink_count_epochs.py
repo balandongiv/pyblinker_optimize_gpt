@@ -1,4 +1,4 @@
-"""Blink count per epoch using the real ``ear_eog.fif`` dataset.
+"""Blink count per epoch using the real ``ear_eog_raw.fif`` dataset.
 
 This test validates ``blink_count_epochs`` which operates on an
 :meth:`mne.Epochs` object. Blink annotations are loaded from the sample
@@ -23,7 +23,7 @@ class TestBlinkCountEpochs(unittest.TestCase):
     """Verify epoch blink counts match the reference implementation."""
 
     def setUp(self) -> None:
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         events = mne.make_fixed_length_events(raw, id=1, duration=30.0)
         self.epochs = mne.Epochs(

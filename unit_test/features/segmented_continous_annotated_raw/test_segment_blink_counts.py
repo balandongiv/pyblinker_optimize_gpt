@@ -27,7 +27,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 class TestSegmentBlinkCounts(unittest.TestCase):
     """Ensure blink counts match reference values after property extraction.
 
-    The test suite uses ``ear_eog.fif`` along with the CSV file
+    The test suite uses ``ear_eog_raw.fif`` along with the CSV file
     ``ear_eog_blink_count_epoch.csv`` as ground truth.  By re-counting blinks
     after running the property extraction pipeline, we guard against regressions
     that might drop or duplicate blink events.
@@ -42,11 +42,11 @@ class TestSegmentBlinkCounts(unittest.TestCase):
 
         Notes
         -----
-        ``self.segments`` holds the 30-second slices of ``ear_eog.fif`` and
+        ``self.segments`` holds the 30-second slices of ``ear_eog_raw.fif`` and
         ``self.expected_counts`` contains the blink counts per segment from the
         accompanying CSV file.  These fixtures are reused in the actual test.
         """
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments, _, _, _ = slice_raw_into_epochs(
             raw,

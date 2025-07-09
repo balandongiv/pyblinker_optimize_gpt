@@ -79,7 +79,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 class TestSegmentBlinkProperties(unittest.TestCase):
     """Validate blink property extraction on raw segments.
 
-    The fixture uses ``ear_eog.fif`` which contains manual annotations of blink
+    The fixture uses ``ear_eog_raw.fif`` which contains manual annotations of blink
     events.  Each test slices the raw data into 30-second segments and
     cross-checks extracted blink features against these annotations.
     """
@@ -97,7 +97,7 @@ class TestSegmentBlinkProperties(unittest.TestCase):
         ``self.blink_df`` with blink onset/offset pairs.  ``self.params``
         defines the processing parameters shared across tests.
         """
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments, _, _, _ = slice_raw_into_epochs(
             raw,

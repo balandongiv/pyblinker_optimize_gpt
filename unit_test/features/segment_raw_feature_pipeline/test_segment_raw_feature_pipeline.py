@@ -36,7 +36,7 @@ class TestSegmentRawFeaturePipeline(unittest.TestCase):
         ----------
         None
         """
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments, _, _, _ = slice_raw_into_epochs(
             raw, epoch_len=30.0, blink_label=None

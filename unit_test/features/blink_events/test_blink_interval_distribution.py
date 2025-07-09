@@ -1,4 +1,4 @@
-"""Unit tests for blink interval distribution features using ``ear_eog.fif``.
+"""Unit tests for blink interval distribution features using ``ear_eog_raw.fif``.
 
 Raw data segments (``mne.io.Raw``) are cropped from the test file and used
 directly in the feature functions.
@@ -25,7 +25,7 @@ class TestBlinkIntervalDistribution(unittest.TestCase):
 
     def setUp(self) -> None:
         """Load the sample raw file and create two 30s segments."""
-        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog.fif"
+        raw_path = PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif"
         raw = mne.io.read_raw_fif(raw_path, preload=False, verbose=False)
         self.segments = []
         for i in range(2):
