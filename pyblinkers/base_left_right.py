@@ -41,6 +41,12 @@ def create_left_right_base(candidate_signal, df):
         - 'right_base' (float): The calculated right base value for the blink event,
           derived from the blink velocity and the specified outer end index.
         Rows with NaN values in any of these new columns are dropped from the DataFrame.
+
+    Raises
+    ------
+    ValueError
+        If all rows are removed after NaN filtering, indicating that there are
+        no valid blink frames to compute baselines for the current segment.
     """
 
     # Ensure df is a fresh copy to prevent SettingWithCopyWarning
@@ -81,6 +87,12 @@ def create_left_right_base(candidate_signal, df):
 
     # Drop rows with NaNs again if any were introduced
     df.dropna(inplace=True)
+
+    """If all rows were removed, there are no blink frames left to process."""
+    # Downstream calculations require at least one blink frame. Raising an
+    # exception allows the calling pipeline to skip this segment gracefully.
+    if df.empty:
+        raise ValueError("No valid blink frames after baseline computation")
 
     # Compute rightBase safely using .assign()
     df = df.assign(
