@@ -88,9 +88,9 @@ def create_left_right_base(candidate_signal, df):
     # Drop rows with NaNs again if any were introduced
     df.dropna(inplace=True)
 
-    # It's possible that after removing NaN values no blink frames remain.
-    # In that case downstream calculations would fail, so we raise an error
-    # to signal that the current segment should be skipped by the caller.
+    """If all rows were removed, there are no blink frames left to process."""
+    # Downstream calculations require at least one blink frame. Raising an
+    # exception allows the calling pipeline to skip this segment gracefully.
     if df.empty:
         raise ValueError("No valid blink frames after baseline computation")
 

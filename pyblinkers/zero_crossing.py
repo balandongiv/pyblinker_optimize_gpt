@@ -189,6 +189,8 @@ def get_right_base(candidate_signal, blink_velocity, right_outer, max_neg_vel_fr
         ``max_neg_vel_frame`` is ``NaN``.
     """
     r_outer = int(right_outer)
+
+    """Return ``NaN`` when no negative velocity peak exists."""
     # If the maximum negative velocity frame is undefined (NaN),
     # the right base cannot be determined, so return NaN to
     # indicate that the segment should be ignored by downstream logic.
