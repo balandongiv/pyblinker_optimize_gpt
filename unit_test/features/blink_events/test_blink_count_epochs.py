@@ -16,7 +16,7 @@ from ground_truth.epoch_blink_overlay import summarize_blink_counts
 logger = logging.getLogger(__name__)
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestBlinkCountEpochs(unittest.TestCase):

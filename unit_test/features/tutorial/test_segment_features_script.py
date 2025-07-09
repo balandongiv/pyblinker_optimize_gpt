@@ -25,7 +25,7 @@ from pyblinkers.features.blink_events import generate_blink_dataframe
 logger = logging.getLogger(__name__)
 
 # Project root is two levels up from this file
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestSegmentFeaturesScript(unittest.TestCase):

@@ -23,7 +23,7 @@ from pyear.pyblinkers.segment_blink_properties import compute_segment_blink_prop
 
 logger = logging.getLogger(__name__)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestSegmentRawFeaturePipeline(unittest.TestCase):

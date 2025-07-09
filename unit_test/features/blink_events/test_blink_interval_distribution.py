@@ -17,7 +17,7 @@ from pyblinkers.features.blink_events.event_features.blink_interval_distribution
 logger = logging.getLogger(__name__)
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestBlinkIntervalDistribution(unittest.TestCase):

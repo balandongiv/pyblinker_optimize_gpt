@@ -18,7 +18,7 @@ from unit_test.features.fixtures.mock_ear_generation import _generate_refined_ea
 logger = logging.getLogger(__name__)
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestEnergyComplexityFeatures(unittest.TestCase):

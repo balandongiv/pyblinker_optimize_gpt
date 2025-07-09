@@ -12,7 +12,7 @@ from pyblinkers.features.energy_complexity.segment_features import compute_time_
 
 logger = logging.getLogger(__name__)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestSegmentEnergyComplexity(unittest.TestCase):

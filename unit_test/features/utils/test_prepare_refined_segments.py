@@ -9,7 +9,7 @@ from pyear.utils import prepare_refined_segments
 
 logger = logging.getLogger(__name__)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestPrepareRefinedSegments(unittest.TestCase):

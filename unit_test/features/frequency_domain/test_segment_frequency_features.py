@@ -12,7 +12,7 @@ from pyblinkers.features.frequency_domain.segment_features import compute_freque
 
 logger = logging.getLogger(__name__)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestSegmentFrequencyFeatures(unittest.TestCase):

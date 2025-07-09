@@ -11,7 +11,7 @@ from pyear.utils.refinement import refine_blinks_from_epochs, plot_refined_blink
 
 logger = logging.getLogger(__name__)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestEEGEOGRefinement(unittest.TestCase):
