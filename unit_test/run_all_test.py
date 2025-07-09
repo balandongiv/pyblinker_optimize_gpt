@@ -1,8 +1,9 @@
-"""Convenience script to run all unit tests.
+"""Execute every unit test in the repository.
 
-This file discovers and executes every module in ``unit_test`` matching the
-``test_*.py`` pattern. It is mainly intended for manual debugging during
-development.
+This helper script searches both the ``unit_test/blinker_migration`` and
+``unit_test/features`` directories for modules matching ``test_*.py`` and runs
+them using ``unittest``.  It mirrors what continuous integration would execute
+and is useful for local debugging.
 """
 
 from pathlib import Path
