@@ -49,13 +49,14 @@ Each function under test is implemented with the following logic:
    - Computes line intersection via get_intersection.
    - Computes intersection slopes via get_line_intersection_slope.
    - Computes average velocities as p.coef[1] / std(x).
-   - Returns 14 floats:
+   - Returns 10 floats:
      (leftSlope, rightSlope,
       averLeftVelocity, averRightVelocity,
       rightR2, leftR2,
       xIntersect, yIntersect,
-      leftXIntercept, rightXIntercept,
-      xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r).
+      leftXIntercept, rightXIntercept).
+     The original MATLAB version also produced ``xLineCross_*`` metrics,
+     but these were invariably ``NaN`` and have been dropped here.
 
     In general, in the step, we will get
         - right_outer, left_outer
@@ -66,6 +67,7 @@ Each function under test is implemented with the following logic:
         - right_zero_half_height, left_zero_half_height
     upon which, all will be used in extract_blink_properties() to extract blink properties.
 """
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -73,7 +75,7 @@ import os
 from pyblinkers.blinkers.zero_crossing import (
     left_right_zero_crossing,
     get_half_height,
-    compute_fit_range
+    compute_fit_range,
 )
 from pyblinkers.blinkers.base_left_right import create_left_right_base
 from pyblinkers.fitutils.line_intersection import lines_intersection
@@ -104,14 +106,14 @@ def test_df() -> pd.DataFrame:
         pandas.DataFrame of shape (5, 8).
     """
     data = {
-        "start_blink":  [42, 225, 362, 1439, 2151],
-        "end_blink":    [65, 242, 375, 1458, 2157],
-        "max_value":     [94.26998, 102.02947, 124.55329, 227.67508, 21.815195],
-        "max_blink":     [49, 230, 366, 1446, 2153],
-        "outer_start":  [0, 49, 230, 366, 1446],
-        "outer_end":    [230, 366, 1446, 2153, 3052],
-        "left_zero":     [40, 223, 360, 1437, 2148],
-        "right_zero":    [67, 245, 377, 1459, 2166],
+        "start_blink": [42, 225, 362, 1439, 2151],
+        "end_blink": [65, 242, 375, 1458, 2157],
+        "max_value": [94.26998, 102.02947, 124.55329, 227.67508, 21.815195],
+        "max_blink": [49, 230, 366, 1446, 2153],
+        "outer_start": [0, 49, 230, 366, 1446],
+        "outer_end": [230, 366, 1446, 2153, 3052],
+        "left_zero": [40, 223, 360, 1437, 2148],
+        "right_zero": [67, 245, 377, 1459, 2166],
     }
     df = pd.DataFrame(data)
     assert df.shape == (5, 8)
@@ -146,8 +148,12 @@ def test_left_right_zero_crossing(candidate_signal: np.ndarray, test_df: pd.Data
     )
 
     # Assert individual values
-    assert left_z == row["left_zero"], f"left_zero mismatch: got {left_z}, expected {row['left_zero']}"
-    assert right_z == row["right_zero"], f"right_zero mismatch: got {right_z}, expected {row['right_zero']}"
+    assert (
+        left_z == row["left_zero"]
+    ), f"left_zero mismatch: got {left_z}, expected {row['left_zero']}"
+    assert (
+        right_z == row["right_zero"]
+    ), f"right_zero mismatch: got {right_z}, expected {row['right_zero']}"
 
 
 def test_get_half_height_all(candidate_signal: np.ndarray, test_df: pd.DataFrame):
@@ -180,7 +186,7 @@ def test_get_half_height_all(candidate_signal: np.ndarray, test_df: pd.DataFrame
             int(row["left_zero"]),
             int(row["right_zero"]),
             int(df_bases.loc[idx, "left_base"]),
-            int(row["outer_end"])
+            int(row["outer_end"]),
         )
         # assert isinstance((lzh, rzh, lbh, rbh), tuple) and len((lzh, rzh, lbh, rbh)) == 4
         # for v in (lzh, rzh, lbh, rbh):
@@ -235,7 +241,9 @@ def test_compute_fit_range_all(candidate_signal: np.ndarray, test_df: pd.DataFra
         # assert isinstance(xR, np.ndarray) and xR.dtype.kind == 'i' and xR.size > 1
 
 
-def test_lines_intersection_first_two(candidate_signal: np.ndarray, test_df: pd.DataFrame):
+def test_lines_intersection_first_two(
+    candidate_signal: np.ndarray, test_df: pd.DataFrame
+):
     """
     Validate lines_intersection on first two segments.
 
@@ -245,10 +253,10 @@ def test_lines_intersection_first_two(candidate_signal: np.ndarray, test_df: pd.
       - get_intersection returns (xI,yI,leftXI,rightXI)
       - get_line_intersection_slope derives slopes from intersection coords
       - average velocity = p.coef[1] / std(x)
-      - placeholders xLineCross_*, yLineCross_* set NaN
+      - ``xLineCross_*`` metrics are omitted because they were always ``NaN``
 
     Expected Return Shape and Types:
-      Tuple of 14 floats:
+      Tuple of 10 floats:
        0: leftSlope
        1: rightSlope
        2: averLeftVelocity
@@ -259,34 +267,32 @@ def test_lines_intersection_first_two(candidate_signal: np.ndarray, test_df: pd.
        7: yIntersect
        8: leftXIntercept
        9: rightXIntercept
-      10: xLineCross_l (=nan)
-      11: yLineCross_l (=nan)
-      12: xLineCross_r (=nan)
-      13: yLineCross_r (=nan)
 
     Assertions:
-      • len(result)==14
-      • all elements are finite floats except the four NaNs
+      • len(result)==10
+      • all elements are finite floats
     """
 
-    xLeft = np.arange(225, 230, dtype=int)
+    x_left = np.arange(225, 230, dtype=int)
 
-    xRight = np.arange(232, 242, dtype=int)
-    result = lines_intersection(
-            signal=candidate_signal,
-            xLeft=xLeft,
-            xRight=xRight
-        )
-    col_result=[
-            'leftSlope', 'rightSlope', 'averLeftVelocity', 'averRightVelocity',
-            'rightR2', 'leftR2', 'xIntersect', 'yIntersect',
-            'leftXIntercept', 'rightXIntercept',
-            'xLineCross_l', 'yLineCross_l', 'xLineCross_r', 'yLineCross_r'
-        ]
-        # assert isinstance(result, tuple) and len(result) == 14
-        # for i, v in enumerate(result):
-        #     assert isinstance(v, float)
-        #     if i >= 10:
-        #         assert np.isnan(v)
-        #     else:
-        #         assert np.isfinite(v)
+    x_right = np.arange(232, 242, dtype=int)
+    result = lines_intersection(signal=candidate_signal, x_left=x_left, x_right=x_right)
+    col_result = [
+        "leftSlope",
+        "rightSlope",
+        "averLeftVelocity",
+        "averRightVelocity",
+        "rightR2",
+        "leftR2",
+        "xIntersect",
+        "yIntersect",
+        "leftXIntercept",
+        "rightXIntercept",
+    ]
+    # assert isinstance(result, tuple) and len(result) == 14
+    # for i, v in enumerate(result):
+    #     assert isinstance(v, float)
+    #     if i >= 10:
+    #         assert np.isnan(v)
+    #     else:
+    #         assert np.isfinite(v)

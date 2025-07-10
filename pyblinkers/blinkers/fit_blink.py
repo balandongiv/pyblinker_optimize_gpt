@@ -52,10 +52,6 @@ class FitBlinks:
             "y_intersect",
             "left_x_intercept",
             "right_x_intercept",
-            "x_line_cross_l",
-            "y_line_cross_l",
-            "x_line_cross_r",
-            "y_line_cross_r",
         ]
 
     def get_max_blink(self, start_idx, end_idx):
