@@ -14,7 +14,7 @@ class TestBlinkPosition(unittest.TestCase):
         Set up the class-level variables for testing.
         Load MATLAB candidate_signal and define parameters for the blink position calculation.
         """
-        base_path = Path(__file__).resolve().parents[2] / 'migration_files'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
         cls.mat_file_path_input = str(base_path / 'step1bi_data_input_getBlinkPositions.mat')
         cls.mat_file_path_output = str(base_path / 'step1bi_data_output_getBlinkPositions.mat')
 

@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 import pandas as pd
 import mne
-from ground_truth.epoch_blink_overlay import summarize_blink_counts
+from unit_test.ground_truth.epoch_blink_overlay import summarize_blink_counts
 
 logger = logging.getLogger(__name__)
 
