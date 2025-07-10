@@ -8,7 +8,7 @@ from .matlab_forking import (
     weighted_corr,
 )
 from .line_intersection_matlab import lines_intersection_matlabx
-from .mad_matlab import mad_matlab
+from .matlab_forking import mad_matlab
 
 __all__ = [
     "corrMatlab",

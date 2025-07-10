@@ -8,6 +8,13 @@ from scipy.linalg import qr, solve_triangular
 from scipy.stats import pearsonr, spearmanr, kendalltau
 
 
+def mad_matlab(arr: np.ndarray, axis: int | None = None, keepdims: bool = True) -> np.ndarray:
+    """Compute median absolute deviation similar to MATLAB."""
+    median = np.median(arr, axis=axis, keepdims=True)
+    mad = np.median(np.abs(arr - median), axis=axis, keepdims=keepdims)[0]
+    return mad
+
+
 def corrMatlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None):
     """
     Computes correlation coefficient(s) and p-values between pairs of candidate_signal.
