@@ -40,9 +40,15 @@ def lines_intersection(
         ``(
         left_slope, right_slope, aver_left_velocity, aver_right_velocity,
         right_r2, left_r2, x_intersect, y_intersect,
-        left_x_intercept, right_x_intercept,
-        x_line_cross_l, y_line_cross_l, x_line_cross_r, y_line_cross_r
+        left_x_intercept, right_x_intercept
         )``.
+
+    Notes
+    -----
+    The original MATLAB code also returned ``x_line_cross_l``,
+    ``y_line_cross_l``, ``x_line_cross_r``, and ``y_line_cross_r`` as part of
+    the results.  These values were always ``NaN`` and are therefore omitted
+    from the Python implementation.
     """
 
     y_right = signal[x_right]
@@ -71,12 +77,6 @@ def lines_intersection(
     aver_left_velocity = p_left[0] / mu_left[1]
     aver_right_velocity = p_right[0] / mu_right[1]
 
-    # Placeholder values retained from the original MATLAB implementation
-    x_line_cross_l = np.nan
-    y_line_cross_l = np.nan
-    x_line_cross_r = np.nan
-    y_line_cross_r = np.nan
-
     return (
         left_slope,
         right_slope,
@@ -88,9 +88,4 @@ def lines_intersection(
         y_intersect,
         left_x_intercept,
         right_x_intercept,
-        x_line_cross_l,
-        y_line_cross_l,
-        x_line_cross_r,
-        y_line_cross_r,
     )
-

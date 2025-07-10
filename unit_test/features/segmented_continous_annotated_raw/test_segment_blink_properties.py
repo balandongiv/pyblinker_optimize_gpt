@@ -50,13 +50,14 @@ Run extraction and sanity-check resulting columns.
             "y_intersect",
             "left_x_intercept",
             "right_x_intercept",
-            "x_line_cross_l",
-            "y_line_cross_l",
-            "x_line_cross_r",
-            "y_line_cross_r",
         ]
 
+        # The original MATLAB implementation also exposed four
+        # ``x_line_cross_*``/``y_line_cross_*`` columns. They were always
+        # ``NaN`` and are intentionally omitted here.
+
 """
+
 from __future__ import annotations
 
 import logging
