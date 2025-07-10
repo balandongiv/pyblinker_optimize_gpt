@@ -5,16 +5,17 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pyblinkers"
 version = "0.1.0"
-description = "Toolkit for blink-based fatigue analysis"
-readme = "README.md"
 requires-python = ">=3.8"
-authors = [{ name = "rpb" }]
+authors = [{email = "balandong@ums.edu.my",name = "Rodney Petrus Balandong" }]
 dependencies = [
     "mne",
     "pandas",
     "tqdm",
     "PyWavelets",
 ]
-
+description = "Toolkit for blink-based fatigue analysis"
 [tool.setuptools.packages.find]
 include = ["pyblinkers*"]
+license = {text = "BSD-3-Clause"}
+readme = "README.md"
+requires-python = ">= 3.10"
