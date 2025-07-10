@@ -1,3 +1,10 @@
+"""Line intersection utilities replicating MATLAB behavior in Python.
+
+This module provides the :func:`lines_intersection` function which wraps
+MATLAB-style helpers to compute line intersections and related metrics.
+"""
+
+from __future__ import annotations
 
 import numpy as np
 
@@ -10,34 +17,80 @@ from pyblinkers.fitutils.forking import (
 from pyblinkers.blinkers.zero_crossing import get_line_intersection_slope
 
 
-def lines_intersection(signal=None, xRight=None, xLeft=None):
+def lines_intersection(
+    *,
+    signal: np.ndarray | None = None,
+    x_right: np.ndarray | None = None,
+    x_left: np.ndarray | None = None,
+) -> tuple[float, ...]:
+    """Return intersection metrics for the given signal segments.
 
-    yRight = signal[xRight]
-    yLeft = signal[xLeft]
-    n=1
-    pLeft, SLeft, muLeft = polyfit(xLeft, yLeft, n)
-    yPred, _ = polyval(pLeft, xLeft, S=SLeft, mu=muLeft)
-    leftR2, _ = corr(yLeft, yPred)
+    Parameters
+    ----------
+    signal : np.ndarray, optional
+        Full signal array containing blink data.
+    x_right : np.ndarray, optional
+        Sample indices of the right-side segment.
+    x_left : np.ndarray, optional
+        Sample indices of the left-side segment.
 
+    Returns
+    -------
+    tuple
+        ``(
+        left_slope, right_slope, aver_left_velocity, aver_right_velocity,
+        right_r2, left_r2, x_intersect, y_intersect,
+        left_x_intercept, right_x_intercept,
+        x_line_cross_l, y_line_cross_l, x_line_cross_r, y_line_cross_r
+        )``.
+    """
 
+    y_right = signal[x_right]
+    y_left = signal[x_left]
 
-    pRight, SRight, muRight = polyfit(xRight, yRight, 1)
-    yPredRight, _ = polyval(pRight, xRight, S=SRight, mu=muRight)
-    rightR2, _ = corr(yRight, yPredRight)
+    degree = 1
+    p_left, s_left, mu_left = polyfit(x_left, y_left, degree)
+    y_pred_left, _ = polyval(p_left, x_left, S=s_left, mu=mu_left)
+    left_r2, _ = corr(y_left, y_pred_left)
 
-    xIntersect, yIntersect, leftXIntercept, rightXIntercept = get_intersection(pLeft, pRight, muLeft, muRight)
+    p_right, s_right, mu_right = polyfit(x_right, y_right, 1)
+    y_pred_right, _ = polyval(p_right, x_right, S=s_right, mu=mu_right)
+    right_r2, _ = corr(y_right, y_pred_right)
 
+    (
+        x_intersect,
+        y_intersect,
+        left_x_intercept,
+        right_x_intercept,
+    ) = get_intersection(p_left, p_right, mu_left, mu_right)
 
+    left_slope, right_slope = get_line_intersection_slope(
+        x_intersect, y_intersect, left_x_intercept, right_x_intercept
+    )
 
-    ### leftSlope,rightSlope
-    leftSlope,rightSlope=get_line_intersection_slope(xIntersect,yIntersect,leftXIntercept,rightXIntercept)
+    aver_left_velocity = p_left[0] / mu_left[1]
+    aver_right_velocity = p_right[0] / mu_right[1]
 
-    ### averLeftVelocity,averRightVelocity
-    averLeftVelocity=pLeft[0]/muLeft[1]
-    averRightVelocity=pRight[0]/muRight[1]
+    # Placeholder values retained from the original MATLAB implementation
+    x_line_cross_l = np.nan
+    y_line_cross_l = np.nan
+    x_line_cross_r = np.nan
+    y_line_cross_r = np.nan
 
-    # I am not sure about the following lines, and whether it will be use or not
-    xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r=np.nan, np.nan, np.nan, np.nan
-    return leftSlope, rightSlope, averLeftVelocity, averRightVelocity, \
-        rightR2[0][0], leftR2[0][0], xIntersect, yIntersect, leftXIntercept, rightXIntercept, \
-        xLineCross_l, yLineCross_l, xLineCross_r, yLineCross_r
+    return (
+        left_slope,
+        right_slope,
+        aver_left_velocity,
+        aver_right_velocity,
+        right_r2[0][0],
+        left_r2[0][0],
+        x_intersect,
+        y_intersect,
+        left_x_intercept,
+        right_x_intercept,
+        x_line_cross_l,
+        y_line_cross_l,
+        x_line_cross_r,
+        y_line_cross_r,
+    )
+
