@@ -13,7 +13,7 @@ def mad(arr: np.ndarray, axis: int | None = None, keepdims: bool = True) -> np.n
 
 
 def corr(x, y=None, type='Pearson', rows='all', tail='both', weights=None):
-    """Compute correlation coefficients mimicking MATLAB's ``corr``."""
+    """Compute correlation coefficients mimicking MATLAB's ``corr``.
 
     Parameters:
         x: array-like, shape (n_samples, n_features1)
