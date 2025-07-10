@@ -100,6 +100,13 @@ def compute_segment_blink_properties(
             logger.warning("Skipping segment %d due to fit error: %s", seg_id, exc)
             continue
 
+        if fitter.frame_blinks.empty:
+            logger.warning(
+                "Skipping segment %d due to no valid blink frames after fitting",
+                seg_id,
+            )
+            continue
+
         props = BlinkProperties(
             signal,
             fitter.frame_blinks,
