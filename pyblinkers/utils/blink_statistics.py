@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from pyblinkers.utils.matlab import mad_matlab
+from pyblinkers.fitutils import mad
 from pyblinkers.blinkers.default_setting import SCALING_FACTOR
 
 
@@ -57,9 +57,9 @@ def get_blink_statistic(df: pd.DataFrame, z_thresholds: np.ndarray, signal: np.n
     good_values = df_data.loc[good_mask_bottom, "max_value"].to_numpy()
 
     best_median = np.nanmedian(best_values)
-    best_robust_std = SCALING_FACTOR * mad_matlab(best_values)
+    best_robust_std = SCALING_FACTOR * mad(best_values)
     worst_median = np.nanmedian(worst_values)
-    worst_robust_std = SCALING_FACTOR * mad_matlab(worst_values)
+    worst_robust_std = SCALING_FACTOR * mad(worst_values)
 
     cutoff = (best_median * worst_robust_std + worst_median * best_robust_std) / (
         best_robust_std + worst_robust_std

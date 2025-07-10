@@ -1,5 +1,6 @@
 import numpy as np
 import warnings
+import pandas as pd
 
 from .zero_crossing import (
     get_half_height,
@@ -7,7 +8,7 @@ from .zero_crossing import (
     left_right_zero_crossing,
 )
 from .base_left_right import create_left_right_base
-from ..matlab_fork.line_intersection_matlab import lines_intersection_matlabx
+from ..fitutils.line_intersection import lines_intersection
 
 
 class FitBlinks:
@@ -189,6 +190,7 @@ class FitBlinks:
             # No valid blink regions after baseline calculation
             all_cols = (
                 list(self.df.columns)
+                + ["left_base", "right_base"]
                 + self.cols_half_height
                 + self.cols_fit_range
                 + ["nsize_x_left", "nsize_x_right"]
@@ -242,6 +244,7 @@ class FitBlinks:
         if self.frame_blinks.empty:
             all_cols = (
                 list(self.df.columns)
+                + ["left_base", "right_base"]
                 + self.cols_half_height
                 + self.cols_fit_range
                 + ["nsize_x_left", "nsize_x_right"]
@@ -253,10 +256,10 @@ class FitBlinks:
         # Calculate line intersections
 
         self.frame_blinks[self.cols_lines_intesection] = self.frame_blinks.apply(
-            lambda row: lines_intersection_matlabx(
+            lambda row: lines_intersection(
                 signal=self.candidate_signal,
-                xRight=row["x_right"],
-                xLeft=row["x_left"],
+                x_right=row["x_right"],
+                x_left=row["x_left"],
             ),
             axis=1,
             result_type="expand",

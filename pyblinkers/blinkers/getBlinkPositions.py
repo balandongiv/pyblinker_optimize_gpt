@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from .default_setting import SCALING_FACTOR
-from ..utils.matlab import mad_matlab
+from ..fitutils import mad
 
 
 def get_blink_position(
@@ -39,7 +39,7 @@ def get_blink_position(
 
     # Compute basic statistics
     mu = np.mean(blink_component, dtype=np.float64)
-    mad_val = mad_matlab(blink_component)
+    mad_val = mad(blink_component)
     robust_std= SCALING_FACTOR * mad_val
 
     # Minimum blink length in frames

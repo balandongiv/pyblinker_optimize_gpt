@@ -12,7 +12,7 @@ Data Lineage:
     - left_right_zero_crossing
     - _get_half_height
     - compute_fit_range
-    - lines_intersection_matlabx
+    - lines_intersection
 
 These upstream steps generate intermediate features such as:
   - Zero/base/tent crossings
