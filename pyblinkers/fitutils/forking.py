@@ -1,23 +1,19 @@
-"""
-
-The following code is base on MATLAB internal lib implementation
-"""
+"""Utility functions replicating select MATLAB helpers in Python."""
 
 import numpy as np
 from scipy.linalg import qr, solve_triangular
 from scipy.stats import pearsonr, spearmanr, kendalltau
 
 
-def mad_matlab(arr: np.ndarray, axis: int | None = None, keepdims: bool = True) -> np.ndarray:
-    """Compute median absolute deviation similar to MATLAB."""
+def mad(arr: np.ndarray, axis: int | None = None, keepdims: bool = True) -> np.ndarray:
+    """Compute median absolute deviation using the MATLAB approach."""
     median = np.median(arr, axis=axis, keepdims=True)
     mad = np.median(np.abs(arr - median), axis=axis, keepdims=keepdims)[0]
     return mad
 
 
-def corrMatlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None):
-    """
-    Computes correlation coefficient(s) and p-values between pairs of candidate_signal.
+def corr(x, y=None, type='Pearson', rows='all', tail='both', weights=None):
+    """Compute correlation coefficients mimicking MATLAB's ``corr``."""
 
     Parameters:
         x: array-like, shape (n_samples, n_features1)
@@ -166,8 +162,7 @@ def corrMatlab(x, y=None, type='Pearson', rows='all', tail='both', weights=None)
     return coef, pval
 
 def weighted_corr(x, y, w):
-    """This function is related to the corrMatlab
-    Compute weighted Pearson correlation coefficient."""
+    """Compute weighted Pearson correlation coefficient used by ``corr``."""
     w_sum = np.sum(w)
     w_mean_x = np.sum(w * x) / w_sum
     w_mean_y = np.sum(w * y) / w_sum
@@ -178,9 +173,8 @@ def weighted_corr(x, y, w):
 
 
 
-def polyfitMatlab(x, y, n):
-    """
-    Fit a polynomial of degree n to candidate_signal using least squares.
+def polyfit(x, y, n):
+    """Fit a polynomial of degree ``n`` using MATLAB's ``polyfit`` logic.
 
     Parameters:
     x : array_like, shape (M,)
@@ -243,9 +237,8 @@ def polyfitMatlab(x, y, n):
 
     return p, S, mu
 
-def polyvalMatlab(p, x, S=None, mu=None):
-    """
-    Evaluate polynomial with optional error estimates.
+def polyval(p, x, S=None, mu=None):
+    """Evaluate a polynomial using MATLAB's ``polyval`` logic.
 
     Parameters:
     p : array_like

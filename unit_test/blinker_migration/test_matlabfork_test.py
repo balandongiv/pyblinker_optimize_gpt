@@ -1,10 +1,10 @@
 import unittest
 import logging
 import numpy as np
-from pyblinkers.matlab_fork.matlab_forking import (
-    corrMatlab as corr_matlab,
-    polyvalMatlab as polyval_matlab,
-    polyfitMatlab as polyfit_matlab,
+from pyblinkers.fitutils.forking import (
+    corr as corr_matlab,
+    polyval as polyval_matlab,
+    polyfit as polyfit_matlab,
     get_intersection,
 )
 
@@ -119,7 +119,7 @@ class TestMatlabForking(unittest.TestCase):
 
 
             logger.info("Test get_intersection passed.")
-    def test_lines_intersection_matlabx(self):
+    def test_lines_intersection(self):
         xLeft = np.array([43, 44, 45, 46, 47, 48])
         yLeft = np.array([15.399296760559082, 26.770189285278320, 40.020221710205080,
                   54.111049652099610, 67.944847106933600, 80.329727172851560])

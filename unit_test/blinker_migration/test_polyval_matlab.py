@@ -1,5 +1,5 @@
 import numpy as np
-from pyblinkers.matlab_fork.matlab_forking import polyvalMatlab as polyval_matlab
+from pyblinkers.fitutils.forking import polyval as polyval_matlab
 # Unit test remains the same
 def test_polyval_matlab():
     # Input variables

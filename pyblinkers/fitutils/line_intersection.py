@@ -1,29 +1,29 @@
 
 import numpy as np
 
-from pyblinkers.matlab_fork.matlab_forking import (
-    corrMatlab,
-    polyvalMatlab,
-    polyfitMatlab,
+from pyblinkers.fitutils.forking import (
+    corr,
+    polyval,
+    polyfit,
     get_intersection,
 )
 from pyblinkers.blinkers.zero_crossing import get_line_intersection_slope
 
 
-def lines_intersection_matlabx(signal=None,xRight=None, xLeft=None):
+def lines_intersection(signal=None, xRight=None, xLeft=None):
 
     yRight = signal[xRight]
     yLeft = signal[xLeft]
     n=1
-    pLeft, SLeft, muLeft = polyfitMatlab(xLeft, yLeft, n)
-    yPred, delta = polyvalMatlab(pLeft, xLeft, S=SLeft, mu= muLeft)
-    leftR2, _ = corrMatlab(yLeft , yPred)
+    pLeft, SLeft, muLeft = polyfit(xLeft, yLeft, n)
+    yPred, _ = polyval(pLeft, xLeft, S=SLeft, mu=muLeft)
+    leftR2, _ = corr(yLeft, yPred)
 
 
 
-    pRight, SRight, muRight = polyfitMatlab(xRight, yRight, 1)
-    yPredRight, delta = polyvalMatlab(pRight, xRight, S=SRight, mu= muRight)
-    rightR2, _ = corrMatlab(yRight , yPredRight)
+    pRight, SRight, muRight = polyfit(xRight, yRight, 1)
+    yPredRight, _ = polyval(pRight, xRight, S=SRight, mu=muRight)
+    rightR2, _ = corr(yRight, yPredRight)
 
     xIntersect, yIntersect, leftXIntercept, rightXIntercept = get_intersection(pLeft, pRight, muLeft, muRight)
 

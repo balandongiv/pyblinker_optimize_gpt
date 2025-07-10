@@ -7,7 +7,7 @@ from .zero_crossing import (
     left_right_zero_crossing,
 )
 from .base_left_right import create_left_right_base
-from ..matlab_fork.line_intersection_matlab import lines_intersection_matlabx
+from ..fitutils.line_intersection import lines_intersection
 
 
 class FitBlinks:
@@ -253,7 +253,7 @@ class FitBlinks:
         # Calculate line intersections
 
         self.frame_blinks[self.cols_lines_intesection] = self.frame_blinks.apply(
-            lambda row: lines_intersection_matlabx(
+            lambda row: lines_intersection(
                 signal=self.candidate_signal,
                 xRight=row["x_right"],
                 xLeft=row["x_left"],

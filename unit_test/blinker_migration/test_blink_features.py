@@ -8,7 +8,7 @@ Unit tests for blink‐extraction helper functions in pyblinkers:
  - left_right_zero_crossing : under the function dprocess()
  - _get_half_height : under the function fit()
  - compute_fit_range : under the function fit()
- - lines_intersection_matlabx : under the function fit()
+ - lines_intersection : under the function fit()
 
 These tests do not assert exact numerical values, but verify:
   • correct return types and lengths
@@ -43,7 +43,7 @@ Each function under test is implemented with the following logic:
      blinkBottom_l_Y, blinkBottom_l_X, blinkTop_l_Y, blinkTop_l_X,
      blinkBottom_r_X, blinkBottom_r_Y, blinkTop_r_X, blinkTop_r_Y).
 
-4. lines_intersection_matlabx:
+4. lines_intersection:
    - Fits first-order polynomials to (x_left, y_left) and (x_right, y_right) via polyfit_matlab.
    - Uses polyval_matlab and corr_matlab to compute R² for each fit.
    - Computes line intersection via get_intersection.
@@ -77,8 +77,8 @@ from pyblinkers.blinkers.zero_crossing import (
     compute_fit_range,
 )
 from pyblinkers.blinkers.base_left_right import create_left_right_base
-from pyblinkers.matlab_fork.line_intersection_matlab import (
-    lines_intersection_matlabx,
+from pyblinkers.fitutils.line_intersection import (
+    lines_intersection,
 )
 
 
@@ -238,9 +238,9 @@ def test_compute_fit_range_all(candidate_signal: np.ndarray, test_df: pd.DataFra
         # assert isinstance(xR, np.ndarray) and xR.dtype.kind == 'i' and xR.size > 1
 
 
-def test_lines_intersection_matlabx_first_two(candidate_signal: np.ndarray, test_df: pd.DataFrame):
+def test_lines_intersection_first_two(candidate_signal: np.ndarray, test_df: pd.DataFrame):
     """
-    Validate lines_intersection_matlabx on first two segments.
+    Validate lines_intersection on first two segments.
 
     Internals:
       - polyfit_matlab(x_left, y_left, 1) and (x_right, y_right, 1)
@@ -275,7 +275,7 @@ def test_lines_intersection_matlabx_first_two(candidate_signal: np.ndarray, test
     xLeft = np.arange(225, 230, dtype=int)
 
     xRight = np.arange(232, 242, dtype=int)
-    result = lines_intersection_matlabx(
+    result = lines_intersection(
             signal=candidate_signal,
             xLeft=xLeft,
             xRight=xRight
