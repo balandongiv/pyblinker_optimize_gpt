@@ -5,7 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from .default_setting import SCALING_FACTOR
-from ..utils.matlab import mad_matlab
+from ..matlab_fork import mad_matlab
 
 
 def get_blink_position(

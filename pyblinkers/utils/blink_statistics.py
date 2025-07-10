@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from pyblinkers.utils.matlab import mad_matlab
+from pyblinkers.matlab_fork import mad_matlab
 from pyblinkers.blinkers.default_setting import SCALING_FACTOR
 
 
