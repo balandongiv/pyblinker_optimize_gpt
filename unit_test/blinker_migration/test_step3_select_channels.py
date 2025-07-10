@@ -23,7 +23,7 @@ class TestSelectChannelCompact(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        base_path = Path(__file__).resolve().parents[2] / 'migration_files'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
         cls.mat_file_path_input = base_path / 'step3a_input_selectChannel_compact.mat'
         cls.mat_file_path_output = base_path / 'step3a_output_selectChannel_compact.mat'
 

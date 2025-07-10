@@ -112,7 +112,7 @@ class TestExtractBlinkProperties(unittest.TestCase):
         """
         cls.params = default_setting.DEFAULT_PARAMS.copy()
         cls.params['sfreq'] = 100
-        base_path = Path(__file__).resolve().parents[2] / 'migration_files'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
         cls.mat_file_path_input = base_path / 'step1bi_data_input_getBlinkPositions.mat'
         cls.mat_file_path_output = base_path / 'immitate_full_step.mat'
 

@@ -14,7 +14,7 @@ class TestBlinkStatistic(unittest.TestCase):
         """
         Set up the test environment by loading input and ground truth candidate_signal.
         """
-        base_path = Path(__file__).resolve().parents[2] / 'migration_files'
+        base_path = Path(__file__).resolve().parents[1] / 'migration_files'
         cls.mat_file_path_input = base_path / 'step1bii_v_input_blinkStatProperties.mat'
         cls.mat_file_path_output = base_path / 'step1bii_v_output_blinkStatProperties.mat'
 
