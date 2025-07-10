@@ -178,8 +178,8 @@ if __name__ == "__main__":
         "raw",
         type=Path,
         nargs="?",
-        default=PROJECT_ROOT / "unitest" / "ear_eog.fif",
-        help="Path to raw FIF file (default: unitest/ear_eog.fif)",
+        default=PROJECT_ROOT / "unit_test" / "features" / "ear_eog_raw.fif",
+        help="Path to raw FIF file (default: unit_test/features/ear_eog_raw.fif)",
     )
     parser.add_argument(
         "output",
