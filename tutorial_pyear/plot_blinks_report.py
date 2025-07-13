@@ -12,8 +12,8 @@ it as an example when exploring the project.
 """
 from __future__ import annotations
 
-import logging
 from pathlib import Path
+import logging
 
 import matplotlib.pyplot as plt
 import mne
@@ -21,8 +21,8 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from pyear.blink_events import generate_blink_dataframe
-from pyear.utils.epochs import slice_raw_into_epochs
+from pyblinkers.features.blink_events import generate_blink_dataframe
+from pyblinkers.utils.epochs import slice_raw_into_epochs
 
 logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
