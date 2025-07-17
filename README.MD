@@ -1,26 +1,3 @@
----
-title: pyblinkers: A Python package for automated eye-blink artifact detection in biosignals
-tags:
-  - Python
-  - Biosignals
-  - Neuroscience
-  - Artifact Detection
-  - Eye-blink
-  - MNE-Python
-  - EEG
-  - EOG
-  - Eye Aspect Ratio
-authors:
-  - name: [Your Name]
-    orcid: [Your ORCID]
-    affiliation: [Your Affiliation] # e.g., University of X
-  - name: [Co-author Name (if any)]
-    orcid: [Co-author ORCID (if any)]
-    affiliation: [Co-author Affiliation (if any)]
-date: 28 October 2024 # Date of submission
-bibliography: paper.bib # if you have a bib file, otherwise remove this line
----
-
 # Summary
 pyblinker is a Python package primarily intended for automated detection of eye-blink artifacts in diverse biosignals, including EEG, EOG, and Eye Aspect Ratio (EAR). It addresses the limitations of existing MATLAB-based tools like BLINKERS, offering a Python-based, open-source solution for researchers analyzing various types of physiological data.
 
@@ -61,8 +38,22 @@ RPB wishes to thank the Ministry of Higher Education Malaysia for their financia
 - Kleifges, K., Fachner, J., Munte, T. F., & Bohr, K. (2017). Automatic artifact detection and ocular index computation using blind source separation. *Biological Psychology*, *128*, 132-141. [https://doi.org/10.1016/j.biopsycho.2017.07.007](https://doi.org/10.1016/j.biopsycho.2017.07.007)
 - van Rossum, G., Warsaw, B., & Coghlan, A. (2001). PEP 8 -- Style Guide for Python Code. *Python Enhancement Proposals*. [https://peps.python.org/pep-0008/](https://peps.python.org/pep-0008/)
 
-<div id="footnotes">
-<sup>2</sup> GitHub repository URL will be inserted here.
-<br>
-<sup>3</sup> Read the Docs documentation URL will be inserted here.
-</div>
+
+---
+
+### 📦 Installation
+
+To install directly from GitHub using `pip`, run:
+
+```bash
+pip install git+https://github.com/balandongiv/pyblinker_optimize_gpt.git
+```
+
+Alternatively, for development purposes:
+
+```bash
+git clone https://github.com/balandongiv/pyblinker_optimize_gpt.git
+cd pyblinker_optimize_gpt
+pip install -e .
+```
+
