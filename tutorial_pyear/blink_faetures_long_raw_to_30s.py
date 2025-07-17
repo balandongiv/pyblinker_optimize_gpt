@@ -39,7 +39,11 @@ except FileNotFoundError:
 
 print("Refining blink segments...")
 try:
-    segments, refined_blinks = prepare_refined_segments(RAW_FILE, channel="EOG-EEG-eog_vert_left")
+    segments, refined_blinks = prepare_refined_segments(
+        RAW_FILE,
+        channel="EOG-EEG-eog_vert_left",
+        keep_epoch_signal=True,
+    )
 except FileNotFoundError:
     print(f"Error: Raw data file not found at {RAW_FILE}")
     print("Please ensure the file path is correct and the necessary data is available.")
@@ -94,8 +98,12 @@ epoch_len = 30.0
 n_epochs = len(segments)
 
 df = extract_features(refined_blinks, sfreq, epoch_len, n_epochs, raw_segments=segments)
-print("\nExtracted Features DataFrame (first 5 rows):")
-print(df.head())
+df_with_gt = df.copy()
+df_with_gt.insert(1, "Ground Truth Blinks", ground_truth["blink_count"])
+df_with_gt.insert(2, "Match", df_with_gt["blink_count"] == ground_truth["blink_count"])
+
+print("\nCombined Features DataFrame (first 5 rows):")
+print(df_with_gt.head())
 
 
 # The DataFrame shows one row per epoch with columns such as `blink_count` and various morphological or frequency metrics. Summing `blink_count` should match the total number of blinks in the ground truth CSV, providing a quick validation of the extracted features.
