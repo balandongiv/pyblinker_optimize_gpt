@@ -55,5 +55,6 @@ Alternatively, for development purposes:
 git clone https://github.com/balandongiv/pyblinker_optimize_gpt.git
 cd pyblinker_optimize_gpt
 pip install -e .
+pip install -r requirements.txt  # install optional test utilities
 ```
 
