@@ -15,6 +15,7 @@ dependencies = [
     "pandas",
     "tqdm",
     "PyWavelets",
+    "gdown",
 ]
 
 [tool.setuptools.packages.find]
